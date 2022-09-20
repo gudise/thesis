@@ -1,0 +1,90 @@
+ Este programa crea todos los ficheros necesarios (.v .xdc .ino) para implementar una matriz de osciladores de anillo en FPGA y medir sus frecuencias de oscilacion utilizando una interfaz Arduino. Para medir la frecuencia de un oscilador se mide el tiempo que le cuesta a este realizar 'resolucion' oscilaciones
+-------------------------------------------
+
+Opciones:
+
+ -out "romatrix"
+ 
+	Todas las salidas del programa tendran este nombre seguido de la extension correspondiente
+
+
+ -tipo lut1 | lut2 | lut3 | lut3mr | lut4 | lut5 | lut6 | lut6mr | lut6_2
+ 
+	si esta opcion esta presente, se modifica la clase de LUT que constiuye un inversor (por defecto se toma 
+	'lut1'). Las matrices de osciladores modificados admiten un array de configuracion (ademas de la seleccion de
+	osciladores):
+		Bits de configuracion:
+			lut3 --> 2*N_inv*N_osciladores
+			lut3_mr (multirouting) --> N_inv*N_osciladores
+			lut4 --> 3*N_inv_N_osciladores
+			lut5 --> 4*N_inv_N_osciladores
+			lut6 --> 5*N_inv*N_osciladores
+			lut6_mr(multirouting) --> 4*N_inv_N_osciladores
+
+
+ -config [x] {x, y}
+ 
+	direccion en la que se colocaran los inversores de cada oscilador
+
+
+ -directriz [x] ¤ {x, y}
+ 
+	esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del eje 'x')
+
+
+ -pinmap [I0:A1,I1:A2,...]
+ 
+	esta opcion permite cambiar la asignacion de puertos de la LUT. La nomenclatura 'Ix:Ay' es lenguaje XDC y debe
+	respetarse. Recordar que el numero de entradas 'Ix' depende del tipo de LUT utilizado. La nomenclatura de los
+	puertos de cada LUT es A1,A2,A3,A4,A5,A6.
+
+
+ -minsel [0]
+ 
+	con esta opcion se realizará una seleccion minima (unicamente 5 bits), que comparten todos los inversores de
+	cada oscilador. Para activar 'minsel' podemos escribir '-minsel 1', o simplemente '-minsel'. '-minsel 0' (la
+	opción por defecto) equivale a no utilizar esta opción
+
+
+ -Ninv [3]
+ 
+	numero de inversores de cada oscilador
+
+
+ -XOSincr [1]
+ 
+	distancia entre las coordenadas X de dos osciladores adyacentes
+
+
+ -YOSincr [1]
+ 
+	distancia entre las coordenadas Y de dos osciladores adyacentes
+
+
+ -XOSmax [20]
+ 
+	coordenada X maxima de la matriz de osciladores implementada
+
+
+ -YOSmax [20]
+ 
+	coordenada Y maxima de la matriz de osciladores implementada
+
+
+ -Nosc [10]
+ 
+	numero de osciladores de la matriz. Si Nosc=-1, la matriz se llenara hasta completar las celdas indicadas en
+	XOSmax, YOSmax
+
+
+ -posmap [x0,y0 x1,y1 ...]
+ 
+	esta opcion permite indicar explícitamente las posiciones de (la primera puerta, i.e., de la puerta AND) de cada
+	oscilador. Si no se indican tantos pares x,y como osciladores haya, el resto de osciladores hasta llegar a Nosc
+	se escribirán de acuerdo con los criterios establecidos en OSincr y OSmax. Si no se indica esta opción en
+	absoluto se utiliza x0=0, y0=0
+
+
+ -resolucion [1000000]
+ 
+	numero de ciclos de medicion para cada oscilador;

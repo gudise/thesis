@@ -1,0 +1,61 @@
+ 
+ Script para medir la frecuencia de romatrix. El resultado se guarda en formato de matriz '.mtz', donde cada fila
+ contiene las medidas de todos los osciladores seleccionados para una instancia, repetición y pdl determinada.
+ 
+ Uso:
+ ----
+ 
+ medir_romatrix.py [-help] [-out] [-trama_selector] [-buffer_out_width] [-osc_range] [-pdl_range] [-osc_por_instancia]
+		  [-nrep] [-puerto] [-baudrate] 
+
+ Opciones:
+ ---------
+ 
+ -help
+ 
+	pinta esta ayuda
+
+
+ -out "rawdata.mtz"
+ 
+	nombre del fichero de salida
+ 
+ 
+ -trama_selector(ts) {sel_ro_width} {sel_pdl_width}
+ 
+	Esta opción permite configurar la palabra binaria que se envía a la FPGA para solicitar una medida. Esta palabra
+	consta de dos partes: la primera contiene el número del oscilador que solicitamos, y la segunda el número de la 
+	PDL que solicitamos. Con esta opción elegimos el tamaño (número de bits) de cada parte de la trama:
+	
+		sel_ro_width -> selector de osciladores (por defecto 8)
+		sel_pdl_width -> selector de PDL (por defecto 5)
+		
+	Notar que esta opción no es discrecional: tiene que coincidir con el tamaño de la trama utilizado en el diseño
+	de 'romatrix'.
+
+
+ -buffer_out_width(bow) 32
+ 
+
+ -osc_range(or) [0] 1 [1]
+ 
+ 
+ -pdl_range(pr) [0] 1 [1]
+ 
+
+ -osc_por_instancia(opi) {N_osciladores}
+ 
+
+ -nrep 1
+ 
+ 
+ -puerto 1
+
+	Esta opción permite cambiar el número del puerto serie al cual está conectado la FPGA. Este dato puede 
+	consultarse en el administrador de dispositivos de Windows -> puertos (COM y LPT) -> COM{puerto}
+
+
+ -baudrate 9600
+ 
+	Esta opción permite cambiar la tasa de transeferencia de la comunicación
+ 

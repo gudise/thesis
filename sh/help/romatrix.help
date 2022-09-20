@@ -1,0 +1,74 @@
+
+ Este script copia en el directorio actual los tres ficheros necesarios para implementar una matriz de osciladores
+ de anillo con medicion de la frecuencia y comunicacion pc (.py) <-> microprocesador (.c) <-> FSM en FPGA (.v),
+ ademas de un script .tcl generado por Vivado para reconstruir el blockDesign que contiene los modulos GPIO
+ necesarios para la comunicacion. Al incluir el nombre de la placa, el script copia los ficheros correctos para
+ implementar el diseno (en ausencia de nombre se considera por defecto 'zybo'. Notar que este script copia un
+ esquema de FSM2, debe incluirse en el diseño una matriz (usar gen_romatrix.puf.x), y editarse la maquina FSM2 para
+ acomodar los retos/bits de selecion\n.
+	Opciones:
+		-help, pinta esta ayuda
+		
+		-projname [\"project_romatrixfsm2\"]
+		
+		-board [zybo | pynqz2 | cmoda7]
+		
+		-njobs [4]
+		
+		-qspi
+		
+		-detailr, si esta opcion esta presente el flujo .tcl incluira el cableado de los inversores despues de la
+		sintesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es
+		recomendable comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
+		
+		-tipo <[lut1]|lut2|lut3|lut3mr|lut4|lut5|lut6|lut6mr|lut6_2>
+		
+		-config <[x]|y>, direccion en la que se colocaran los inversores de cada oscilador
+		
+		-directriz <[y]|x>, esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del
+		eje 'x')
+		
+		-pinmap [I0:A1,I1:A2,...], esta opcion permite cambiar la asignacion de puertos de la LUT. La nomenclatura
+		'Ix:Ay' es XDC y debe respetarse (teniendo en cuenta el tipo de LUT que estamos utilizando). El puerto 'I0'
+		siempre corresponde al puerto vivo del oscilador, y los puertos restantes son puertos de seleccion. Por
+		defecto los puertos lógicos y físicos se asignan correlativamente en orden ascendente (I0:A1,I1:A2,...). Se
+		recomienda respetar la primera de estas asignaciones (I0:A1) ya que parece maximizar la resolución en
+		frecuencia de las distintas configuraciones (a pesar de que A1 parece ser el puerto más lento). 
+		
+		-minsel, si esta opcion esta presente se realizar una seleccion minima (unicamente 5 bits), que comparten
+		todos los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6)
+		
+		-Ninv [3]
+		
+		-Nosc [2]
+		
+		-posmap [\"x0,y0 x1,y1 ...\"], esta opcion permite indicar explícitamente las posiciones de (la primera
+		puerta, i.e., de la puerta AND) de cada oscilador. Si no se indican tantos pares x,y como osciladores haya,
+		el resto de osciladores hasta llegar a Nosc se escribirán de acuerdo con los criterios establecidos en
+		OSincr y OSmax. Si no se indica esta opción en basoluto se utiliza x0=0, y0=0. Notar que esta opción debe
+		estar entrecomillada (de otro modo el script no lo tomará como un único string).
+				
+		-Xincr [1]
+		
+		-Xmax [20]
+				
+		-Yincr [1]
+		
+		-Ymax [20]
+		
+		-resolucion [1000000]
+
+		-dw [32], data_width (tamano del bus gpio)
+		
+		-biw [auto], buffer_in_width (bits significativos de la palabra de entrada data_in). Si esta opcion se omite
+		el script calcula automáticamente cuántos bits son necesarios para: (i) seleccionar el oscilador de la
+		matriz y (ii) seleccionar la configuración de cada inversor. La trama del buffer de entrada será: [biw-1:x]
+		para la configuración, y [x-1:0] para seleccionar el oscilador.
+		
+		-bow [32], buffer_out_width (bits significativos de la palabra de salida data_out)
+		
+		-port [ttyS4], esta opcion permite cambiar el puerto COM que sera utilizado por el script python (tty es
+		nomenclatura de linux)
+		
+		-linux, utilizar esta opcion si Vivado esta instalado en un SO linux. De otro modo el formato de los PATH
+		sera el de Windows y los script tcl fallaran
