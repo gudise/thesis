@@ -60,7 +60,7 @@ for i, opt in enumerate(sys.argv):
 				pdl = range(pdl[0])
 			elif len(pdl) == 2:
 				pdl = range(pdl[0], pdl[1], 1)
-			elif len(osc) == 3:
+			elif len(pdl) == 3:
 				pdl = range(pdl[0], pdl[1], pdl[2])
 				
 	if opt == "-osc_por_instancia" or opt=="-opi":
