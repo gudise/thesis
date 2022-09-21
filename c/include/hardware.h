@@ -45,7 +45,7 @@ void	pintarOscilador_LUT6_multirouting(FILE* punte, char config, int N_inversore
 void	pintarOscilador_LUT6_2(FILE* punte, char config, int N_inversores, int i, int XOS, int YOS, char* pinmap, char minsel);
 
 
-
+const char *bel_array[] = {"C6LUT","A6LUT","D6LUT","B6LUT"};
 
 
 
@@ -114,7 +114,7 @@ void pintarOscilador(FILE* punte, char config, int N_inversores, int i, int XOS,
     celda[0]=XOS;
     celda[1]=YOS;
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
     aux=0;
     ocupacion_celda=1;
@@ -130,14 +130,14 @@ void pintarOscilador(FILE* punte, char config, int N_inversores, int i, int XOS,
         
         if(aux==N_inversores-1)
         {
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT1 #(2'b01) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]));\n\n",celda[0],celda[1],pinmap,i,N_inversores-1,i,i,N_inversores-1);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT1 #(2'b01) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,N_inversores-1,i,i,N_inversores-1);
             
             ocupacion_celda++;
             
             break;
         }
         
-        fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT1 #(2'b01) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux);
+        fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT1 #(2'b01) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux);
         
         ocupacion_celda++;
         
@@ -202,7 +202,7 @@ void pintarOscilador_LUT2(FILE* punte, char config, int N_inversores, int i, int
     celda[0]=XOS;
     celda[1]=YOS;
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -220,9 +220,9 @@ void pintarOscilador_LUT2(FILE* punte, char config, int N_inversores, int i, int
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,contador);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,contador);
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,0);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,0);
             
             ocupacion_celda++;
             
@@ -230,9 +230,9 @@ void pintarOscilador_LUT2(FILE* punte, char config, int N_inversores, int i, int
         }
         
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador);
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT2 #(4'h5) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0);
             
         contador++;
 		
@@ -300,7 +300,7 @@ void pintarOscilador_LUT3(FILE* punte, char config, int N_inversores, int i, int
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -318,10 +318,10 @@ void pintarOscilador_LUT3(FILE* punte, char config, int N_inversores, int i, int
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1);
                     
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1);
             
             ocupacion_celda++;
             
@@ -329,10 +329,10 @@ void pintarOscilador_LUT3(FILE* punte, char config, int N_inversores, int i, int
         }
         
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1);
                 
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1); 
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h55) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1); 
         
         contador+=2;
 		
@@ -397,7 +397,7 @@ void pintarOscilador_LUT3_multirouting(FILE* punte, char config, int N_inversore
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -414,14 +414,14 @@ void pintarOscilador_LUT3_multirouting(FILE* punte, char config, int N_inversore
         
         if(aux==N_inversores-1)
         {
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h1B) inv_%d_%d(.O(out_ro[%d]), .I0(sel[%d]), .I1(w_%d[%d]), .I2(w_%d[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,contador,i,aux,i,aux);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h1B) inv_%d_%d(.O(out_ro[%d]), .I0(sel[%d]), .I1(w_%d[%d]), .I2(w_%d[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,contador,i,aux,i,aux);
             
             ocupacion_celda++;
             
             break;
         }
         
-        fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h1B) inv_%d_%d(.O(w_%d[%d]), .I0(sel[%d]), .I1(w_%d[%d]), .I2(w_%d[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,contador,i,aux,i,aux);
+        fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT3 #(8'h1B) inv_%d_%d(.O(w_%d[%d]), .I0(sel[%d]), .I1(w_%d[%d]), .I2(w_%d[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,contador,i,aux,i,aux);
         
         ocupacion_celda++;
         contador++;
@@ -487,7 +487,7 @@ void pintarOscilador_LUT4(FILE* punte, char config, int N_inversores, int i, int
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -505,10 +505,10 @@ void pintarOscilador_LUT4(FILE* punte, char config, int N_inversores, int i, int
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2);
                     
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2);
             
             ocupacion_celda++;
             
@@ -516,10 +516,10 @@ void pintarOscilador_LUT4(FILE* punte, char config, int N_inversores, int i, int
         }
         
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2);
                 
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT4 #(16'h5555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2);
         
         ocupacion_celda++;
         contador+=3;
@@ -584,7 +584,7 @@ void pintarOscilador_LUT5(FILE* punte, char config, int N_inversores, int i, int
     celda[0]=XOS;
     celda[1]=YOS;
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -602,10 +602,10 @@ void pintarOscilador_LUT5(FILE* punte, char config, int N_inversores, int i, int
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2,contador+3);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2,contador+3);
                     
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2,3);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2,3);
             
             ocupacion_celda++;
             
@@ -613,10 +613,10 @@ void pintarOscilador_LUT5(FILE* punte, char config, int N_inversores, int i, int
         }
 
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3);
 	
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT5 #(32'h55555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3);
         
         ocupacion_celda++;
         contador+=4;
@@ -682,7 +682,7 @@ void pintarOscilador_LUT6(FILE* punte, char config, int N_inversores, int i, int
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -700,10 +700,10 @@ void pintarOscilador_LUT6(FILE* punte, char config, int N_inversores, int i, int
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
                 
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2,3,4);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(out_ro[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux,0,1,2,3,4);
             
             ocupacion_celda++;
             
@@ -711,10 +711,10 @@ void pintarOscilador_LUT6(FILE* punte, char config, int N_inversores, int i, int
         }
 
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
 				
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3,4);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3,4);
         
         ocupacion_celda++;
         contador+=5;
@@ -780,7 +780,7 @@ void pintarOscilador_LUT6_2(FILE* punte, char config, int N_inversores, int i, i
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(w_%d[%d]));\n",celda[0],celda[1],i,i,i,i,N_inversores);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(w_%d[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i,N_inversores);
     
 	contador=0;
     aux=0;
@@ -798,10 +798,10 @@ void pintarOscilador_LUT6_2(FILE* punte, char config, int N_inversores, int i, i
         if(aux==N_inversores-1)
         {
             if(!minsel)
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6_2 #(64'h5555555555555555) inv_%d_%d(.O5(out_ro[%d]), .O6(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6_2 #(64'h5555555555555555) inv_%d_%d(.O5(out_ro[%d]), .O6(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
                 
             else
-                fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6_2 #(64'h5555555555555555) inv_%d_%d(.O5(out_ro[%d]), .O6(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,i,aux+1,i,aux,0,1,2,3,4);
+                fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6_2 #(64'h5555555555555555) inv_%d_%d(.O5(out_ro[%d]), .O6(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,i,aux+1,i,aux,0,1,2,3,4);
             
             ocupacion_celda++;
             
@@ -809,10 +809,10 @@ void pintarOscilador_LUT6_2(FILE* punte, char config, int N_inversores, int i, i
         }
 
         if(!minsel)
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,contador,contador+1,contador+2,contador+3,contador+4);
 				
         else
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3,4);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h5555555555555555) inv_%d_%d(.O(w_%d[%d]), .I0(w_%d[%d]), .I1(sel[%d]), .I2(sel[%d]), .I3(sel[%d]), .I4(sel[%d]), .I5(sel[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,i,aux,0,1,2,3,4);
         
         ocupacion_celda++;
         contador+=5;
@@ -875,7 +875,7 @@ void pintarOscilador_LUT6_multirouting(FILE* punte, char config, int N_inversore
     celda[1]=YOS;
     
     
-    fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",celda[0],celda[1],i,i,i,i);
+    fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"I0:A1,I1:A2\" *) LUT2 #(4'b1000) AND_%d(.O(w_%d[0]), .I0(enable_ro[%d]), .I1(out_ro[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],i,i,i,i);
     
 	contador=0;
     aux=0;
@@ -892,14 +892,14 @@ void pintarOscilador_LUT6_multirouting(FILE* punte, char config, int N_inversore
         
         if(aux==N_inversores-1)
         {
-            fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h123456789ABCDEF) inv_%d_%d(.O(out_ro[%d]), .I0(sel[%d]), .I1(sel[%d]), .I2(w_%d[%d]), .I3(w_%d[%d]), .i4(w_%d[%d]), .i5(w_%d[%d]));\n\n",celda[0],celda[1],pinmap,i,aux,i,contador,contador+1,i,aux,i,aux,i,aux,i,aux);
+            fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h123456789ABCDEF) inv_%d_%d(.O(out_ro[%d]), .I0(sel[%d]), .I1(sel[%d]), .I2(w_%d[%d]), .I3(w_%d[%d]), .i4(w_%d[%d]), .i5(w_%d[%d]));\n\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,contador,contador+1,i,aux,i,aux,i,aux,i,aux);
             
             ocupacion_celda++;
             
             break;
         }
         
-        fprintf(punte,"    (* LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h123456789ABCDEF) inv_%d_%d(.O(w_%d[%d]), .I0(sel[%d]), .I1(sel[%d]), .I2(w_%d[%d]), .I3(w_%d[%d]), .i4(w_%d[%d]), .i5(w_%d[%d]));\n",celda[0],celda[1],pinmap,i,aux,i,aux+1,contador,contador+1,i,aux,i,aux,i,aux,i,aux);
+        fprintf(punte,"    (* BEL=\"%s\", LOC=\"SLICE_X%dY%d\", DONT_TOUCH=\"true\", LOCK_PINS=\"%s\" *) LUT6 #(64'h123456789ABCDEF) inv_%d_%d(.O(w_%d[%d]), .I0(sel[%d]), .I1(sel[%d]), .I2(w_%d[%d]), .I3(w_%d[%d]), .i4(w_%d[%d]), .i5(w_%d[%d]));\n",bel_array[ocupacion_celda],celda[0],celda[1],pinmap,i,aux,i,aux+1,contador,contador+1,i,aux,i,aux,i,aux,i,aux);
         
         ocupacion_celda++;
         contador+=2;
