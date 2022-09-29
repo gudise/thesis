@@ -72,3 +72,4 @@
 		
 		-linux, utilizar esta opcion si Vivado esta instalado en un SO linux. De otro modo el formato de los PATH
 		sera el de Windows y los script tcl fallaran
+

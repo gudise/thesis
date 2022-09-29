@@ -31,127 +31,122 @@ i=2
 for opcion
 do
 	if test "$opcion" = "-help"
+	then
+		tabs 4; cat "$REPO_puf/sh/help/romatrix.help"
+		exit
+		
+	elif test "$opcion" = "-projname"
+	then
+		PROJNAME="${!i}"
+		
+	elif test "$opcion" = "-board"
+	then
+		if test "${!i}" == "cmoda7"
 		then
-			while read line
-			do
-				echo $line
-			done < "$REPO_puf/sh/help/romatrix.help"
-
-			exit
-			
-		elif test "$opcion" = "-projname"
+			BRD="cmoda7"
+			PARTNUMBER="xc7a15tcpg236-1"
+			BOARDPART="digilentinc.com:cmod_a7-15t:part0:1.1"
+			MEMPART="mx25l3233"
+				
+		elif test "${!i}" == "zybo"
 		then
-			PROJNAME="${!i}"
-			
-		elif test "$opcion" = "-board"
+			BRD="zybo"
+			PARTNUMBER="xc7z010clg400-1"
+			BOARDPART="digilentinc.com:zybo:part0:1.0"
+			MEMPART="?"
+				
+		elif test "${!i}" == "pynqz2"
 		then
-			if test "${!i}" == "cmoda7"
-			then
-				BRD="cmoda7"
-				PARTNUMBER="xc7a15tcpg236-1"
-				BOARDPART="digilentinc.com:cmod_a7-15t:part0:1.1"
-				MEMPART="mx25l3233"
-					
-			elif test "${!i}" == "zybo"
-			then
-				BRD="zybo"
-				PARTNUMBER="xc7z010clg400-1"
-				BOARDPART="digilentinc.com:zybo:part0:1.0"
-				MEMPART="?"
-					
-			elif test "${!i}" == "pynqz2"
-			then
-				BRD="pynqz2"
-				PARTNUMBER="xc7z020clg400-1"
-				BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
-				MEMPART="?"
-
+			BRD="pynqz2"
+			PARTNUMBER="xc7z020clg400-1"
+			BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
+			MEMPART="?"
 		fi
-	
-		elif test "$opcion" = "-njobs"
-		then
-			NJOBS=${!i}
-			
-		elif test "$opcion" = "-qspi"
-		then
-			QSPI=1
-			
-		elif test "$opcion" = "-detailr"
-		then
-			DETAILR=1
-			
-		elif test "$opcion" = "-tipo"
-		then
-			TIPO="${!i}"
-			
-		elif test "$opcion" = "-config"
-		then
-			CONFIG="${!i}"
-			
-		elif test "$opcion" = "-directriz"
-		then
-			DIRECTRIZ="${!i}"
-			
-		elif test "$opcion" = "-pinmap"
-		then
-			PINMAP="${!i}"
-			PINMAP_SET=1
-			
-		elif test "$opcion" = "-minsel"
-		then
-			MINSEL=1
-			
-		elif test "$opcion" = "-Ninv"
-		then
-			NINV=${!i}
-			
-		elif test "$opcion" = "-Nosc"
-		then
-			NOSC=${!i}
-			
-		elif test "$opcion" = "-posmap"
-		then
-			POSMAP=${!i}
-			
-		elif test "$opcion" = "-Xincr"
-		then
-			XOSincr=${!i}
-			
-		elif test "$opcion" = "-Xmax"
-		then
-			XOSmax=${!i}
-			
-		elif test "$opcion" = "-Yincr"
-		then
-			YOSincr=${!i}
-			
-		elif test "$opcion" = "-Ymax"
-		then
-			YOSmax=${!i}
-			
-		elif test "$opcion" = "-resolucion"
-		then
-			RESOLUCION=${!i}
-			
-		elif test "$opcion" = "-dw"
-		then
-			DATA_WIDTH="${!i}"
-			
-		elif test "$opcion" = "-biw"
-		then
-			BUFFER_IN_WIDTH="${!i}"
-			
-		elif test "$opcion" = "-bow"
-		then
-			BUFFER_OUT_WIDTH="${!i}"
-			
-		elif test "$opcion" = "-port"
-		then
-			USBPORT="${!i}"
-			
-		elif test "$opcion" = "-linux"
-		then
-			WINDOWS_STYLE=0
+
+	elif test "$opcion" = "-njobs"
+	then
+		NJOBS=${!i}
+		
+	elif test "$opcion" = "-qspi"
+	then
+		QSPI=1
+		
+	elif test "$opcion" = "-detailr"
+	then
+		DETAILR=1
+		
+	elif test "$opcion" = "-tipo"
+	then
+		TIPO="${!i}"
+		
+	elif test "$opcion" = "-config"
+	then
+		CONFIG="${!i}"
+		
+	elif test "$opcion" = "-directriz"
+	then
+		DIRECTRIZ="${!i}"
+		
+	elif test "$opcion" = "-pinmap"
+	then
+		PINMAP="${!i}"
+		PINMAP_SET=1
+		
+	elif test "$opcion" = "-minsel"
+	then
+		MINSEL=1
+		
+	elif test "$opcion" = "-Ninv"
+	then
+		NINV=${!i}
+		
+	elif test "$opcion" = "-Nosc"
+	then
+		NOSC=${!i}
+		
+	elif test "$opcion" = "-posmap"
+	then
+		POSMAP=${!i}
+		
+	elif test "$opcion" = "-Xincr"
+	then
+		XOSincr=${!i}
+		
+	elif test "$opcion" = "-Xmax"
+	then
+		XOSmax=${!i}
+		
+	elif test "$opcion" = "-Yincr"
+	then
+		YOSincr=${!i}
+		
+	elif test "$opcion" = "-Ymax"
+	then
+		YOSmax=${!i}
+		
+	elif test "$opcion" = "-resolucion"
+	then
+		RESOLUCION=${!i}
+		
+	elif test "$opcion" = "-dw"
+	then
+		DATA_WIDTH="${!i}"
+		
+	elif test "$opcion" = "-biw"
+	then
+		BUFFER_IN_WIDTH="${!i}"
+		
+	elif test "$opcion" = "-bow"
+	then
+		BUFFER_OUT_WIDTH="${!i}"
+		
+	elif test "$opcion" = "-port"
+	then
+		USBPORT="${!i}"
+		
+	elif test "$opcion" = "-linux"
+	then
+		WINDOWS_STYLE=0
 	fi
 	i=$((i+1))
 done
