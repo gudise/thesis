@@ -1,0 +1,9 @@
+setup.py
+mymod/__init__.py
+mymod/fsm.py
+mymod/main.py
+mymod.egg-info/PKG-INFO
+mymod.egg-info/SOURCES.txt
+mymod.egg-info/dependency_links.txt
+mymod.egg-info/not-zip-safe
+mymod.egg-info/top_level.txt
