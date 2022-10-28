@@ -24,7 +24,6 @@ RESOLUCION=1000000
 DATA_WIDTH=32
 BUFFER_IN_WIDTH=0
 BUFFER_OUT_WIDTH=32
-USBPORT="ttyS4"
 WINDOWS_STYLE=1
 
 i=2
@@ -139,10 +138,6 @@ do
 	elif test "$opcion" = "-bow"
 	then
 		BUFFER_OUT_WIDTH="${!i}"
-		
-	elif test "$opcion" = "-port"
-	then
-		USBPORT="${!i}"
 		
 	elif test "$opcion" = "-linux"
 	then
@@ -462,124 +457,6 @@ printf "
  
  sel_pdl_width = $(($BUFFER_IN_WIDTH-$aux))
 "
-
-## python script (obsoleto)
-# if test $NOSC -eq 1
-# then
-# printf "
-# import sys
-# import serial
-# import time
-# import math
-# import numpy as np
-# import mymod.fsm
-
-# buffer_in_width = $BUFFER_IN_WIDTH
-# buffer_out_width = $BUFFER_OUT_WIDTH
-
-# sel_width = $(($BUFFER_IN_WIDTH-$aux))
-
-# numero_sel = 2**sel_width
-# numero_estadistica = 10
-
-
-# fpga = serial.Serial(port='/dev/${USBPORT}', baudrate=9600, bytesize=8)
-# time.sleep(.1)
-
-# print(f\"ind.\\\tfreq.\\\tdesv\", flush=1)
-
-# for j in range(numero_sel):
-	# buffer_in = mymod.int_to_bitstr(j)
-
-	# mymod.fsm.scan(fpga, buffer_in, buffer_in_width)
-
-	# medidas=[]
-	# for k in range(numero_estadistica):
-		# medidas.append(mymod.bitstr_to_int(mymod.fsm.calc(fpga, buffer_out_width))/10000)
-
-	# media = np.average(medidas)
-
-	# desviacion = np.std(medidas)/math.sqrt(numero_estadistica)
-		
-	# print(f\"{j}\\\t{media}\\\t{desviacion}\", flush=1)
-		
-# fpga.close()
-# " > romatrix.py
-# else
-# printf "import sys
-# import serial
-# import time
-# import numpy as np
-# import math
-# import mymod.fsm
-
-
-# out_name = \"result.txt\"
-# for i, opt in enumerate(sys.argv):
-	# if opt == \"-help\":
-		# print(\"Script para medir la frecuencia de romatrix_fsm2\\\n\")
-		# print(\"-help, pinta esta ayuda\")
-		# print(\"-out [result.txt], nombre del fichero de salida\")
-		# exit()
-		
-	# if opt == \"-out\":
-		# out_name = sys.argv[i+1]
-
-# buffer_in_width = $BUFFER_IN_WIDTH
-# buffer_out_width = $BUFFER_OUT_WIDTH
-
-# sel_ro_width = $aux
-# sel_width = $(($BUFFER_IN_WIDTH-$aux))
-
-# numero_sel = 2**sel_width
-# numero_osciladores = $NOSC
-# numero_estadistica = 10
-
-
-# fpga = serial.Serial(port='/dev/${USBPORT}', baudrate=9600, bytesize=8)
-# time.sleep(.1)
-
-# with open(out_name, \"w\") as punte:
-	# print(\"sel\",end='', file=punte)
-	# for j in range(numero_osciladores):
-		# print(f\"\\\tosc_{j}\\\terror_{j}\", end='', file=punte)
-	# print(file=punte)
-
-	# contador=0
-	# for i in range(numero_sel):
-		# buffer_sel = mymod.resize_array(mymod.int_to_bitstr(i), sel_width)
-	
-		# print(i, end='', file=punte)
-	
-		# for j in range(numero_osciladores):
-			# buffer_sel_ro = mymod.resize_array(mymod.int_to_bitstr(j), sel_ro_width)
-		
-			# buffer_in = buffer_sel_ro + buffer_sel
-
-			# mymod.fsm.scan(fpga, buffer_in, buffer_in_width)
-
-			# medidas=[]
-			# for k in range(numero_estadistica):
-				# medidas.append(mymod.bitstr_to_int(mymod.fsm.calc(fpga, buffer_out_width))/10000)
-
-			# media = np.average(medidas)
-
-			# desviacion = np.std(medidas)/math.sqrt(numero_estadistica)
-		
-			# print(f\"\\\t{media}\\\t{desviacion}\", end='', file=punte)
-			
-			# mymod.pinta_progreso(contador, numero_sel*numero_osciladores, barra=40)
-			# contador = contador+1
-		
-		# print(file=punte)
-		
-	# mymod.pinta_progreso(numero_sel*numero_osciladores, numero_sel*numero_osciladores, barra=40)
-	
-# fpga.close()
-
-# print(\"\\\n-- medida finalizada --\\\n\")
-# " > romatrix.py
-# fi
 
 ## vivado sources
 mkdir vivado_src
