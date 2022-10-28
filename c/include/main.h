@@ -14,7 +14,6 @@
 #include <omp.h>
 #include <gmp.h>
 #include <mpfr.h>
-#include "alias/estandar.h" //redefinicion de algunas funciones estandar de C
 #include "alias/mpfr.h" //redefinicion de las funciones mpfr
 #include "alias/gsl.h"
  
@@ -34,6 +33,8 @@
 #define MTZ_INDEX(m, i, j)  i*m->N_columnas+j   
 #define MTZ_FIL_INDEX(m, n) n/m->N_columnas
 #define MTZ_COL_INDEX(m, n) n%m->N_columnas
+
+#define fseekset(x, y)  fseek(x, y, SEEK_SET)
 
 
 

@@ -1,12 +1,13 @@
 PROJNAME="project_templatefsm"
 PROJDIR="./"
-NJOBS=4
-PARTNUMBER=""
 BRD="pynqz2"
-BOARDPART=""
-MEMPART=""
+BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
+PARTNUMBER="xc7z020clg400-1"
+NJOBS=4
 QSPI=0
+MEMPART=""
 DATA_WIDTH=32
+USBPORT="ttys4"
 BUFFER_IN_WIDTH=8
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
@@ -73,6 +74,10 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 		then
 			DATA_WIDTH="${!i}"
 			
+		elif test "$opcion" == "-usbport"
+		then
+			USBPORT="${!i}"
+			
 		elif test "$opcion" == "-biw"
 		then
 			BUFFER_IN_WIDTH="${!i}"
@@ -105,32 +110,34 @@ if test "$BRD" == "cmoda7"
 then
 	if test $QSPI == 1
 	then
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pcmbpspl_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pcmbpspl_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "zybo"
 then
 	if test $QSPI == 1
 	then
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pczynqpspl_qspi_zynq.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_zybo.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pczynqpspl_zynq.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_zybo.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "pynqz2"
 then
 	if test $QSPI == 1
 	then
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pczynqpspl_qspi_zynq.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "${COMPUTACION}/my-source-repo/tcl/bd_fsm2_pczynqpspl_zynq.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 fi
 
 ## partial flows (tcl)
+mkdir ./partial_flows
+
 printf "
 create_project ${PROJNAME} ${PROJDIR}/${PROJNAME} -part $PARTNUMBER
 
@@ -144,7 +151,7 @@ regenerate_bd_layout
 
 update_compile_order -fileset sources_1
 
-add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/template_fsm.cp.v ${PROJDIR}/vivado_src/include/fsm.cp.vh ${PROJDIR}/vivado_src/include/constantes.cp.vh}
+add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/editame_fsm.v ${PROJDIR}/vivado_src/include/fsm.cp.vh ${PROJDIR}/vivado_src/include/constantes.cp.vh}
 
 update_compile_order -fileset sources_1
 
@@ -180,11 +187,36 @@ set_property top design_1_wrapper [current_fileset]
 
 update_compile_order -fileset sources_1
 
+set_property STEPS.SYNTH_DESIGN.ARGS.RESOURCE_SHARING off [get_runs synth_1]
+
+" > ./partial_flows/setupdesign.tcl
+
+printf "
+if {[file exists ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/detail_routing.xdc]==1} {
+    export_ip_user_files -of_objects  [get_files ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/detail_routing.xdc] -no_script -reset -force -quiet
+    remove_files  -fileset constrs_1 ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/detail_routing.xdc
+}
+
+if {[file exists ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc]==1} {
+    export_ip_user_files -of_objects  [get_files ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc] -no_script -reset -force -quiet
+    remove_files  -fileset constrs_1 ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc
+}
+
+if {[file exists ${PROJDIR}/${PROJNAME}/${PROJNAME}.runs/synth_1]==1} {
+	reset_run synth_1
+}
+
 update_compile_order -fileset sources_1
 
-" > ./mkhwdplatform.tcl
+update_module_reference design_1_TOP_0_0
 
-if test $QSPI == 1 && "$BRD" == "cmoda7"
+launch_runs synth_1 -jobs $NJOBS
+
+wait_on_run synth_1
+
+" > ./partial_flows/genbitstream.tcl
+
+if test $QSPI -eq 1 && test $BRD = "cmoda7"
 then
 printf "
 file mkdir ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1
@@ -201,9 +233,7 @@ set_property used_in_synthesis false [get_files  ${PROJDIR}/${PROJNAME}/${PROJNA
 
 update_compile_order -fileset sources_1
 
-launch_runs synth_1 -jobs $NJOBS
-
-wait_on_run synth_1
+update_module_reference design_1_TOP_0_0
 
 open_run synth_1 -name synth_1
 
@@ -221,16 +251,20 @@ save_constraints
 
 close_design
 
-" >> ./mkhwdplatform.tcl
+" >> ./partial_flows/genbitstream.tcl
 fi
 
 printf "
+if {[file exists ${PROJDIR}/${PROJNAME}/${PROJNAME}.runs/synth_1/__synthesis_is_complete__]==1} {
+	reset_run synth_1
+}
+	
 launch_runs impl_1 -to_step write_bitstream -jobs $NJOBS
 
 wait_on_run impl_1
+" >> ./partial_flows/genbitstream.tcl
 
-update_compile_order -fileset sources_1
-
+printf "
 file mkdir ${PROJDIR}/${PROJNAME}/${PROJNAME}.sdk
 
 file copy -force ${PROJDIR}/${PROJNAME}/${PROJNAME}.runs/impl_1/design_1_wrapper.sysdef ${PROJDIR}/${PROJNAME}/${PROJNAME}.sdk/design_1_wrapper.hdf
@@ -238,7 +272,16 @@ file copy -force ${PROJDIR}/${PROJNAME}/${PROJNAME}.runs/impl_1/design_1_wrapper
 launch_sdk -workspace ${PROJDIR}/${PROJNAME}/${PROJNAME}.sdk -hwspec ${PROJDIR}/${PROJNAME}/${PROJNAME}.sdk/design_1_wrapper.hdf
 ## Aqui termina la generacion de hwd_platform
 
-	" >> ./mkhwdplatform.tcl
+" > ./partial_flows/launchsdk.tcl
+
+printf "
+source ${PROJDIR}/partial_flows/setupdesign.tcl
+
+source ${PROJDIR}/partial_flows/genbitstream.tcl
+
+source ${PROJDIR}/partial_flows/launchsdk.tcl
+
+" > mkhwdplatform.tcl
 
 
 ## python script
@@ -249,7 +292,7 @@ import mymod.fsm
 buffer_in_width = $BUFFER_IN_WIDTH
 buffer_out_width = $BUFFER_OUT_WIDTH
 
-fpga = serial.Serial(port=\"/dev/ttyS4\", baudrate=9600, bytesize=8)
+fpga = serial.Serial(port=\"/dev/${USBPORT}\", baudrate=9600, bytesize=8)
 time.sleep(.1)
 
 ## valor de entrada
@@ -265,18 +308,19 @@ resultado = mymod.bitstr_to_int(mymod.fsm.calc(fpga, buffer_out_width))
 print(f\"valor devuelto:\\\t\\\t{resultado}\\\n\")
 
 fpga.close()
-" > template_fsm.py
+" > editame_fsm.py
 
 
 ## vivado sources
 mkdir vivado_src
 mkdir vivado_src/include
-cp "${COMPUTACION}/my-source-repo/verilog/template_fsm.v" ./vivado_src/template_fsm.cp.v
-cp "${COMPUTACION}/my-source-repo/verilog/include/fsm.vh" ./vivado_src/include/fsm.cp.vh
-cp "${COMPUTACION}/my-source-repo/verilog/include/constantes.vh" ./vivado_src/include/constantes.cp.vh
+cp "$REPO_fpga/verilog/template_fsm.v" ./vivado_src/editame_fsm.v
+cp "$REPO_fpga/verilog/include/fsm.vh" ./vivado_src/include/fsm.cp.vh
+cp "$REPO_fpga/verilog/include/constantes.vh" ./vivado_src/include/constantes.cp.vh
 
 ((aux=$DATA_WIDTH-1))
-printf "\`timescale 1ns / 1ps
+printf "
+\`timescale 1ns / 1ps
 
 
 module TOP (
@@ -305,8 +349,8 @@ endmodule
 
 ## sdk sources
 mkdir sdk_src
-cp "${COMPUTACION}/my-source-repo/c-xilinx/include/fsm.h" ./sdk_src/fsm.cp.h
-cp "${COMPUTACION}/my-source-repo/c-xilinx/template_fsm.c" ./template_fsm.cp.c
+cp "$REPO_fpga/c-xilinx/sdk/include/fsm.h" ./sdk_src/fsm.cp.h
+cp "$REPO_fpga/c-xilinx/sdk/template_fsm.c" ./editame_fsm.c
 
 printf "
 #define DATA_WIDTH			%d
@@ -316,36 +360,35 @@ printf "
 
 if test "$brd" == "cmoda7"
 then
-	cp "${COMPUTACION}/../recursos/FPGA/CMOD-A7-15T/pinout_cmoda7.xdc" ./vivado_src/puertos.xdc
-
 	xuart="#include \"xuartlite.h\""
 	
 elif test "$brd" == "zybo"
 then
-	cp "${COMPUTACION}/../recursos/FPGA/Zybo/pinout_zybo.xdc" ./vivado_src/puertos.xdc
-
 	xuart="#include \"xuartps.h\""
 	
 elif test "$brd" == "pynqz2"
 then
-	cp "${COMPUTACION}/../recursos/FPGA/PYNQ-Z2/pinout_pynqz2.xdc" ./vivado_src/puertos.xdc
-	
 	xuart="#include \"xuartps.h\""
 
 fi
 
-echo $xuart | cat - template_fsm.cp.c > temp && mv temp template_fsm.cp.c
-mv template_fsm.cp.c ./sdk_src/template_fsm.cp.c
+echo $xuart | cat - editame_fsm.c > temp && mv temp editame_fsm.c
+mv editame_fsm.c ./sdk_src/editame_fsm.c
 
 
 ## echo log
 echo ""
 
-echo "fpga part: ${PARTNUMBER}"
+echo " fpga part: ${PARTNUMBER}"
 
 echo ""
 
-echo "sdk source files: ${PROJDIR}/sdk_src/"
+echo " sdk source files: ${PROJDIR}/sdk_src/"
+
+echo ""
+
+echo " ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerda editar
+ 'partial_flows/setupdesign.tcl' (comando 'add_files') para reflejar este cambio!"
 
 echo ""
 

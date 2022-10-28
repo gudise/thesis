@@ -1,0 +1,17 @@
+#script para facilitar la compilacion utilizando las bibliotecas 'gsl', 'gmp' y 'mpfr' y la API 'openMP'. El script esta disenado para que las librerias esten instaladas bajo los directorios $HOME/gsl, $HOME/gmp y $HOME/mpfr
+
+
+if test "$1" = "-help"
+then
+    echo "GCC a b"
+    echo "donde:"
+    echo "  a = fuente"
+    echo "  b = output"
+    echo "Se incluye informacion para debuggear (usando gdb o valgrind)"
+	echo ""
+    
+    exit
+fi
+
+gcc "${1}" -o "${2}" -g -lm -lgsl -lgslcblas -lgmp -lmpfr -fopenmp -I"$REPO_fpga/c/include" -I"$GSL_DIR/include" -I"$GMP_DIR/include" -I"$MPFR_DIR/include" -L"$GSL_DIR/lib" -L"$GMP_DIR/lib" -L"$MPFR_DIR/lib"
+# gcc "${1}" -o "${2}" -g -lm -I"$REPO_fpga/c/include" ## Este repo no requiere tantas librerias, pero cambiarlo es mucho trabajo de cara al 'main.h'... :-(
