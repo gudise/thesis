@@ -21,7 +21,7 @@ puerto = '/dev/ttyS1'
 baudrate = 9600
 for i, opt in enumerate(sys.argv):
 	if opt == "-help":
-		with open(f"{os.environ['MYREPO']}/python/scripts/help/medir_romatrix.help", "r") as f:
+		with open(f"{os.environ['REPO_puf']}/python/scripts/help/medir_romatrix.help", "r") as f:
 			print(f.read())
 		exit()
 		
@@ -60,7 +60,7 @@ for i, opt in enumerate(sys.argv):
 				pdl = range(pdl[0])
 			elif len(pdl) == 2:
 				pdl = range(pdl[0], pdl[1], 1)
-			elif len(osc) == 3:
+			elif len(pdl) == 3:
 				pdl = range(pdl[0], pdl[1], pdl[2])
 				
 	if opt == "-osc_por_instancia" or opt=="-opi":

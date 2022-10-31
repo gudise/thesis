@@ -1,5 +1,5 @@
-#include "include/main.h"
-#include "include/hardware.h"
+#include "main.h"
+#include "hardware.h"
 
 
 
@@ -13,7 +13,7 @@ void main(int N_opcion, char** opcion)
 		if( strcmp(opcion[i], "-help")==0 )
 		{
 			printf("\ncalc_nbits x , este programa devuelve el numero de bits necesarios para alojar 'x' estados (bien redondeados).\n\n");
-            
+
 			exit(0);
 		}
 	}

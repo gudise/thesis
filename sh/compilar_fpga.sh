@@ -13,10 +13,7 @@ fi
 cd "$REPO_fpga"
 
 GCC_fpga.sh c/calc_nbits.c				"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/calc_nbits.x"
-GCC_fpga.sh c/hwd_genRO.c				"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/hwd_genRO.x"
-GCC_fpga.sh c/hwd_genConfigurableRO.c	"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/hwd_genConfigurableRO.x"
-
-
+GCC_fpga.sh c/gen_romatrix.c			"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/gen_romatrix.x"
 
 echo "-- Compilación terminada --"
 echo ""

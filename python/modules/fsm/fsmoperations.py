@@ -1,4 +1,4 @@
-from .main import *
+#from .main import *
 
 cmd_idle =		105 #'i'
 cmd_reset =		114 #'r'
