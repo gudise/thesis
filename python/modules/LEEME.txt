@@ -1,9 +1,0 @@
-Para instalar el módulo:
-
-	1- Crear una distribución del código fuente (en caso de que no exista) utilizando el comando:
-		py setup.py sdit
-
-	2- Movernos al directorio 'dist' creado.
-
-	3- Instalar con 'pip':
-		pip install [archivo .tar]

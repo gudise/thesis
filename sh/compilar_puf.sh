@@ -12,8 +12,6 @@ fi
 
 cd "$REPO_puf"
 
-GCC_puf.sh c/calc_nbits.c	"$REPOS_WRAPPER/exe/$REPO_puf_NAME/calc_nbits.x"
-GCC_puf.sh c/gen_romatrix.c	"$REPOS_WRAPPER/exe/$REPO_puf_NAME/gen_romatrix.x"
 GCC_puf.sh c/analizar_puf.c		"$REPOS_WRAPPER/exe/$REPO_puf_NAME/analizar_puf.x"
 GCC_puf.sh c/gen_topol.c	"$REPOS_WRAPPER/exe/$REPO_puf_NAME/gen_topol.x"
 
