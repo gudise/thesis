@@ -2,7 +2,7 @@ if test "$1" = "-help"
 then
 printf " pinout zybo | pynqz2 | cmoda7
 	
- Este programa copia en el directorio actual el fichero de pines maestro de la placa correspondiente\n\n"
+ Este programa escribe el fichero de pines maestro de la placa correspondiente.\n\n"
 	exit
 fi
 

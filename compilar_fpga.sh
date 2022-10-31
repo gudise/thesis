@@ -15,5 +15,6 @@ cd "$REPO_fpga"
 GCC_fpga.sh c/calc_nbits.c				"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/calc_nbits.x"
 GCC_fpga.sh c/gen_romatrix.c			"$REPOS_WRAPPER/exe/$REPO_fpga_NAME/gen_romatrix.x"
 
+echo ""
 echo "-- Compilación terminada --"
 echo ""
