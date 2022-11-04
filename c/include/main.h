@@ -127,6 +127,8 @@ typedef struct SDISTRIBUCION_STRUCT
 //gestion de memoria
 MATRIZ*         mallocMatriz(unsigned long N_filas, unsigned long N_columnas);
 
+MATRIZ*			copiarMatriz_otf(MATRIZ* A); // copia matriz 'on the fly', i.e., generando una nueva matriz.
+
 MPFR_MATRIZ*    MPFR_mallocMatriz(unsigned long N_filas, unsigned long N_columnas);
 
 TABLA*          mallocTabla(unsigned long N_filas, unsigned long N_columnas);
@@ -260,6 +262,20 @@ MATRIZ* mallocMatriz(unsigned long N_filas, unsigned long N_columnas)
         result->elemento[i] = calloc(N_columnas, sizeof(double));
 
     return result;
+}
+
+MATRIZ* copiarMatriz_otf(MATRIZ* A)
+{
+	MATRIZ* result;
+	
+	result=mallocMatriz(A->N_filas, A->N_columnas);
+	for(int i=0; i<A->N_filas; i++)
+	{
+		for(int j=0; j<A->N_columnas; j++)
+			result->elemento[i][j] = A->elemento[i][j];
+	}
+	
+	return result;
 }
 
 MPFR_MATRIZ* MPFR_mallocMatriz(unsigned long N_filas, unsigned long N_columnas)

@@ -2,10 +2,10 @@
 #include "matematicas.h"
 #include "digital.h"
 
-#define N_1			 0
+#define N_1				0
 #define one_out_of_2	1
-#define All_pairs	   2
-#define k_modular	   3
+#define All_pairs		2
+#define k_modular		3
 #define compare_to_1	4
 #define file_externo	5
 #define random_pairs	6
@@ -14,131 +14,150 @@
 
 int main(int N_opcion, char** opcion)
 {
-	long	mpfr_prec  =   53;
-	char	in_name[256]	=   {"rawdata.mtz"},
-			input   		=   0;
-	char	out_r_name[256] =   {"rawdata_out.mtz"},
-			out_d_name[256] =   {"dist_out.mtz"},
-			out_x_name[256] =   {"pufexp_out.pex"},
-			out_m_name[256] =   {"map.txt"},
-			out_h_name[256] =   {"histograma.txt"},			
-			output_r		=   0,
-			output_d		=   0,
-			output_x		=   0,
-			output_m		=   0,
-			output_h		=   0;
-	char	hist_type   	=   0,
-			hist_norm   	=   0,
-			resize	  		=   0;
+	long	mpfr_prec  =	53;
+	char	in_name[256]	=	{"rawdata.mtz"},
+			input			=	0;
+	char	out_r_name[256]	=	{"rawdata_out.mtz"},
+			out_d_name[256]	=	{"dist_out.mtz"},
+			out_x_name[256]	=	{"pufexp_out.pex"},
+			out_m_name[256]	=	{"map.txt"},
+			out_h_name[256]	=	{"histograma.txt"},			
+			output_r		=	0,
+			output_d		=	0,
+			output_x		=	0,
+			output_m		=	0,
+			output_h		=	0;
+	char	hist_type		=	0,
+			hist_norm		=	0,
+			resize			=	0,
+			promx			=	0;
 	int		hist_resolucion,
-			trunc	   		=   -1,
-			resize_retos	=   1,
-			resize_inst 	=   1,
-			resize_rep  	=   1,
-			resize_y		=   1;
-	char	intrad	  		=   0,
-			intrad_h		=   0,
-			intrad_a		=   0,
-			intrad_d		=   0;
-	char	intrad_ajuste_name[256] =   {"intrad_ajuste.txt"},
-			intrad_dist_name[256]   =   {"intrad_fist.txt"},
-			intrad_hist_name[256]   =   {"intrad_hist.txt"};
-	double  caja_intrad	 	=   1.0,
-			xmin_intrad	 	=   -1,
-			xmax_intrad	 	=   -1,
-			media_intrad	=   -1.0,
+			trunc			=	-1,
+			resize_retos	=	1,
+			resize_inst 	=	1,
+			resize_rep  	=	1,
+			resize_y		=	1;
+	char	intrad			=	0,
+			intrad_h		=	0,
+			intrad_a		=	0,
+			intrad_d		=	0;
+	char	intrad_ajuste_name[256] =	{"intrad_ajuste.txt"},
+			intrad_dist_name[256]	=	{"intrad_dist.txt"},
+			intrad_hist_name[256]	=	{"intrad_hist.txt"};
+	double  caja_intrad		=	1.0,
+			xmin_intrad		=	-1,
+			xmax_intrad		=	-1,
+			media_intrad	=	-1.0,
 			desv_intrad, p_intrad;
-	char	interd	  	=   0,
-			interd_h	=   0,
-			interd_a	=   0,
-			interd_d	=   0;
-	char	interd_ajuste_name[256] =   {"interd_ajuste.txt"},
-			interd_dist_name[256]   =   {"interd_fist.txt"},
-			interd_hist_name[256]   =   {"interd_hist.txt"};
-	double  caja_interd	 	=   1.0,
-			xmin_interd	 	=   -1,
-			xmax_interd	 	=   -1,
-			media_interd	=   -1.0,
-			desv_interd, p_interd;
-	char	far_name[256] = {"far.txt"},
-			frr_name[256] = {"frr.txt"},
-			roc_name[256] = {"roc.txt"};
-	char	far =   0,
-			frr =   0,
-			eer =   0,
-			roc =   0;
+	char	interd		=	0,
+			interd_h	=	0,
+			interd_a	=	0,
+			interd_d	=	0;
+	char	interd_ajuste_name[256] =	{"interd_ajuste.txt"},
+			interd_dist_name[256]	=	{"interd_dist.txt"},
+			interd_hist_name[256]	=	{"interd_hist.txt"};
+	double  caja_interd		=	1.0,
+			xmin_interd		=	-1,
+			xmax_interd		=	-1,
+			media_interd	=	-1.0,
+			desv_interd,
+			p_interd;
+	char	far_name[256]	=	{"far.txt"},
+			frr_name[256]	=	{"frr.txt"},
+			roc_name[256]	=	{"roc.txt"};
+	char	far	=	0,
+			frr	=	0,
+			eer	=	0,
+			roc	=	0;
 	double  eer_value;
 	int	 	eer_index = -1;
-	int	 	Nx	  	=   0,
-			Ny  	=   0;
-	char	fcorr   =   0;
+	char	analisisv		=	0,
+			analisisv_h		=	0,
+			analisisv_a		=	0,
+			analisisv_d		=	0;
+	char	analisisv_ajuste_name[256]	=	{"analisisv_ajuste.txt"},
+			analisisv_dist_name[256]	=	{"analisisv_dist.txt"},
+			analisisv_hist_name[256]	=	{"analisisv_hist.txt"};
+	char	goldenkey_name[256]			=	{"goldenkey.mtz"};
+	double  caja_analisisv		=	1.0,
+			xmin_analisisv		=	-1,
+			xmax_analisisv		=	-1,
+			media_analisisv		=	-1.0,
+			desv_analisisv, p_analisisv;
+	int	 	Nx		=	0,
+			Ny		=	0;
+	char	fcorr	=	0;
 	int	 	x_coord,
 			y_coord;
-	double  frec_esperada	   	=   100.0,
-			desv_frec_esperada  =   1.0,
-			factorx			 	=   1.0,
-			factory			 	=   1.0,
-			cteT				=   0;
-	int	 	N_prec  =   1,
-			N_rep   =   1,
-			N_inst  =   1,
-			N_retos =   1,
-			N_pdl 	=	1,
-			N_cells =   0,
-			pufarray_dim0,
-			pufarray_dim1,
-			pufarray_dim2,
-			pufarray_dim3;
-	char	puftype =   0,
-			topol   =   0;
-	int	 	k_mod   =   3,
-			N_bits  =   0,
+	double  frec_esperada			=	100.0,
+			desv_frec_esperada  =	1.0,
+			factorx			 	=	1.0,
+			factory			 	=	1.0,
+			cteT				=	0;
+	int	 	N_prec	=	1,
+			N_rep	=	1,
+			N_inst	=	1,
+			N_retos	=	1,
+			N_pdl	=	1,
+			N_cells	=	0;
+	char	promediar_rep=0;
+	char	puftype	=	0,
+			topol	=	0;
+	int	 	k_mod	=	3,
+			N_bits	=	0,
 			N_claves,
 			**index_array,
 			contador,
 			contador1;
-	int	 	ntrials	 =   1,
-			N_exitos	=   0,
-			bias_orden  =   1;
-	float   umbral_id   =   -1.0;
-	char	adversario  =   0,
-			verbose	 =   1,
-			entrop	  =   0,
-			minentrop   =   0,
-			gsort	   =   0;
-	char	topolfile[256]  =   {"topol.cmt"},
+	int	 	ntrials		=	1,
+			N_exitos	=	0,
+			bias_orden	=	1;
+	float	umbral_id	=	-1.0;
+	char	adversario	=	0,
+			verbose		=	1,
+			entrop		=	0,
+			minentrop	=	0,
+			gsort		=	0;
+	char	topolfile[256]	=	{"topol.cmt"},
 			helptxt[256];
-	double  *****pufarray;
-	int	 	aux,
+	int		aux,
 			*aux_array,
 			aux_rand0,
 			aux_rand1;
-	double  daux, 
-			*daux_array, 
-			entropia, 
+	double  daux,
+			*daux_array,
+			entropia,
 			minentropia;
 	MATRIZ	*rawdata,
+			*rawdata_temp,
 			*set_intrad,
-			*set_interd, 
+			*set_interd,
+			*set_analisisv,
 			*frec_nominal,
-			*bitwrd_bias;
+			*bitwrd_bias,
+			*goldenkey;
 	MPFR_MATRIZ *data;
-	PUFEXP*	pufexp,
+	PUFARRAY	*pufarray,
+				*pufarray_temp;
+	PUFEXP	*pufexp,
 			*pufexp_ilegit,
 			*pufexp_temp,
-			*pufexp_resize;
-	DISTRI *intrad_hist,
+			*pufexp_resize,
+			*pufexp_trunc;
+	DISTRI	*intrad_hist,
 			*intrad_ajuste = NULL,
 			*interd_hist,
 			*interd_ajuste = NULL,
 			*far_curve,
 			*frr_curve,
-			*roc_curve;
+			*roc_curve,
+			*analisisv_hist,
+			*analisisv_ajuste = NULL;
 	MPFR_DISTRI *histograma;
 	BINARIO **bitstring,
 			*caux;
 	CMTOPOL *topologia;
-	mpfr_t 	caja,
+	mpfr_t	caja,
 			fcaja,
 			xmin,
 			xmax;
@@ -312,6 +331,9 @@ int main(int N_opcion, char** opcion)
 		
 		if( strcmp(opcion[i], "-truncate_pufexp")==0 || strcmp(opcion[i], "-trux")==0 )
 			sscanf(opcion[i+1], "%d", &trunc);
+			
+		if( strcmp(opcion[i], "-promedio_pufexp")==0 || strcmp(opcion[i], "-promx")==0 )
+			promx=1;
 		
 		if( strcmp(opcion[i], "-geom")==0 )
 		{
@@ -434,7 +456,14 @@ int main(int N_opcion, char** opcion)
 			sscanf(opcion[i+1], "%d", &N_inst);
 		
 		if( strcmp(opcion[i], "-nrep")==0 )
+		{
 			sscanf(opcion[i+1], "%d", &N_rep);
+			if(i+2<N_opcion)
+			{
+				if(strcmp(opcion[i+2], "promedio")==0)
+					promediar_rep=1;
+			}
+		}
 		
 		if( strcmp(opcion[i], "-npdl")==0 )
 			sscanf(opcion[i+1], "%d", &N_pdl);
@@ -536,7 +565,7 @@ int main(int N_opcion, char** opcion)
 					intrad=1;
 					for(int k=j+1; k<N_opcion; k++)
 					{
-						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc"))
+						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
 							break;
 						else
 						{
@@ -545,12 +574,12 @@ int main(int N_opcion, char** opcion)
 								intrad_h=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a caja xmin xmax"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
 									sscanf(opcion[k+1], "%s", intrad_hist_name);
 								}
 								for(int l=k+1; l<N_opcion; l++)
 								{
-									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										break;
 									else
 									{
@@ -570,7 +599,7 @@ int main(int N_opcion, char** opcion)
 								intrad_d=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										sscanf(opcion[k+1], "%s", intrad_dist_name);
 								}
 							}
@@ -579,7 +608,7 @@ int main(int N_opcion, char** opcion)
 								intrad_a=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										sscanf(opcion[k+1], "%s", intrad_ajuste_name);
 								}
 							}
@@ -591,7 +620,7 @@ int main(int N_opcion, char** opcion)
 					interd=1;
 					for(int k=j+1; k<N_opcion; k++)
 					{
-						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc"))
+						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
 							break;
 						else
 						{
@@ -600,12 +629,12 @@ int main(int N_opcion, char** opcion)
 								interd_h=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a caja xmin xmax"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
 									sscanf(opcion[k+1], "%s", interd_hist_name);
 								}
 								for(int l=k+1; l<N_opcion; l++)
 								{
-									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										break;
 									else
 									{
@@ -625,7 +654,7 @@ int main(int N_opcion, char** opcion)
 								interd_d=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										sscanf(opcion[k+1], "%s", interd_dist_name);
 								}
 							}
@@ -634,7 +663,7 @@ int main(int N_opcion, char** opcion)
 								interd_a=1;
 								if(k+1<N_opcion)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										sscanf(opcion[k+1], "%s", interd_ajuste_name);
 								}
 							}
@@ -646,7 +675,7 @@ int main(int N_opcion, char** opcion)
 					far=1;
 					if(j+1<N_opcion)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 							sscanf(opcion[j+1], "%s", far_name);
 					}
 				}
@@ -655,7 +684,7 @@ int main(int N_opcion, char** opcion)
 					frr=1;
 					if(j+1<N_opcion)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 							sscanf(opcion[j+1], "%s", frr_name);
 					}
 				}
@@ -667,8 +696,66 @@ int main(int N_opcion, char** opcion)
 					roc=1;
 					if(j+1<N_opcion)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc hist h dist d ajuste a"))
+						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 							sscanf(opcion[j+1], "%s", roc_name);
+					}
+				}
+				
+				if( strcmp(opcion[j], "analisis_v")==0 || strcmp(opcion[j], "av")==0)
+				{
+					analisisv=1;
+					for(int k=j+1; k<N_opcion; k++)
+					{
+						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
+							break;
+						else
+						{
+							if( strcmp(opcion[k], "hist")==0 || strcmp(opcion[k], "h")==0 )
+							{
+								analisisv_h=1;
+								if(k+1<N_opcion)
+								{
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
+									sscanf(opcion[k+1], "%s", analisisv_hist_name);
+								}
+								for(int l=k+1; l<N_opcion; l++)
+								{
+									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										break;
+									else
+									{
+										if( strcmp(opcion[l], "caja")==0 )
+											sscanf(opcion[l+1], "%lf", &caja_analisisv);
+								
+										if( strcmp(opcion[l], "xmin")==0 )
+											sscanf(opcion[l+1], "%lf", &xmin_analisisv);
+								
+										if( strcmp(opcion[l], "xmax")==0 )
+											sscanf(opcion[l+1], "%lf", &xmax_analisisv);
+									}
+								}
+							}
+							if( strcmp(opcion[k], "dist")==0 || strcmp(opcion[k], "d")==0 )
+							{
+								analisisv_d=1;
+								if(k+1<N_opcion)
+								{
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(opcion[k+1], "%s", analisisv_dist_name);
+								}
+							}
+							if( strcmp(opcion[k], "ajuste")==0 || strcmp(opcion[k], "a")==0 )
+							{
+								analisisv_a=1;
+								if(k+1<N_opcion)
+								{
+									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(opcion[k+1], "%s", analisisv_ajuste_name);
+								}
+							}
+							if( strcmp(opcion[k], "hist")!=0 && strcmp(opcion[k], "h")!=0 && strcmp(opcion[k], "dist")!=0 && strcmp(opcion[k], "d")!=0 && strcmp(opcion[k], "ajuste")!=0 && strcmp(opcion[k], "a")!=0)
+								sscanf(opcion[k+1], "%s", goldenkey_name);
+						}
 					}
 				}
 			}
@@ -761,20 +848,15 @@ int main(int N_opcion, char** opcion)
 				Nx=1;
 			if(Ny==0)
 				Ny=1;
-			if(N_retos==0)
-				N_retos=1;
-			if(N_inst==0)
-				N_inst=1;
-			if(N_rep==0)
-				N_rep=1;
 		}
 		else
 		{
-			rawdata = leerMatriz(in_name);
+			rawdata_temp = leerMatriz(in_name);
 
+			// Revisamos el número de columnas
 			if(Nx>0 && Ny>0)
 			{
-				if(rawdata->N_columnas != Nx*Ny)
+				if(rawdata_temp->N_columnas != Nx*Ny)
 				{
 					printf("\nERROR: el numero de columnas introducidas no coincide con el producto Nx*Ny introducido.\n");					
 					return -1;
@@ -782,112 +864,73 @@ int main(int N_opcion, char** opcion)
 			}
 			else if(Nx>0 && Ny==0)
 			{
-				if(rawdata->N_columnas%Nx!=0)
+				if(rawdata_temp->N_columnas%Nx!=0)
 				{
 					printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
 					return -1;
 				}
 				else
-					Ny = rawdata->N_columnas/Nx;
+					Ny = rawdata_temp->N_columnas/Nx;
 			}
 			else if(Nx==0 && Ny>0)
 			{
-				if(rawdata->N_columnas%Ny!=0)
+				if(rawdata_temp->N_columnas%Ny!=0)
 				{
 					printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
 					return -1;
 				}
 				else
-					Nx = rawdata->N_columnas/Ny;
+					Nx = rawdata_temp->N_columnas/Ny;
 			}
 			else
 			{
-				Nx = rawdata->N_columnas;
+				Nx = rawdata_temp->N_columnas;
 				Ny=1;
 			}
 			
-			if(N_pdl>0 && N_inst>0 && N_rep>0)
+			// Revisamos el número de filas
+			if(rawdata_temp->N_filas != N_pdl*N_inst*N_rep)
 			{
-				if(rawdata->N_filas != N_pdl*N_inst*N_rep)
+				if(N_inst==1 && N_pdl==1 && N_rep==1)
+				{
+					N_rep=rawdata_temp->N_filas;
+					rawdata = copiarMatriz_otf(rawdata_temp);
+					freeMatriz(rawdata_temp);
+				}
+				else if(rawdata_temp->N_filas/(N_pdl*N_inst)==1)
+				{
+					if(N_rep>1)
+					{
+						rawdata = mallocMatriz(N_pdl*N_inst*N_rep, rawdata_temp->N_columnas);
+						for(int i=0; i<N_inst; i++)
+						{
+							for(int j=0; j<N_rep; j++)
+							{
+								for(int k=0; k<N_pdl; k++)
+								{
+									for(int l=0; l<rawdata_temp->N_columnas; l++)
+										rawdata->elemento[i*(N_rep*N_pdl)+j*N_pdl+k][l] = rawdata_temp->elemento[i*N_pdl+k][l];
+								}
+							}
+						}
+						freeMatriz(rawdata_temp);
+					}
+					else
+					{
+						rawdata = copiarMatriz_otf(rawdata_temp);
+						freeMatriz(rawdata_temp);
+					}
+				}
+				else
 				{
 					printf("\nERROR: el numero de filas introducidas no coincide con los numeros (Nretos, Ninst, Nrep) introducidos.\n");					
 					return -1;
 				}
 			}
-			else if(N_pdl>0 && N_inst>0 && N_rep==0)
-			{
-				if(rawdata->N_filas%(N_pdl*N_inst) != 0)
-				{
-					printf("\nERROR: el producto de los valores (Nretos, Ninst) introducidos no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-					N_rep = rawdata->N_filas/(N_pdl*N_inst);	   
-			}
-			else if(N_pdl>0 && N_inst==0 && N_rep>0)
-			{
-				if(rawdata->N_filas%(N_pdl*N_rep) != 0)
-				{
-					printf("\nERROR: el producto de los valores (Nretos, Nrep) introducidos no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-					N_inst = rawdata->N_filas/(N_pdl*N_rep);
-			}
-			else if(N_pdl==0 && N_inst>0 && N_rep>0)
-			{
-				if(rawdata->N_filas%(N_rep*N_inst) != 0)
-				{
-					printf("\nERROR: el producto de los valores (Ninst, N_rep) introducidos no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-					N_pdl = rawdata->N_filas/(N_rep*N_inst);
-			}
-			else if(N_pdl>0 && N_inst==0 && N_rep==0)
-			{
-				if(rawdata->N_filas%N_pdl != 0)
-				{
-					printf("\nERROR: el valor Nretos introducido no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-				{
-					N_rep = rawdata->N_filas/N_pdl;
-					N_inst = 1;
-				}
-			}
-			else if(N_pdl==0 && N_inst>0 && N_rep==0)
-			{
-				if(rawdata->N_filas%N_inst != 0)
-				{
-					printf("\nERROR: el valor Ninst introducido no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-				{
-					N_rep = rawdata->N_filas/N_inst;
-					N_pdl = 1;
-				}
-			}
-			else if(N_pdl==0 && N_inst==0 && N_rep>0)
-			{
-				if(rawdata->N_filas%N_inst != 0)
-				{
-					printf("\nERROR: el valor Nrep introducido no es divisor del numero de filas leidas.\n");					
-					return -1;
-				}
-				else
-				{
-					N_inst = rawdata->N_filas/N_rep;
-					N_pdl = 1;
-				}
-			}
 			else
 			{
-				N_rep = rawdata->N_filas;
-				N_inst = 1;
-				N_pdl = 1;
+				rawdata = copiarMatriz_otf(rawdata_temp);
+				freeMatriz(rawdata_temp);
 			}
 		}
 		
@@ -909,25 +952,7 @@ int main(int N_opcion, char** opcion)
 
 		N_cells = Nx*Ny;
 		N_claves = N_retos*N_inst*N_rep*N_pdl;
-		pufarray = (double*****)malloc(sizeof(double****)*N_retos);
-		for(int i=0; i<N_retos; i++)
-		{
-			pufarray[i] = (double****)malloc(sizeof(double***)*N_inst);
-			for(int j=0; j<N_inst; j++)
-			{
-				pufarray[i][j] = (double***)malloc(sizeof(double**)*N_rep);
-				for(int k=0; k<N_rep; k++)
-				{
-					pufarray[i][j][k] = (double**)malloc(sizeof(double*)*N_pdl);
-					for(int l=0; l<N_pdl; l++)
-						pufarray[i][j][k][l] = (double*)malloc(sizeof(double)*N_cells);
-				}
-			}
-		}
-		pufarray_dim0 = N_retos;
-		pufarray_dim1 = N_inst;
-		pufarray_dim2 = N_rep;
-		pufarray_dim3 = N_pdl;
+		pufarray_temp = mallocPufarray(N_retos, N_inst, N_rep, N_pdl, N_cells);
 		
 		if(input==0)
 		{
@@ -944,18 +969,18 @@ int main(int N_opcion, char** opcion)
 					for(int l=0; l<N_pdl; l++)
 					{
 						for(int m=0; m<N_cells; m++)
-						{   
+						{	
 							x_coord = m%Nx;
 							y_coord = m/Nx;
 							
-							pufarray[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, cteT);//valores nominales y acoplo termico
+							pufarray_temp->elemento[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, cteT);//valores nominales y acoplo termico
 							
 							if(fcorr==1)
-								pufarray[0][j][k][l][m] += factorx*x_coord;
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
 							else if(fcorr==2)
-								pufarray[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
 							else if(fcorr==3)
-								pufarray[0][j][k][l][m] += factorx*x_coord*y_coord;
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
 						}
 					}
 				}
@@ -971,11 +996,44 @@ int main(int N_opcion, char** opcion)
 					for(int l=0; l<N_pdl; l++)
 					{
 						for(int m=0; m<N_cells; m++)
-							pufarray[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m];
+						{
+							pufarray_temp->elemento[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m] + ran1_gauss(0, cteT);
+							
+							if(fcorr==1)
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
+							else if(fcorr==2)
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
+							else if(fcorr==3)
+								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
+						}
 					}
 				}
 			}
 		}
+		
+ 		if(promediar_rep)
+		{
+			pufarray = mallocPufarray(N_retos, N_inst, 1, N_pdl, N_cells);
+			for(int i=0; i<N_retos; i++)
+			{
+				for(int j=0; j<N_inst; j++)
+				{
+					for(int k=0; k<N_rep; k++)
+					{
+						for(int l=0; l<N_pdl; l++)
+						{
+							for(int m=0; m<N_cells; m++)
+								pufarray->elemento[i][j][0][l][m] += pufarray_temp->elemento[i][j][k][l][m]/N_rep;
+						}
+					}
+				}
+			}
+			N_rep = 1;
+			N_claves = N_retos*N_inst*N_pdl;
+		}
+		else
+			pufarray=copiarPufarray(pufarray_temp);
+		freePufarray(pufarray_temp);
 		
 		if(output_m)
 		{
@@ -985,7 +1043,7 @@ int main(int N_opcion, char** opcion)
 			{
 				x_coord = m%Nx;
 				y_coord = m/Nx;
-				fprintf(punte, "%d\t%d\t%lf\n", x_coord, y_coord, pufarray[0][0][0][0][m]);
+				fprintf(punte, "%d\t%d\t%lf\n", x_coord, y_coord, pufarray->elemento[0][0][0][0][m]);
 			}
 			fclose(punte);
 		}
@@ -1010,7 +1068,7 @@ int main(int N_opcion, char** opcion)
 					for(int l=0; l<N_pdl; l++)
 					{
 						for(int m=0; m<N_cells; m++)
-							pufarray[i][j][k][l][m] = pufarray[0][j][k][l][index_array[i][m]];
+							pufarray->elemento[i][j][k][l][m] = pufarray->elemento[0][j][k][l][index_array[i][m]];
 					}
 				}
 			}
@@ -1077,7 +1135,7 @@ int main(int N_opcion, char** opcion)
 									{
 										if(topologia->matriz[m][n]>0)
 										{
-											daux = pufarray[i][j][k][l][m]-pufarray[i][j][k][l][n];
+											daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][n];
 											daux*=1e+6;
 											digitalizarComparacion(caux, (long)daux); 
 											for(int n=0; n<N_prec; n++)
@@ -1097,7 +1155,7 @@ int main(int N_opcion, char** opcion)
 								contador1=0; //contador de 0 a N_bits-1
 								for(int m=0; m<N_cells-1; m++)
 								{
-									daux = pufarray[i][j][k][l][m]-pufarray[i][j][k][l][m+1];
+									daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
 									daux*=1e+6;
 									digitalizarComparacion(caux, (long)daux);
 									for(int n=0; n<N_prec; n++)
@@ -1114,7 +1172,7 @@ int main(int N_opcion, char** opcion)
 								contador1=0; //contador de 0 a N_bits-1
 								for(int m=1; m<N_cells; m++)
 								{
-									daux = pufarray[i][j][k][l][0]-pufarray[i][j][k][l][m];
+									daux = pufarray->elemento[i][j][k][l][0]-pufarray->elemento[i][j][k][l][m];
 									daux*=1e+6;
 									digitalizarComparacion(caux, (long)daux);
 									for(int n=0; n<N_prec; n++)
@@ -1131,7 +1189,7 @@ int main(int N_opcion, char** opcion)
 								contador1=0; //contador de 0 a N_bits-1
 								for(int m=0; m<N_cells; m+=2)
 								{
-									daux = pufarray[i][j][k][l][m]-pufarray[i][j][k][l][m+1];
+									daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
 									daux*=1e+6;
 									digitalizarComparacion(caux, (long)daux);
 									for(int n=0; n<N_prec; n++)
@@ -1151,7 +1209,7 @@ int main(int N_opcion, char** opcion)
 								{
 									for(int n=m+1; n<N_cells; n++)
 									{
-										daux = pufarray[i][j][k][l][m]-pufarray[i][j][k][l][n];
+										daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][n];
 										daux*=1e+6;
 										digitalizarComparacion(caux, (long)daux);
 										for(int n=0; n<N_prec; n++)
@@ -1174,7 +1232,7 @@ int main(int N_opcion, char** opcion)
 									{
 										for(int q=n+1; q<k_mod; q++)
 										{
-											daux = pufarray[i][j][k][l][m*k_mod+n]-pufarray[i][j][k][l][m*k_mod+q];
+											daux = pufarray->elemento[i][j][k][l][m*k_mod+n]-pufarray->elemento[i][j][k][l][m*k_mod+q];
 											daux*=1e+6;
 											digitalizarComparacion(caux, (long)daux);
 											for(int n=0; n<N_prec; n++)
@@ -1200,9 +1258,9 @@ int main(int N_opcion, char** opcion)
 											break;
 									}
 									if(aux_rand0>aux_rand1)
-										daux = pufarray[0][j][k][l][aux_rand0]-pufarray[0][j][k][l][aux_rand1];
+										daux = pufarray->elemento[0][j][k][l][aux_rand0]-pufarray->elemento[0][j][k][l][aux_rand1];
 									else
-										daux = pufarray[0][j][k][l][aux_rand1]-pufarray[0][j][k][l][aux_rand0];
+										daux = pufarray->elemento[0][j][k][l][aux_rand1]-pufarray->elemento[0][j][k][l][aux_rand0];
 									daux*=1e+6;
 									digitalizarComparacion(caux, (long)daux);
 									for(int n=0; n<N_prec; n++)
@@ -1236,24 +1294,25 @@ int main(int N_opcion, char** opcion)
 			free(index_array[i]);
 		free(index_array);
 		freeBinario(caux);
-
-		if(resize && trunc>0) //primero resize, luego trunc
-		{
-			pufexp_resize = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-			pufexp = truncate_pex(pufexp_resize, trunc);
-			freePufexp(pufexp_resize);
-		}
-		else if(resize && trunc<=0) //solo resize
-			pufexp = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-		
-		else if(!resize && trunc>0) // solo trunc
-			pufexp = truncate_pex(pufexp_temp, trunc);
 			
-		else // ninguno de los dos
-			pufexp = copiar_pex(pufexp_temp);
-		
+		if(resize)
+			pufexp_resize = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
+		else
+			pufexp_resize = copiar_pex(pufexp_temp);
 		freePufexp(pufexp_temp);
-
+			
+		if(trunc>0)
+			pufexp_trunc = truncate_pex(pufexp_resize, trunc);
+		else
+			pufexp_trunc = copiar_pex(pufexp_resize);
+		freePufexp(pufexp_resize);
+			
+		if(promx)
+			pufexp = prom_pex(pufexp_trunc);
+		else
+			pufexp = copiar_pex(pufexp_trunc);
+		freePufexp(pufexp_trunc);
+		
 		N_bits=pufexp->tamano_respuesta;
 		N_retos=pufexp->N_retos;
 		N_inst=pufexp->N_instancias;
@@ -1265,22 +1324,23 @@ int main(int N_opcion, char** opcion)
 	{
 		pufexp_temp = leerPufexp(in_name);
 		
-		if(resize && trunc>0) //primero resize, luego trunc
-		{
+		if(resize)
 			pufexp_resize = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-			pufexp = truncate_pex(pufexp_resize, trunc);
-			freePufexp(pufexp_resize);
-		}
-		else if(resize && trunc<=0) //solo resize
-			pufexp = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-		
-		else if(!resize && trunc>0) // solo trunc
-			pufexp = truncate_pex(pufexp_temp, trunc);
-		
-		else // ninguno de los dos
-			pufexp = copiar_pex(pufexp_temp);
-		
+		else
+			pufexp_resize = copiar_pex(pufexp_temp);
 		freePufexp(pufexp_temp);
+			
+		if(trunc>0)
+			pufexp_trunc = truncate_pex(pufexp_resize, trunc);
+		else
+			pufexp_trunc = copiar_pex(pufexp_resize);
+		freePufexp(pufexp_resize);
+			
+		if(promx)
+			pufexp = prom_pex(pufexp_trunc);
+		else
+			pufexp = copiar_pex(pufexp_trunc);
+		freePufexp(pufexp_trunc);
 		
 		N_bits=pufexp->tamano_respuesta;
 		N_retos=pufexp->N_retos;
@@ -1300,6 +1360,9 @@ int main(int N_opcion, char** opcion)
 		MPFR_ordenarData(data);
 	else
 		MPFR_GSL_ordenarData(data);
+		
+	if(analisisv)
+		goldenkey=leerMatriz(goldenkey_name);
 	
 	
 	// PINTAR RESULTADOS
@@ -1317,7 +1380,7 @@ int main(int N_opcion, char** opcion)
 					for(int l=0; l<N_pdl; l++)
 					{
 						for(int m=0; m<N_cells; m++)
-							fprintf(punte, "%lg\t",pufarray[i][j][k][l][m]);
+							fprintf(punte, "%lg\t",pufarray->elemento[i][j][k][l][m]);
 					}
 					fprintf(punte, "\n");
 				}
@@ -1369,7 +1432,7 @@ int main(int N_opcion, char** opcion)
 		fclose(punte);
 	}
 	
-	if(input!='d' && (intrad || interd || far || frr || roc || (adversario && umbral_id<0)))
+	if(input!='d' && (intrad || interd || far || frr || roc || analisisv || (adversario && umbral_id<0)))
 	{
 		if(intrad)
 		{
@@ -1422,7 +1485,33 @@ int main(int N_opcion, char** opcion)
 			freeMatriz(set_interd);
 		}
 		
-		if(intrad_a || interd_a || far || frr || eer || roc || (adversario && umbral_id<0))
+		if(analisisv)
+		{
+			analisisvStat(pufexp, goldenkey, &media_analisisv, &desv_analisisv);
+			if(verbose)
+				printf("\n\n Análisis_V HD media +/- desv = %lg +/- %lg = %lg %% +/- %lg %%\n\n", media_analisisv, desv_analisisv, media_analisisv*100.0/pufexp->tamano_respuesta, desv_analisisv*100.0/pufexp->tamano_respuesta); 
+			else
+				printf("%lg", media_analisisv);
+		}
+		if(analisisv_h || analisisv_d)
+		{
+			set_analisisv = analisisvSet(pufexp, goldenkey, 0);
+			if(analisisv_h)
+			{
+				analisisv_hist = construyeHistograma(set_analisisv, caja_analisisv, xmin_analisisv, xmax_analisisv, 1, 1, 0);
+				pintarDistribucion(analisisv_hist, analisisv_hist_name);
+				freeDistribucion(analisisv_hist);
+			}
+			if(analisisv_d)
+			{
+				punte = fopen(analisisv_dist_name, "w");
+				pintarMatriz(set_analisisv, punte);
+				fclose(punte); 
+			}	 
+			freeMatriz(set_analisisv);
+		}
+		
+		if(intrad_a || interd_a || far || frr || eer || roc || analisisv_a || (adversario && umbral_id<0))
 		{
 			if(eer || roc || (adversario && umbral_id<0))
 			{
@@ -1500,7 +1589,7 @@ int main(int N_opcion, char** opcion)
 				if(intrad_a || frr)
 				{
 					intrad_ajuste = mallocDistribucion(N_bits);
-					for(int i=0; i<N_bits+1; i++)
+					for(int i=0; i<N_bits; i++)
 						intrad_ajuste->ejex[i]=i;
 					calculaBinomial(intrad_ajuste, N_bits, media_intrad/N_bits);
 					
@@ -1519,7 +1608,7 @@ int main(int N_opcion, char** opcion)
 				if(interd_a || far)
 				{
 					interd_ajuste = mallocDistribucion(N_bits);
-					for(int i=0; i<N_bits+1; i++)
+					for(int i=0; i<N_bits; i++)
 						interd_ajuste->ejex[i]=i;
 					calculaBinomial(interd_ajuste, N_bits, media_interd/N_bits);
 					
@@ -1534,6 +1623,17 @@ int main(int N_opcion, char** opcion)
 					}
 					
 					freeDistribucion(interd_ajuste);
+				}
+				if(analisisv_a)
+				{
+					analisisv_ajuste = mallocDistribucion(N_bits); 
+					for(int i=0; i<N_bits; i++)
+						analisisv_ajuste->ejex[i]=i;
+					calculaBinomial(analisisv_ajuste, N_bits, media_analisisv/N_bits);
+					
+					pintarDistribucion(analisisv_ajuste, analisisv_ajuste_name);
+					
+					freeDistribucion(analisisv_ajuste);
 				}
 			}
 		}
@@ -1755,33 +1855,7 @@ int main(int N_opcion, char** opcion)
 	// LIBERAR MEMORIA:
 	if(input==0 || input=='r')
 	{
-		for(int i=0; i<pufarray_dim0; i++)
-		{
-			for(int j=0; j<pufarray_dim1; j++)
-			{
-				for(int k=0; k<pufarray_dim2; k++)
-				{
-					for(int l=0; l<pufarray_dim3; l++)
-						free(pufarray[i][j][k][l]);
-				}
-			}
-		}
-		for(int i=0; i<pufarray_dim0; i++)
-		{
-			for(int j=0; j<pufarray_dim1; j++)
-			{
-				for(int k=0; k<pufarray_dim2; k++)
-					free(pufarray[i][j][k]);
-			}
-		}
-		for(int i=0; i<pufarray_dim0; i++)
-		{
-			for(int j=0; j<pufarray_dim1; j++)
-				free(pufarray[i][j]);
-		}
-		for(int i=0; i<pufarray_dim0; i++)
-			free(pufarray[i]);
-		free(pufarray);
+		freePufarray(pufarray);
 		
 		if(topol==file_externo)
 			freeCmtopol(topologia);
@@ -1792,6 +1866,9 @@ int main(int N_opcion, char** opcion)
 
 	if(input!='d')
 		freePufexp(pufexp);
+		
+	if(analisisv)
+		freeMatriz(goldenkey);
 
 	MPFR_freeMatriz(data);
 

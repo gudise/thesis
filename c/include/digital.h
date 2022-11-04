@@ -1,5 +1,16 @@
 /* ESTRUCTURAS */
 
+typedef struct PUFARRAY_STRUCT
+{
+	double  *****elemento;
+	int N_retos;
+	int N_inst;
+	int N_rep;
+	int N_pdl;
+	int N_cells;
+	
+} PUFARRAY;
+
 typedef struct PUFEXP_STRUCT
 {
     int N_retos, N_instancias, N_repeticiones, tamano_reto, tamano_respuesta;
@@ -28,11 +39,15 @@ typedef struct CMTOPOL_STRUCT
 /*ENCABEZADOS*/
 
 //gestion de memoria
+PUFARRAY*	mallocPufarray(int N_retos, int N_inst, int N_rep, int N_pdl, int N_cells);
+
 PUFEXP*     mallocPufexp(int N_retos, int N_instancias, int N_repeticiones, int tamano_reto, int tamano_respuesta);
 
 BINARIO*    mallocBinario(int Nbits);
 
 CMTOPOL*    mallocCmtopol(int N_celdas);
+
+void		freePufarray(PUFARRAY* A);
 
 void        freePufexp(PUFEXP* A);
 
@@ -80,17 +95,25 @@ MATRIZ*     intradistanciaSet(PUFEXP* A, char realdata);
 
 void        intradistanciaStat(PUFEXP* A, double* media, double* desv);
 
+MATRIZ*		analisisvSet(PUFEXP* A, MATRIZ* goldenkey, char realdata);
+
+void		analisisvStat(PUFEXP* A, MATRIZ* goldenkey, double* media, double* desv);
+
 PUFEXP*     mtz_to_pex(MATRIZ* retos, MATRIZ* respuestas, int N_retos, int N_instancias, int N_repeticiones);
 
 MATRIZ*     pex_to_mtz(PUFEXP* input);
 
 MPFR_MATRIZ* pex_to_datamtz(PUFEXP* input); // esta funcion crea una matriz (de una sola columna) con los valores decimales almacenados en un experimento.
 
+PUFARRAY*	copiarPufarray(PUFARRAY* entrada);
+
 PUFEXP*     copiar_pex(PUFEXP* entrada);
 
 PUFEXP*     resize_pex(PUFEXP* entrada, int resize_retos, int resize_inst, int resize_rep, int resize_y); //cambia 'entrada' a un experimento de numero_de_respuestas,tamano_respuesta.
 
-PUFEXP*     truncate_pex(PUFEXP* entrada, int trunc); //trunca 'entrada' a 'trunc' numero d ebits (on-the-fly)
+PUFEXP*     truncate_pex(PUFEXP* entrada, int trunc); //trunca 'entrada' a 'trunc' numero de bits (on-the-fly)
+
+PUFEXP*		prom_pex(PUFEXP* entrada); //promedia 'pufexp' para obtener un 'pufexp' de N_repeticiones=1
 
 void        digitalizarComparacion(BINARIO* result, long medida);
 
@@ -112,6 +135,52 @@ void        pintarCmtopol(CMTOPOL* A, char* output);
 /*FUNCIONES*/
 
 //gestion de memoria
+PUFARRAY* mallocPufarray(int N_retos, int N_inst, int N_rep, int N_pdl, int N_cells)
+{
+	PUFARRAY *result;
+
+	result = (PUFARRAY*)malloc(sizeof(PUFARRAY));
+	
+	result->N_retos = N_retos;
+	result->N_inst = N_inst;
+	result->N_rep = N_rep;
+	result->N_pdl = N_pdl;
+	result->N_cells = N_cells;
+	
+	result->elemento = (double*****)malloc(sizeof(double****)*N_retos);
+	for(int i=0; i<N_retos; i++)
+	{
+		result->elemento[i] = (double****)malloc(sizeof(double***)*N_inst);
+		for(int j=0; j<N_inst; j++)
+		{
+			result->elemento[i][j] = (double***)malloc(sizeof(double**)*N_rep);
+			for(int k=0; k<N_rep; k++)
+			{
+				result->elemento[i][j][k] = (double**)malloc(sizeof(double*)*N_pdl);
+				for(int l=0; l<N_pdl; l++)
+					result->elemento[i][j][k][l] = (double*)malloc(sizeof(double)*N_cells);
+			}
+		}
+	}
+	
+	for(int i=0; i<N_retos; i++)
+	{
+		for(int j=0; j<N_inst; j++)
+		{
+			for(int k=0; k<N_rep; k++)
+			{
+				for(int l=0; l<N_pdl; l++)
+				{
+					for(int m=0; m<N_cells; m++)
+						result->elemento[i][j][k][l][m] = 0;
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
 PUFEXP* mallocPufexp(int N_retos, int N_instancias, int N_repeticiones, int tamano_reto, int tamano_respuesta)
 {
     int i,j,k;
@@ -181,6 +250,38 @@ CMTOPOL* mallocCmtopol(int N_celdas)
         result->matriz[i]=(int*)malloc(sizeof(int)*N_celdas);
     
     return result;
+}
+
+void freePufarray(PUFARRAY *A)
+{
+		for(int i=0; i<A->N_retos; i++)
+		{
+			for(int j=0; j<A->N_inst; j++)
+			{
+				for(int k=0; k<A->N_rep; k++)
+				{
+					for(int l=0; l<A->N_pdl; l++)
+						free(A->elemento[i][j][k][l]);
+				}
+			}
+		}
+		for(int i=0; i<A->N_retos; i++)
+		{
+			for(int j=0; j<A->N_inst; j++)
+			{
+				for(int k=0; k<A->N_rep; k++)
+					free(A->elemento[i][j][k]);
+			}
+		}
+		for(int i=0; i<A->N_retos; i++)
+		{
+			for(int j=0; j<A->N_inst; j++)
+				free(A->elemento[i][j]);
+		}
+		for(int i=0; i<A->N_retos; i++)
+			free(A->elemento[i]);
+			
+		free(A->elemento);
 }
 
 void freePufexp(PUFEXP* A)
@@ -677,6 +778,84 @@ void intradistanciaStat(PUFEXP* A, double* media, double* desv)
     *desv = sqrt(*desv);
 }
 
+MATRIZ* analisisvSet(PUFEXP* A, MATRIZ* goldenkey, char realdata)
+{
+    long i, j, k, N, contador;
+    MATRIZ* result;
+	
+	if(A->N_retos*A->N_instancias != goldenkey->N_filas)
+	{
+		printf("\nERROR: en función 'analisisvSet'. El número de filas de la matriz 'goldenkey' no es formateable a nretos*ninst.\n");
+		return NULL;
+	}
+	if(A->tamano_respuesta != goldenkey->N_columnas)
+	{
+		printf("\nERROR: en función 'analisisvSet'. El número de columnas de la matriz 'goldenkey' no coincide con el número de bits de las respuestas de 'pufexp'.\n");
+		return NULL;
+	}
+
+    N = A->N_instancias*A->N_retos*A->N_repeticiones;
+
+    result = mallocMatriz(N, 1);
+
+    contador=0;
+    for(i=0; i<A->N_retos; i++)
+    {
+        for(j=0; j<A->N_instancias; j++)
+        {
+            for(k=0; k<A->N_repeticiones; k++)
+            {
+				if(!realdata)
+					result->elemento[contador][0] = distanciaHamming(A->elementoy[i][j][k], goldenkey->elemento[i*A->N_instancias+j], A->tamano_respuesta);
+				else
+					result->elemento[contador][0] = distanciaEuclidea(A->elementoy[i][j][k], goldenkey->elemento[i*A->N_instancias+j], A->tamano_respuesta);
+					
+				contador++;
+            }
+        }
+    }
+
+    return result;
+}
+
+void analisisvStat(PUFEXP* A, MATRIZ* goldenkey, double* media, double* desv)
+{
+    *media=0;
+    *desv=0;
+
+	if(A->N_retos*A->N_instancias != goldenkey->N_filas)
+	{
+		printf("\nERROR: en función 'analisisvSet'. El número de filas de la matriz 'goldenkey' no es formateable a nretos*ninst.\n");
+		exit(0);
+	}
+	if(A->tamano_respuesta != goldenkey->N_columnas)
+	{
+		printf("\nERROR: en función 'analisisvSet'. El número de columnas de la matriz 'goldenkey' no coincide con el número de bits de las respuestas de 'pufexp'.\n");
+		exit(0);
+	}
+
+    for(int i=0; i<A->N_retos; i++)
+    {
+        for(int j=0; j<A->N_instancias; j++)
+        {
+            for(int k=0; k<A->N_repeticiones; k++)
+                *media+=distanciaHamming(A->elementoy[i][j][k], goldenkey->elemento[i*A->N_instancias+j], A->tamano_respuesta);
+        }
+    }
+    *media /= A->N_instancias*A->N_retos*A->N_repeticiones;
+    
+    for(int i=0; i<A->N_retos; i++)
+    {
+        for(int j=0; j<A->N_instancias; j++)
+        {
+            for(int k=0; k<A->N_repeticiones; k++)
+                *desv+=(distanciaHamming(A->elementoy[i][j][k], goldenkey->elemento[i*A->N_instancias+j], A->tamano_respuesta)-*media)*(distanciaHamming(A->elementoy[i][j][k], goldenkey->elemento[i*A->N_instancias+j], A->tamano_respuesta)-*media);
+        }
+    }
+    *desv /= (A->N_instancias*A->N_retos*A->N_repeticiones-1);
+    *desv = sqrt(*desv);
+}
+
 PUFEXP *mtz_to_pex(MATRIZ* retos, MATRIZ* respuestas, int N_retos, int N_instancias, int N_repeticiones)
 {
     int i, j, N, contador_reto=0, contador_instancia=0, contador_repeticion=0;
@@ -786,6 +965,30 @@ MPFR_MATRIZ* pex_to_datamtz(PUFEXP* input)
     return result;
 }
 
+PUFARRAY* copiarPufarray(PUFARRAY* entrada)
+{
+	PUFARRAY* result;
+	
+	result = mallocPufarray(entrada->N_retos, entrada->N_inst, entrada->N_rep, entrada->N_pdl, entrada->N_cells);
+	
+	for(int i=0; i<entrada->N_retos; i++)
+	{
+		for(int j=0; j<entrada->N_inst; j++)
+		{
+			for(int k=0; k<entrada->N_rep; k++)
+			{
+				for(int l=0; l<entrada->N_pdl; l++)
+				{
+					for(int m=0; m<entrada->N_cells; m++)
+						result->elemento[i][j][k][l][m] = entrada->elemento[i][j][k][l][m];
+				}
+			}
+		}
+	}
+	
+	return result;
+}
+
 PUFEXP* copiar_pex(PUFEXP* entrada)
 {
     PUFEXP* result;
@@ -875,6 +1078,39 @@ PUFEXP* truncate_pex(PUFEXP* entrada, int trunc)
                 for(int l=0; l<trunc; l++)
                     result->elementoy[i][j][k][l] = entrada->elementoy[i][j][k][l];
             }
+        }
+    }
+    
+    return result;
+}
+
+PUFEXP* prom_pex(PUFEXP* entrada)
+{
+	PUFEXP* result;
+	
+    result = mallocPufexp(entrada->N_retos, entrada->N_instancias, 1, entrada->tamano_reto, entrada->tamano_respuesta);
+
+    for(int i=0; i<entrada->N_retos; i++)
+    {
+        for(int j=0; j<entrada->N_instancias; j++)
+        {
+			for(int l=0; l<entrada->tamano_reto; l++)
+				result->elementox[i][j][0][l] = entrada->elementox[i][j][0][l];
+            
+			for(int k=0; k<entrada->N_repeticiones; k++)
+            {
+                for(int l=0; l<entrada->tamano_respuesta; l++)
+                    result->elementoy[i][j][0][l] += entrada->elementoy[i][j][k][l];
+            }
+			
+			for(int l=0; l<entrada->tamano_respuesta; l++)
+			{
+				result->elementoy[i][j][0][l] /= entrada->N_repeticiones;
+				if(result->elementoy[i][j][0][l] > 0.5)
+					result->elementoy[i][j][0][l] = 1;
+				else
+					result->elementoy[i][j][0][l] = 0;
+			}
         }
     }
     

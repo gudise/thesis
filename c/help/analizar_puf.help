@@ -35,11 +35,11 @@
 		ninst(nrep(npdl)). En caso de faltar todas (o algunas) de estas opciones, el programa procede de la
 		siguiente manera:
 		
-			Si faltan todas se toma por defecto nrep = N_filas de la entrada (y el resto =1).
-			Si solo se da '-nrep' se toma ninst=N_filas/nrep (y el resto =1).
-			Si solo se da '-ninst' se toma nrep=N_filas/ninst (y el resto =1).
-			Si solo se da '-npdl' se toma nrep=N_filas/npdl (y el resto =1).
-			Si se dan dos opciones cualesquiera (Na, Nb), la tercera se calcula como Nc=N_filas/(Na*Nb).
+			Por defecto ninst=npdl=1, nrep=N_filas de la entrada.
+			Si nrep>1 pero N_filas==ninst*npdl, se supone que el usuario quiere realizar una simulación (e.g.
+			de temperatura) introduciendo una única repetición, y se expande nrep para coincidir con 
+			N_filas=ninst*n_rep*npdl.
+			En otro caso el programa termina con un error.
 			
 		En cualquier caso los números introducidos deben permitir 'doblar' el numero de columnas leídas en un
 		array de tres dimensiones, en caso contrario el programa terminará con un error. Al introducir los
@@ -134,6 +134,11 @@
  
 	Esta opción permite truncar las 'bitwrds' de entrada, modificando el tamaño de las respuestas al número 
 	entero indicado a continuación. Si este número es negativo (por defecto), esta opción se ignora.
+	
+	
+ -promedio_pufexp(promx)
+ 
+	Si esta opción está presente se promedia 'pufexp' en el eje 'nrep'.
 
 
  -geom [nx] [ny]
@@ -149,17 +154,18 @@
 
  -sim [frec] [desv] [fcorr] [ftemp]
  
-	Esta opción controla algunos parámetros de la simulación, por lo tanto se ignora si se uitiliza '-in'.
+	Esta opción controla algunos parámetros de la simulación, por lo tanto se ignora si se uitilizan las
+	entradas '-in d | -in x'.
 
 	frec [100.0]
-		Frecuencia nominal promedio para la simulacion (en MHz).
+		Frecuencia nominal promedio para la simulacion (en MHz). Se ignora si se utiliza la entrada '-in r'.
 
 	desv [1.0]
 		Desviación de la frecuencia nominal en cada array de celdas.
 
 	fcorr [lineal_x | lineal_xy | producto_xy]
-		Factor de correlación entre los valores de distintas celdas.
-		Pueden utilizarse diversos tipos de correlacion:
+		Si esta opción está presente se aplicará un factor de correlación entre los valores de distintas
+		celdas. Pueden utilizarse diversos tipos de correlacion:
 
 		lineal_x [1.0]
 			El valor medio de la distribución depende de la coordenada X multiplicada por 'factor.
@@ -187,10 +193,11 @@
 	Número de instancias simuladas. Esta opción se ignora si se utilizan las entradas '-in d | -in x'
 
 
- -nrep 1
+ -nrep 1 [promedio]
  
 	Número de repeticiones medidas para cada reto e instancia. Esta opción se ignora si se utilizan las 
-	entradas '-in d | -in x'
+	entradas '-in d | -in x'. Si se acompaña de la palabra 'promedio' (detrás del entero que indica el número
+	de repeticiones) se utilizará el promedio (i.e., será como un sistema con una únia repetición).
 
 
  -npdl 1
@@ -246,7 +253,7 @@
 		Simula una Arbiter-PUF.
 
 
- -pufanalisis(pa) [intradist] [interdist] [far] [frr] [eer] [roc]
+ -pufanalisis(pa) [intradist] [interdist] [far] [frr] [eer] [roc] [analisis_v(av)]
  
 	Esta opción permite configurar el análisis llevado a cabo sobre los datos PUF simulados/introducidos.
 
@@ -305,6 +312,34 @@
 
 	roc ["roc.txt"]
 		Calcula la curva Receiver-Operating Characteristic (ROC)
+		
+	analisis_v(av) ["goldenkey.mtz"] [hist(h)] [dist(d)] [ajuste(a)]
+		Realiza un 'análisis V' utilizando un fichero 'goldenkey'. Este análisis consiste en calcular la
+		distancia Hamming entre la respuesta binaria introducida/simulada y la palabra 'golden' guardada en 
+		el fichero 'goldenkey', para cada reto e instancia, y promediada por el número de retos, instancias y
+		repeticiones. El fichero 'goldenkey' consta de nretos*ninst filas desdobladas nretos(ninst), y tantas
+		columnas como bits contengan las respuestas. Los retos/instancias no se identifican de ninguna manera
+		particular, el usuario es responsable de que estos estén en el mismo orden que en el archivo '.pex'
+		simulado/introducido. Admite una serie de subopciones:
+		
+			hist(h) ["intrad_hist.txt"] [caja] [xmin] [xmax]
+				Genera el histograma de las distancias Hamming. Ver '-in h' para una explicacion de la
+				configuración.
+		
+				caja 1.0
+					Ver la subopción 'caja' en '-in h'
+			
+				xmin -1.0
+					Ver la subopción 'xmin' en '-in h'
+			
+				xmax -1.0
+					Ver la subopción 'xmax' en '-in h'
+
+			dist(d) ["intrad_dist.mtz"]
+				Genera la distribución (módulo 10) de las respuestas.
+
+			ajuste(a) ["intrad_ajuste.txt"]
+				Genera un ajuste binomial al histograma de las distancias Hamming.
 
 
  -adversario(adv) [ignorant(i) | global_bias(gb) | local_bias(lb) | machine_learning(ml)] [ntrials]
