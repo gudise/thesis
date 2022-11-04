@@ -107,13 +107,15 @@ MPFR_MATRIZ* pex_to_datamtz(PUFEXP* input); // esta funcion crea una matriz (de 
 
 PUFARRAY*	copiarPufarray(PUFARRAY* entrada);
 
-PUFEXP*     copiar_pex(PUFEXP* entrada);
+PUFEXP*     copiarPufexp(PUFEXP* entrada);
 
 PUFEXP*     resize_pex(PUFEXP* entrada, int resize_retos, int resize_inst, int resize_rep, int resize_y); //cambia 'entrada' a un experimento de numero_de_respuestas,tamano_respuesta.
 
 PUFEXP*     truncate_pex(PUFEXP* entrada, int trunc); //trunca 'entrada' a 'trunc' numero de bits (on-the-fly)
 
 PUFEXP*		prom_pex(PUFEXP* entrada); //promedia 'pufexp' para obtener un 'pufexp' de N_repeticiones=1
+
+PUFEXP*		zeropadPufexp(PUFEXP* entreada, int n_zeroes);
 
 void        digitalizarComparacion(BINARIO* result, long medida);
 
@@ -989,7 +991,7 @@ PUFARRAY* copiarPufarray(PUFARRAY* entrada)
 	return result;
 }
 
-PUFEXP* copiar_pex(PUFEXP* entrada)
+PUFEXP* copiarPufexp(PUFEXP* entrada)
 {
     PUFEXP* result;
     
@@ -1115,6 +1117,31 @@ PUFEXP* prom_pex(PUFEXP* entrada)
     }
     
     return result;
+}
+
+PUFEXP* zeropadPufexp(PUFEXP* entrada, int n_zeroes)
+{
+	PUFEXP* result;
+	
+	result = mallocPufexp(entrada->N_retos, entrada->N_instancias, entrada->N_repeticiones, entrada->tamano_reto, entrada->tamano_respuesta+n_zeroes);
+	
+    for(int i=0; i<entrada->N_retos; i++)
+    {
+        for(int j=0; j<entrada->N_instancias; j++)
+        {
+            for(int k=0; k<entrada->N_repeticiones; k++)
+            {
+                for(int l=0; l<entrada->tamano_reto; l++)
+                    result->elementox[i][j][k][l] = entrada->elementox[i][j][k][l];
+				for(int l=0; l<entrada->tamano_respuesta; l++)
+					result->elementoy[i][j][k][l] = entrada->elementoy[i][j][k][l];
+				for(int l=0; l<n_zeroes; l++)
+					result->elementoy[i][j][k][entrada->tamano_respuesta+l] = 0;
+            }
+        }
+    }
+	
+	return result;
 }
 
 void digitalizarComparacion(BINARIO* result, long medida)

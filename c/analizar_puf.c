@@ -14,7 +14,7 @@
 
 int main(int N_opcion, char** opcion)
 {
-	long	mpfr_prec  =	53;
+	long	mpfr_prec		=	53;
 	char	in_name[256]	=	{"rawdata.mtz"},
 			input			=	0;
 	char	out_r_name[256]	=	{"rawdata_out.mtz"},
@@ -29,10 +29,10 @@ int main(int N_opcion, char** opcion)
 			output_h		=	0;
 	char	hist_type		=	0,
 			hist_norm		=	0,
-			resize			=	0,
-			promx			=	0;
+			out_x_opt[4]	=	{'0','0','0','0'};
 	int		hist_resolucion,
 			trunc			=	-1,
+			zeroes_padded	=	0,
 			resize_retos	=	1,
 			resize_inst 	=	1,
 			resize_rep  	=	1,
@@ -83,7 +83,8 @@ int main(int N_opcion, char** opcion)
 			xmin_analisisv		=	-1,
 			xmax_analisisv		=	-1,
 			media_analisisv		=	-1.0,
-			desv_analisisv, p_analisisv;
+			desv_analisisv,
+			p_analisisv;
 	int	 	Nx		=	0,
 			Ny		=	0;
 	char	fcorr	=	0;
@@ -102,7 +103,7 @@ int main(int N_opcion, char** opcion)
 			N_cells	=	0;
 	char	promediar_rep=0;
 	char	puftype	=	0,
-			topol	=	0;
+			topol	=	one_out_of_2;
 	int	 	k_mod	=	3,
 			N_bits	=	0,
 			N_claves,
@@ -142,8 +143,9 @@ int main(int N_opcion, char** opcion)
 	PUFEXP	*pufexp,
 			*pufexp_ilegit,
 			*pufexp_temp,
-			*pufexp_resize,
-			*pufexp_trunc;
+			*pufexp_aux0,
+			*pufexp_aux1,
+			*pufexp_aux2;
 	DISTRI	*intrad_hist,
 			*intrad_ajuste = NULL,
 			*interd_hist,
@@ -261,8 +263,63 @@ int main(int N_opcion, char** opcion)
 						output_x = 1;
 						if(j+1<N_opcion)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h"))
+							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h resize truncate promedio zeropad "))
 								sscanf(opcion[j+1], "%s", out_x_name);
+						}
+						for(int k=j+1; k<N_opcion; k++)
+						{
+							if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "raw r dist d pufexp x map m hist h "))
+								break;
+							else
+							{
+								if( strcmp(opcion[k], "resize")==0 )
+								{
+									for(int l=0; l<4; l++)
+									{
+										if(out_x_opt[l]=='0')
+										{
+											out_x_opt[l]='r';
+											break;
+										}
+									}
+									sscanf(opcion[k+1], "%d,%d,%d,%d", &resize_retos, &resize_inst, &resize_rep, &resize_y);
+								}
+								if( strcmp(opcion[k], "truncate")==0 )
+								{
+									for(int l=0; l<4; l++)
+									{
+										if(out_x_opt[l]=='0')
+										{
+											out_x_opt[l]='t';
+											break;
+										}
+									}
+									sscanf(opcion[k+1], "%d", &trunc);
+								}
+								if( strcmp(opcion[k], "promedio")==0 )
+								{
+									for(int l=0; l<4; l++)
+									{
+										if(out_x_opt[l]=='0')
+										{
+											out_x_opt[l]='p';
+											break;
+										}
+									}
+								}
+								if( strcmp(opcion[k], "zeropad")==0 )
+								{
+									for(int l=0; l<4; l++)
+									{
+										if(out_x_opt[l]=='0')
+										{
+											out_x_opt[l]='z';
+											break;
+										}
+									}
+									sscanf(opcion[k+1], "%d", &zeroes_padded);
+								}
+							}
 						}
 					}
 					if( strcmp(opcion[j], "map")==0 || strcmp(opcion[j], "m")==0)
@@ -322,18 +379,6 @@ int main(int N_opcion, char** opcion)
 				}
 			}
 		}
-		
-		if( strcmp(opcion[i], "-resize_pufexp")==0 || strcmp(opcion[i], "-resx")==0 )
-		{
-			resize=1;
-			sscanf(opcion[i+1], "%d,%d,%d,%d", &resize_retos, &resize_inst, &resize_rep, &resize_y);
-		}
-		
-		if( strcmp(opcion[i], "-truncate_pufexp")==0 || strcmp(opcion[i], "-trux")==0 )
-			sscanf(opcion[i+1], "%d", &trunc);
-			
-		if( strcmp(opcion[i], "-promedio_pufexp")==0 || strcmp(opcion[i], "-promx")==0 )
-			promx=1;
 		
 		if( strcmp(opcion[i], "-geom")==0 )
 		{
@@ -704,6 +749,11 @@ int main(int N_opcion, char** opcion)
 				if( strcmp(opcion[j], "analisis_v")==0 || strcmp(opcion[j], "av")==0)
 				{
 					analisisv=1;
+					if(j+1<N_opcion)
+					{
+						if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+							sscanf(opcion[j+1], "%s", goldenkey_name);
+					}
 					for(int k=j+1; k<N_opcion; k++)
 					{
 						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
@@ -753,8 +803,6 @@ int main(int N_opcion, char** opcion)
 										sscanf(opcion[k+1], "%s", analisisv_ajuste_name);
 								}
 							}
-							if( strcmp(opcion[k], "hist")!=0 && strcmp(opcion[k], "h")!=0 && strcmp(opcion[k], "dist")!=0 && strcmp(opcion[k], "d")!=0 && strcmp(opcion[k], "ajuste")!=0 && strcmp(opcion[k], "a")!=0)
-								sscanf(opcion[k+1], "%s", goldenkey_name);
 						}
 					}
 				}
@@ -840,180 +888,227 @@ int main(int N_opcion, char** opcion)
 	}
 	
 	// LEER ENTRADA / SIMULAR:
-	if(input==0 || input=='r')
+	if(input==0 || input=='r' || input=='x')
 	{
-		if(input==0)
+		if(input==0 || input=='r')
 		{
-			if(Nx==0)
-				Nx=1;
-			if(Ny==0)
-				Ny=1;
-		}
-		else
-		{
-			rawdata_temp = leerMatriz(in_name);
-
-			// Revisamos el número de columnas
-			if(Nx>0 && Ny>0)
+			if(input==0)
 			{
-				if(rawdata_temp->N_columnas != Nx*Ny)
-				{
-					printf("\nERROR: el numero de columnas introducidas no coincide con el producto Nx*Ny introducido.\n");					
-					return -1;
-				}
-			}
-			else if(Nx>0 && Ny==0)
-			{
-				if(rawdata_temp->N_columnas%Nx!=0)
-				{
-					printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
-					return -1;
-				}
-				else
-					Ny = rawdata_temp->N_columnas/Nx;
-			}
-			else if(Nx==0 && Ny>0)
-			{
-				if(rawdata_temp->N_columnas%Ny!=0)
-				{
-					printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
-					return -1;
-				}
-				else
-					Nx = rawdata_temp->N_columnas/Ny;
+				if(Nx==0)
+					Nx=1;
+				if(Ny==0)
+					Ny=1;
 			}
 			else
-			{
-				Nx = rawdata_temp->N_columnas;
-				Ny=1;
-			}
-			
-			// Revisamos el número de filas
-			if(rawdata_temp->N_filas != N_pdl*N_inst*N_rep)
-			{
-				if(N_inst==1 && N_pdl==1 && N_rep==1)
+			{ 
+				rawdata_temp = leerMatriz(in_name);
+
+				// Revisamos el número de columnas
+				if(Nx>0 && Ny>0)
 				{
-					N_rep=rawdata_temp->N_filas;
-					rawdata = copiarMatriz_otf(rawdata_temp);
-					freeMatriz(rawdata_temp);
-				}
-				else if(rawdata_temp->N_filas/(N_pdl*N_inst)==1)
-				{
-					if(N_rep>1)
+					if(rawdata_temp->N_columnas != Nx*Ny)
 					{
-						rawdata = mallocMatriz(N_pdl*N_inst*N_rep, rawdata_temp->N_columnas);
-						for(int i=0; i<N_inst; i++)
-						{
-							for(int j=0; j<N_rep; j++)
-							{
-								for(int k=0; k<N_pdl; k++)
-								{
-									for(int l=0; l<rawdata_temp->N_columnas; l++)
-										rawdata->elemento[i*(N_rep*N_pdl)+j*N_pdl+k][l] = rawdata_temp->elemento[i*N_pdl+k][l];
-								}
-							}
-						}
-						freeMatriz(rawdata_temp);
+						printf("\nERROR: el numero de columnas introducidas no coincide con el producto Nx*Ny introducido.\n");					
+						return -1;
+					}
+				}
+				else if(Nx>0 && Ny==0)
+				{
+					if(rawdata_temp->N_columnas%Nx!=0)
+					{
+						printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
+						return -1;
 					}
 					else
+						Ny = rawdata_temp->N_columnas/Nx;
+				}
+				else if(Nx==0 && Ny>0)
+				{
+					if(rawdata_temp->N_columnas%Ny!=0)
 					{
+						printf("\nERROR: el valor Nx introducido no es divisor del numero de columnas leidas.\n");					
+						return -1;
+					}
+					else
+						Nx = rawdata_temp->N_columnas/Ny;
+				}
+				else
+				{
+					Nx = rawdata_temp->N_columnas;
+					Ny=1;
+				}
+
+				// Revisamos el número de filas
+				if(rawdata_temp->N_filas != N_pdl*N_inst*N_rep)
+				{
+					if(N_inst==1 && N_pdl==1 && N_rep==1)
+					{
+						N_rep=rawdata_temp->N_filas;
 						rawdata = copiarMatriz_otf(rawdata_temp);
 						freeMatriz(rawdata_temp);
 					}
+					else if(rawdata_temp->N_filas/(N_pdl*N_inst)==1)
+					{
+						if(N_rep>1)
+						{
+							rawdata = mallocMatriz(N_pdl*N_inst*N_rep, rawdata_temp->N_columnas);
+							for(int i=0; i<N_inst; i++)
+							{
+								for(int j=0; j<N_rep; j++)
+								{
+									for(int k=0; k<N_pdl; k++)
+									{
+										for(int l=0; l<rawdata_temp->N_columnas; l++)
+											rawdata->elemento[i*(N_rep*N_pdl)+j*N_pdl+k][l] = rawdata_temp->elemento[i*N_pdl+k][l];
+									}
+								}
+							}
+							freeMatriz(rawdata_temp);
+						}
+						else
+						{
+							rawdata = copiarMatriz_otf(rawdata_temp);
+							freeMatriz(rawdata_temp);
+						}
+					}
+					else
+					{
+						printf("\nERROR: el numero de filas introducidas no coincide con los numeros (Nretos, Ninst, Nrep) introducidos.\n");					
+						return -1;
+					}
 				}
 				else
 				{
-					printf("\nERROR: el numero de filas introducidas no coincide con los numeros (Nretos, Ninst, Nrep) introducidos.\n");					
+					rawdata = copiarMatriz_otf(rawdata_temp);
+					freeMatriz(rawdata_temp);
+				}
+			}
+			
+			if(topol==file_externo)
+			{
+				topologia=leerCmtopol(topolfile);
+				
+				if(Nx*Ny>topologia->N_celdas)
+				{
+					Nx = topologia->N_celdas;
+					Ny=1;
+				}
+				else
+				{
+					printf("\n\nERROR: el fichero de topologia introducido tiene mas celdas que el fichero de datos\n");
 					return -1;
 				}
 			}
-			else
-			{
-				rawdata = copiarMatriz_otf(rawdata_temp);
-				freeMatriz(rawdata_temp);
-			}
-		}
-		
-		if(topol==file_externo)
-		{
-			topologia=leerCmtopol(topolfile);
-			
-			if(Nx*Ny>topologia->N_celdas)
-			{
-				Nx = topologia->N_celdas;
-				Ny=1;
-			}
-			else
-			{
-				printf("\n\nERROR: el fichero de topologia introducido tiene mas celdas que el fichero de datos\n");
-				return -1;
-			}
-		}
 
-		N_cells = Nx*Ny;
-		N_claves = N_retos*N_inst*N_rep*N_pdl;
-		pufarray_temp = mallocPufarray(N_retos, N_inst, N_rep, N_pdl, N_cells);
-		
-		if(input==0)
-		{
-			frec_nominal = mallocMatriz(Nx, Ny);
-			for(int j=0; j<N_inst; j++)
+			N_cells = Nx*Ny;
+			N_claves = N_retos*N_inst*N_rep*N_pdl;
+			pufarray_temp = mallocPufarray(N_retos, N_inst, N_rep, N_pdl, N_cells);
+			
+			if(input==0)
 			{
-				for(int k=0; k<Nx; k++)
+				frec_nominal = mallocMatriz(Nx, Ny);
+				for(int j=0; j<N_inst; j++)
 				{
-					for(int l=0; l<Ny; l++)
-						frec_nominal->elemento[k][l] = ran1_gauss(frec_esperada, desv_frec_esperada);
-				}
-				for(int k=0; k<N_rep; k++)
-				{
-					for(int l=0; l<N_pdl; l++)
+					for(int k=0; k<Nx; k++)
 					{
-						for(int m=0; m<N_cells; m++)
-						{	
-							x_coord = m%Nx;
-							y_coord = m/Nx;
-							
-							pufarray_temp->elemento[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, cteT);//valores nominales y acoplo termico
-							
-							if(fcorr==1)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
-							else if(fcorr==2)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
-							else if(fcorr==3)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
-						}
+						for(int l=0; l<Ny; l++)
+							frec_nominal->elemento[k][l] = ran1_gauss(frec_esperada, desv_frec_esperada);
 					}
-				}
-			}
-			freeMatriz(frec_nominal);
-		}
-		else
-		{
-			for(int j=0; j<N_inst; j++)
-			{
-				for(int k=0; k<N_rep; k++)
-				{
-					for(int l=0; l<N_pdl; l++)
+					for(int k=0; k<N_rep; k++)
 					{
-						for(int m=0; m<N_cells; m++)
+						for(int l=0; l<N_pdl; l++)
 						{
-							pufarray_temp->elemento[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m] + ran1_gauss(0, cteT);
-							
-							if(fcorr==1)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
-							else if(fcorr==2)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
-							else if(fcorr==3)
-								pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
+							for(int m=0; m<N_cells; m++)
+							{	
+								x_coord = m%Nx;
+								y_coord = m/Nx;
+								
+								pufarray_temp->elemento[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, cteT);//valores nominales y acoplo termico
+								
+								if(fcorr==1)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
+								else if(fcorr==2)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
+								else if(fcorr==3)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
+							}
+						}
+					}
+				}
+				freeMatriz(frec_nominal);
+			}
+			else
+			{
+				for(int j=0; j<N_inst; j++)
+				{
+					for(int k=0; k<N_rep; k++)
+					{
+						for(int l=0; l<N_pdl; l++)
+						{
+							for(int m=0; m<N_cells; m++)
+							{
+								pufarray_temp->elemento[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m] + ran1_gauss(0, cteT);
+								
+								if(fcorr==1)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
+								else if(fcorr==2)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord+factory*y_coord;
+								else if(fcorr==3)
+									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord*y_coord;
+							}
 						}
 					}
 				}
 			}
-		}
-		
- 		if(promediar_rep)
-		{
-			pufarray = mallocPufarray(N_retos, N_inst, 1, N_pdl, N_cells);
+			
+			if(promediar_rep)
+			{
+				pufarray = mallocPufarray(N_retos, N_inst, 1, N_pdl, N_cells);
+				for(int i=0; i<N_retos; i++)
+				{
+					for(int j=0; j<N_inst; j++)
+					{
+						for(int k=0; k<N_rep; k++)
+						{
+							for(int l=0; l<N_pdl; l++)
+							{
+								for(int m=0; m<N_cells; m++)
+									pufarray->elemento[i][j][0][l][m] += pufarray_temp->elemento[i][j][k][l][m]/N_rep;
+							}
+						}
+					}
+				}
+				N_rep = 1;
+				N_claves = N_retos*N_inst*N_pdl;
+			}
+			else
+				pufarray=copiarPufarray(pufarray_temp);
+			freePufarray(pufarray_temp);
+			
+			if(output_m)
+			{
+				punte = fopen(out_m_name, "w");
+
+				for(int m=0; m<N_cells; m++)
+				{
+					x_coord = m%Nx;
+					y_coord = m/Nx;
+					fprintf(punte, "%d\t%d\t%lf\n", x_coord, y_coord, pufarray->elemento[0][0][0][0][m]);
+				}
+				fclose(punte);
+			}
+			
+			index_array = (int**)malloc(sizeof(int*)*N_retos);
+			for(int i=0; i<N_retos; i++)
+			{
+				index_array[i] = (int*)malloc(sizeof(int)*N_cells);
+				for(int m=0; m<N_cells; m++)
+					index_array[i][m] = m;
+			}
+			
+			for(int i=1; i<N_retos; i++)
+				gsl_ran_shuffle(idum, index_array[i], N_cells, sizeof(int));
+			
 			for(int i=0; i<N_retos; i++)
 			{
 				for(int j=0; j<N_inst; j++)
@@ -1023,121 +1118,150 @@ int main(int N_opcion, char** opcion)
 						for(int l=0; l<N_pdl; l++)
 						{
 							for(int m=0; m<N_cells; m++)
-								pufarray->elemento[i][j][0][l][m] += pufarray_temp->elemento[i][j][k][l][m]/N_rep;
+								pufarray->elemento[i][j][k][l][m] = pufarray->elemento[0][j][k][l][index_array[i][m]];
 						}
 					}
 				}
 			}
-			N_rep = 1;
-			N_claves = N_retos*N_inst*N_pdl;
-		}
-		else
-			pufarray=copiarPufarray(pufarray_temp);
-		freePufarray(pufarray_temp);
-		
-		if(output_m)
-		{
-			punte = fopen(out_m_name, "w");
-
-			for(int m=0; m<N_cells; m++)
+			
+			//Ahora debemos implementar la topologia
+			switch(topol)
 			{
-				x_coord = m%Nx;
-				y_coord = m/Nx;
-				fprintf(punte, "%d\t%d\t%lf\n", x_coord, y_coord, pufarray->elemento[0][0][0][0][m]);
+				case N_1:
+					N_bits = N_cells-1;
+				break;
+				
+				case one_out_of_2:
+					N_bits = N_cells/2;
+				break;
+				
+				case All_pairs:
+					N_bits = (N_cells*(N_cells-1))/2;
+				break;
+				
+				case k_modular:
+					N_bits = (k_mod-1)*N_cells/2;
+				break;
+				
+				case compare_to_1:
+					N_bits = N_cells-1;
+				break;
+				
+				case file_externo:
+					N_bits = topologia->N_bits;
+				break;
+				
+				case random_pairs:
+					if(N_bits==0)
+						N_bits = 1;
+				break;
 			}
-			fclose(punte);
-		}
-		
-		index_array = (int**)malloc(sizeof(int*)*N_retos);
-		for(int i=0; i<N_retos; i++)
-		{
-			index_array[i] = (int*)malloc(sizeof(int)*N_cells);
-			for(int m=0; m<N_cells; m++)
-				index_array[i][m] = m;
-		}
-		
-		for(int i=1; i<N_retos; i++)
-			gsl_ran_shuffle(idum, index_array[i], N_cells, sizeof(int));
-		
-		for(int i=0; i<N_retos; i++)
-		{
-			for(int j=0; j<N_inst; j++)
-			{
-				for(int k=0; k<N_rep; k++)
-				{
-					for(int l=0; l<N_pdl; l++)
-					{
-						for(int m=0; m<N_cells; m++)
-							pufarray->elemento[i][j][k][l][m] = pufarray->elemento[0][j][k][l][index_array[i][m]];
-					}
-				}
-			}
-		}
-		
-		//Ahora debemos implementar la topologia
-		switch(topol)
-		{
-			case N_1:
-				N_bits = N_cells-1;
-			break;
+			N_bits*=N_prec;
 			
-			case one_out_of_2:
-				N_bits = N_cells/2;
-			break;
+			bitstring = (BINARIO**)malloc(sizeof(BINARIO*)*N_claves);
+			for(int i=0; i<N_claves; i++)
+				bitstring[i] = mallocBinario(N_bits);
 			
-			case All_pairs:
-				N_bits = (N_cells*(N_cells-1))/2;
-			break;
+			caux = mallocBinario(N_prec);
 			
-			case k_modular:
-				N_bits = (k_mod-1)*N_cells/2;
-			break;
-			
-			case compare_to_1:
-				N_bits = N_cells-1;
-			break;
-			
-			case file_externo:
-				N_bits = topologia->N_bits;
-			break;
-			
-			case random_pairs:
-				if(N_bits==0)
-					N_bits = 1;
-			break;
-		}
-		N_bits*=N_prec;
-		
-		bitstring = (BINARIO**)malloc(sizeof(BINARIO*)*N_claves);
-		for(int i=0; i<N_claves; i++)
-			bitstring[i] = mallocBinario(N_bits);
-		
-		caux = mallocBinario(N_prec);
-		
-		pufexp_temp = mallocPufexp(N_retos, N_inst, N_rep, 2*N_bits, N_pdl*N_bits);
+			pufexp_temp = mallocPufexp(N_retos, N_inst, N_rep, 2*N_bits, N_pdl*N_bits);
 
-		contador=0;
-		for(int i=0; i<N_retos; i++)
-		{
-			for(int j=0; j<N_inst; j++)
+			contador=0;
+			for(int i=0; i<N_retos; i++)
 			{
-				for(int k=0; k<N_rep; k++)
+				for(int j=0; j<N_inst; j++)
 				{
-					for(int l=0; l<N_pdl; l++)
+					for(int k=0; k<N_rep; k++)
 					{
-						switch(topol) //El objetivo es rellenar bitstring: deben recorrerse todos los bits!
+						for(int l=0; l<N_pdl; l++)
 						{
-							case file_externo:
-								contador1=0; //contador de 0 a N_bits-1
-								for(int m=0; m<N_cells; m++)
-								{
-									for(int n=0; n<N_cells; n++)
+							switch(topol) //El objetivo es rellenar bitstring: deben recorrerse todos los bits!
+							{
+								case file_externo:
+									contador1=0; //contador de 0 a N_bits-1
+									for(int m=0; m<N_cells; m++)
 									{
-										if(topologia->matriz[m][n]>0)
+										for(int n=0; n<N_cells; n++)
+										{
+											if(topologia->matriz[m][n]>0)
+											{
+												daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][n];
+												daux*=1e+6;
+												digitalizarComparacion(caux, (long)daux); 
+												for(int n=0; n<N_prec; n++)
+													bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+												
+												pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
+												pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][n];
+												
+												contador1++;
+											}
+										}
+									}
+									
+									break;
+									
+								case N_1:
+									contador1=0; //contador de 0 a N_bits-1
+									for(int m=0; m<N_cells-1; m++)
+									{
+										daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
+										daux*=1e+6;
+										digitalizarComparacion(caux, (long)daux);
+										for(int n=0; n<N_prec; n++)
+											bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+										
+										pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
+										pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m+1];
+										
+										contador1++;
+									}
+									break;
+									
+								case compare_to_1:
+									contador1=0; //contador de 0 a N_bits-1
+									for(int m=1; m<N_cells; m++)
+									{
+										daux = pufarray->elemento[i][j][k][l][0]-pufarray->elemento[i][j][k][l][m];
+										daux*=1e+6;
+										digitalizarComparacion(caux, (long)daux);
+										for(int n=0; n<N_prec; n++)
+											bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+										
+										pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][0];
+										pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m];
+										
+										contador1++;
+									}
+									break;
+									
+								case one_out_of_2:
+									contador1=0; //contador de 0 a N_bits-1
+									for(int m=0; m<N_cells; m+=2)
+									{
+										daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
+										daux*=1e+6;
+										digitalizarComparacion(caux, (long)daux);
+										for(int n=0; n<N_prec; n++)
+											bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+										
+										pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
+										pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m+1];
+										
+										contador1++;
+									}
+									break;
+									
+									
+								case All_pairs:
+									contador1=0; //contador de 0 a N_bits-1
+									for(int m=0; m<N_cells; m++)
+									{
+										for(int n=m+1; n<N_cells; n++)
 										{
 											daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][n];
 											daux*=1e+6;
-											digitalizarComparacion(caux, (long)daux); 
+											digitalizarComparacion(caux, (long)daux);
 											for(int n=0; n<N_prec; n++)
 												bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
 											
@@ -1147,200 +1271,191 @@ int main(int N_opcion, char** opcion)
 											contador1++;
 										}
 									}
-								}
-								
-								break;
-								
-							case N_1:
-								contador1=0; //contador de 0 a N_bits-1
-								for(int m=0; m<N_cells-1; m++)
-								{
-									daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
-									daux*=1e+6;
-									digitalizarComparacion(caux, (long)daux);
-									for(int n=0; n<N_prec; n++)
-										bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+									break;
 									
-									pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
-									pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m+1];
 									
-									contador1++;
-								}
-								break;
-								
-							case compare_to_1:
-								contador1=0; //contador de 0 a N_bits-1
-								for(int m=1; m<N_cells; m++)
-								{
-									daux = pufarray->elemento[i][j][k][l][0]-pufarray->elemento[i][j][k][l][m];
-									daux*=1e+6;
-									digitalizarComparacion(caux, (long)daux);
-									for(int n=0; n<N_prec; n++)
-										bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
-									
-									pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][0];
-									pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m];
-									
-									contador1++;
-								}
-								break;
-								
-							case one_out_of_2:
-								contador1=0; //contador de 0 a N_bits-1
-								for(int m=0; m<N_cells; m+=2)
-								{
-									daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][m+1];
-									daux*=1e+6;
-									digitalizarComparacion(caux, (long)daux);
-									for(int n=0; n<N_prec; n++)
-										bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
-									
-									pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
-									pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m+1];
-									
-									contador1++;
-								}
-								break;
-								
-								
-							case All_pairs:
-								contador1=0; //contador de 0 a N_bits-1
-								for(int m=0; m<N_cells; m++)
-								{
-									for(int n=m+1; n<N_cells; n++)
+								case k_modular:
+									contador1=0;
+									for(int m=0; m<N_cells/k_mod; m++)
 									{
-										daux = pufarray->elemento[i][j][k][l][m]-pufarray->elemento[i][j][k][l][n];
+										for(int n=0; n<k_mod; n++)
+										{
+											for(int q=n+1; q<k_mod; q++)
+											{
+												daux = pufarray->elemento[i][j][k][l][m*k_mod+n]-pufarray->elemento[i][j][k][l][m*k_mod+q];
+												daux*=1e+6;
+												digitalizarComparacion(caux, (long)daux);
+												for(int n=0; n<N_prec; n++)
+													bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+												
+												pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m*k_mod+n];
+												pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m*k_mod+q];
+												
+												contador1++;
+											}
+										}
+									}
+									break;
+									
+								case random_pairs:
+									for(int m=0; m<N_bits; m++)
+									{
+										aux_rand0 = dado(N_cells);
+										while(1)
+										{
+											aux_rand1=dado(N_cells);
+											if(aux_rand0!=aux_rand1)
+												break;
+										}
+										if(aux_rand0>aux_rand1)
+											daux = pufarray->elemento[0][j][k][l][aux_rand0]-pufarray->elemento[0][j][k][l][aux_rand1];
+										else
+											daux = pufarray->elemento[0][j][k][l][aux_rand1]-pufarray->elemento[0][j][k][l][aux_rand0];
 										daux*=1e+6;
 										digitalizarComparacion(caux, (long)daux);
 										for(int n=0; n<N_prec; n++)
-											bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
+											bitstring[contador]->digito[l*N_prec+n]=caux->digito[n];
 										
-										pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m];
-										pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][n];
+										pufexp_temp->elementox[i][j][k][2*l]=aux_rand0;
+										pufexp_temp->elementox[i][j][k][2*l+1]=aux_rand1;
 										
-										contador1++;
 									}
-								}
-								break;
-								
-								
-							case k_modular:
-								contador1=0;
-								for(int m=0; m<N_cells/k_mod; m++)
-								{
-									for(int n=0; n<k_mod; n++)
-									{
-										for(int q=n+1; q<k_mod; q++)
-										{
-											daux = pufarray->elemento[i][j][k][l][m*k_mod+n]-pufarray->elemento[i][j][k][l][m*k_mod+q];
-											daux*=1e+6;
-											digitalizarComparacion(caux, (long)daux);
-											for(int n=0; n<N_prec; n++)
-												bitstring[contador]->digito[contador1*N_prec+n]=caux->digito[n];
-											
-											pufexp_temp->elementox[i][j][k][2*contador1]=index_array[i][m*k_mod+n];
-											pufexp_temp->elementox[i][j][k][2*contador1+1]=index_array[i][m*k_mod+q];
-											
-											contador1++;
-										}
-									}
-								}
-								break;
-								
-							case random_pairs:
-								for(int m=0; m<N_bits; m++)
-								{
-									aux_rand0 = dado(N_cells);
-									while(1)
-									{
-										aux_rand1=dado(N_cells);
-										if(aux_rand0!=aux_rand1)
-											break;
-									}
-									if(aux_rand0>aux_rand1)
-										daux = pufarray->elemento[0][j][k][l][aux_rand0]-pufarray->elemento[0][j][k][l][aux_rand1];
-									else
-										daux = pufarray->elemento[0][j][k][l][aux_rand1]-pufarray->elemento[0][j][k][l][aux_rand0];
-									daux*=1e+6;
-									digitalizarComparacion(caux, (long)daux);
-									for(int n=0; n<N_prec; n++)
-										bitstring[contador]->digito[l*N_prec+n]=caux->digito[n];
-									
-									pufexp_temp->elementox[i][j][k][2*l]=aux_rand0;
-									pufexp_temp->elementox[i][j][k][2*l+1]=aux_rand1;
-									
-								}
-								break;
+									break;
+							}
+							//mpfra_set_str(data->elemento[contador][0], bitstring[contador]->digito, 2);
+							for(int m=0; m<N_bits; m++)
+							{
+								if(bitstring[contador]->digito[m]=='0')
+									pufexp_temp->elementoy[i][j][k][l*N_bits+m]=0;
+								else
+									pufexp_temp->elementoy[i][j][k][l*N_bits+m]=1;
+							}
+							
+							contador++; //contador de 0 a N_claves-1
 						}
-						//mpfra_set_str(data->elemento[contador][0], bitstring[contador]->digito, 2);
-						for(int m=0; m<N_bits; m++)
-						{
-							if(bitstring[contador]->digito[m]=='0')
-								pufexp_temp->elementoy[i][j][k][l*N_bits+m]=0;
-							else
-								pufexp_temp->elementoy[i][j][k][l*N_bits+m]=1;
-						}
-						
-						contador++; //contador de 0 a N_claves-1
 					}
 				}
 			}
+			for(int i=0; i<N_claves; i++)
+				freeBinario(bitstring[i]);
+			free(bitstring);
+			
+			for(int i=0; i<N_retos; i++)
+				free(index_array[i]);
+			free(index_array);
+			freeBinario(caux);
 		}
-		for(int i=0; i<N_claves; i++)
-			freeBinario(bitstring[i]);
-		free(bitstring);
+		else if(input=='x')
+			pufexp_temp = leerPufexp(in_name);
 		
-		for(int i=0; i<N_retos; i++)
-			free(index_array[i]);
-		free(index_array);
-		freeBinario(caux);
+		switch(out_x_opt[0])
+		{
+			case '0':
+				pufexp_aux0 = copiarPufexp(pufexp_temp);
+				freePufexp(pufexp_temp);
+			break;
 			
-		if(resize)
-			pufexp_resize = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-		else
-			pufexp_resize = copiar_pex(pufexp_temp);
-		freePufexp(pufexp_temp);
+			case 'r':
+				pufexp_aux0 = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
+				freePufexp(pufexp_temp);
+			break;
 			
-		if(trunc>0)
-			pufexp_trunc = truncate_pex(pufexp_resize, trunc);
-		else
-			pufexp_trunc = copiar_pex(pufexp_resize);
-		freePufexp(pufexp_resize);
+			case 't':
+				pufexp_aux0 = truncate_pex(pufexp_temp, trunc);
+				freePufexp(pufexp_temp);
+			break;
 			
-		if(promx)
-			pufexp = prom_pex(pufexp_trunc);
-		else
-			pufexp = copiar_pex(pufexp_trunc);
-		freePufexp(pufexp_trunc);
-		
-		N_bits=pufexp->tamano_respuesta;
-		N_retos=pufexp->N_retos;
-		N_inst=pufexp->N_instancias;
-		N_rep=pufexp->N_repeticiones;
-		
-		data = pex_to_datamtz(pufexp);
-	}
-	else if(input=='x')
-	{
-		pufexp_temp = leerPufexp(in_name);
-		
-		if(resize)
-			pufexp_resize = resize_pex(pufexp_temp, resize_retos, resize_inst, resize_rep, resize_y);
-		else
-			pufexp_resize = copiar_pex(pufexp_temp);
-		freePufexp(pufexp_temp);
+			case 'p':
+				pufexp_aux0 = prom_pex(pufexp_temp);
+				freePufexp(pufexp_temp);
+			break;
 			
-		if(trunc>0)
-			pufexp_trunc = truncate_pex(pufexp_resize, trunc);
-		else
-			pufexp_trunc = copiar_pex(pufexp_resize);
-		freePufexp(pufexp_resize);
+			case 'z':
+				pufexp_aux0 = zeropadPufexp(pufexp_temp, zeroes_padded);
+				freePufexp(pufexp_temp);
+			break;
+		}
+		switch(out_x_opt[1])
+		{
+			case '0':
+				pufexp_aux1 = copiarPufexp(pufexp_aux0);
+				freePufexp(pufexp_aux0);
+			break;
 			
-		if(promx)
-			pufexp = prom_pex(pufexp_trunc);
-		else
-			pufexp = copiar_pex(pufexp_trunc);
-		freePufexp(pufexp_trunc);
+			case 'r':
+				pufexp_aux1 = resize_pex(pufexp_aux0, resize_retos, resize_inst, resize_rep, resize_y);
+				freePufexp(pufexp_aux0);
+			break;
+			
+			case 't':
+				pufexp_aux1 = truncate_pex(pufexp_aux0, trunc);
+				freePufexp(pufexp_aux0);
+			break;
+			
+			case 'p':
+				pufexp_aux1 = prom_pex(pufexp_aux0);
+				freePufexp(pufexp_aux0);
+			break;
+			
+			case 'z':
+				pufexp_aux1 = zeropadPufexp(pufexp_aux0, zeroes_padded);
+				freePufexp(pufexp_aux0);
+			break;
+		}
+		switch(out_x_opt[2])
+		{
+			case '0':
+				pufexp_aux2 = copiarPufexp(pufexp_aux1);
+				freePufexp(pufexp_aux1);
+			break;
+			
+			case 'r':
+				pufexp_aux2 = resize_pex(pufexp_aux1, resize_retos, resize_inst, resize_rep, resize_y);
+				freePufexp(pufexp_aux1);
+			break;
+			
+			case 't':
+				pufexp_aux2 = truncate_pex(pufexp_aux1, trunc);
+				freePufexp(pufexp_aux1);
+			break;
+			
+			case 'p':
+				pufexp_aux2 = prom_pex(pufexp_aux1);
+				freePufexp(pufexp_aux1);
+			break;
+			
+			case 'z':
+				pufexp_aux2 = zeropadPufexp(pufexp_aux1, zeroes_padded);
+				freePufexp(pufexp_aux1);
+			break;
+		}
+		switch(out_x_opt[3])
+		{
+			case '0':
+				pufexp = copiarPufexp(pufexp_aux2);
+				freePufexp(pufexp_aux2);
+			break;
+			
+			case 'r':
+				pufexp = resize_pex(pufexp_aux2, resize_retos, resize_inst, resize_rep, resize_y);
+				freePufexp(pufexp_aux2);
+			break;
+			
+			case 't':
+				pufexp = truncate_pex(pufexp_aux2, trunc);
+				freePufexp(pufexp_aux2);
+			break;
+			
+			case 'p':
+				pufexp = prom_pex(pufexp_aux2);
+				freePufexp(pufexp_aux2);
+			break;
+			
+			case 'z':
+				pufexp = zeropadPufexp(pufexp_aux2, zeroes_padded);
+				freePufexp(pufexp_aux2);
+			break;
+		}
 		
 		N_bits=pufexp->tamano_respuesta;
 		N_retos=pufexp->N_retos;
@@ -1349,12 +1464,10 @@ int main(int N_opcion, char** opcion)
 		N_claves=N_retos*N_inst*N_rep;
 		
 		data = pex_to_datamtz(pufexp);
-
+		
 	}
 	else if(input=='d')
-	{
 		data = MPFR_leerMatriz(in_name);
-	}
 	
 	if(gsort==0)
 		MPFR_ordenarData(data);

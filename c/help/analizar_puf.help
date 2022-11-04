@@ -75,11 +75,32 @@
 		Escribe la distribución de palabras binarias simuladas (si no hay opción '-in'), o introducidas (si 
 		se utiliza la opción '-in r | -in x'). Esta subopción se ignora si se utiliza '-in d'.
 
-	pufexp(x) ["pufexp_out.pex"]
+	pufexp(x) ["pufexp_out.pex"] [resize] [truncate] [promedio] [zeropad]
 		Escribe un experimento PUF en formato '.pex' para una simulación PUF o un fichero 'rawdata'. Esta 
 		subopción se ignora si se utiliza '-in d | -in x'.
-		Notar que si se indican ambas opciones, primero se realiza el desdoblamiento y solo despues el 
-		truncamiento.
+		Admite una serie de subopciones:
+		
+			resize 1,1,1,1
+				Esta opción permite doblar o desdoblar las respuestas para conseguir un menor número de
+				respuestas de mayor longitud, o más respuestas de menor longitud (respectivamente). Una vez
+				indicada esta opción es obligatorio incluir cuatro números enteros separados por una coma que
+				indican:	
+					nuevo_nretos,nuevo_ninst,nuevo_nrep,nuevo_tamano_respuesta
+					
+				El producto de estas cuatro cantidades debe ser igual que en el fichero 'pufexp' original.
+				
+			truncate -1
+				Esta opción permite truncar las 'bitwrds' de entrada, modificando el tamaño de las respuestas al
+				número entero indicado a continuación. Si este número es negativo (por defecto), esta opción se
+				ignora.
+			
+			promedio
+				Si esta opción está presente se promedia 'pufexp' en el eje 'nrep'.
+			
+			zeropad 0
+				Esta opción extiende las respuestas con el número indicado de ceros (por defecto, ninguno).
+				
+		Estas subopciones se resolverán en el mismo orden en el que se introducen (las que se introduzcan).
 
 	map(m) ["map.txt"]
 		Escribe el array de celdas para la primera instancia PUF para una simulación PUF o si se utiliza la 
@@ -117,28 +138,6 @@
 		norm [area | alt]
 			Esta opción controla la normalización del histograma (por área -por defecto- o por el valor
 			maximo).
-
-
- -resize_pufexp(resx) 1,1,1,1
- 
-	Esta opción permite doblar o desdoblar las respuestas para conseguir un menor número de respuestas de 
-	mayor longitud, o más respuestas de menor longitud (respectivamente). Una vez indicada esta opción es 
-	obligatorio incluir cuatro números enteros separados por una coma que indican: 
-	
-		nuevo_nretos,nuevo_ninst,nuevo_nrep,nuevo_tamano_respuesta
-		
-	El producto de estas cuatro cantidades debe ser igual que en el fichero 'pufexp' original.
-
-
- -truncate_pufexp(trux) -1
- 
-	Esta opción permite truncar las 'bitwrds' de entrada, modificando el tamaño de las respuestas al número 
-	entero indicado a continuación. Si este número es negativo (por defecto), esta opción se ignora.
-	
-	
- -promedio_pufexp(promx)
- 
-	Si esta opción está presente se promedia 'pufexp' en el eje 'nrep'.
 
 
  -geom [nx] [ny]
@@ -217,18 +216,18 @@
 	Esta opción permite elegir qué clase de PUF simular. Se ignora si '-in d | x'. Además la forma en que se
 	interpreta '-in r' puede cambiar.
 
-	ringoscillator(ro) [n-1 | 1o2 | ap | km | c1 | file | rp]
+	ringoscillator(ro) [1o2 | n-1 | ap | km | c1 | file | rp]
 		Simula RO-PUF. Los retos se componen de la sucesión de parejas utilizadas en la comparación (sin 
 		normalizar por el número de osciladores).
 		La subopción que sigue permite cambiar la forma en que se comparan pares de osciladores:
 		
-		n-1
-			Se comparan pares de osciladores contiguos con repetición (e.g., 1 con 2, 2 con 3, etc), dando 
-			lugar a una respuesta de N-1 bits (siendo 'N' el número de osciladores).
-
 		1o2
 			Se comparan pares de osciladores sin repetición (e.g., 1 con 2, 3 con 4, etc), dando lugar a una
 			respuesta de N/2 bits (siendo 'N' el número de osciladores).
+		
+		n-1
+			Se comparan pares de osciladores contiguos con repetición (e.g., 1 con 2, 2 con 3, etc), dando 
+			lugar a una respuesta de N-1 bits (siendo 'N' el número de osciladores).
 
 		ap
 			Se comparan todos los pares de osciladores, dando lugar a una respuesta de N·(N-1)/2 bits (siendo
@@ -410,3 +409,4 @@
 	Si esta opción está presente se utilizarán las funciones de la biblioteca GSL para ordenar arreglos. En 
 	caso contrario se utilizara el algoritmo 'quickSort'. El método GSL es mucho más rápido pero consume más 
 	memoria
+
