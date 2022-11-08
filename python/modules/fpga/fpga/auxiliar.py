@@ -1,8 +1,3 @@
-from .datastream import *
-
-from .fsmoperations import *
-
-
 def pinta_progreso(indice, total, barra=40):
 	"""
 	Esta funcion pinta una barra de progreso para el valor 'indice'

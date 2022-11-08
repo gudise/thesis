@@ -228,27 +228,27 @@ if test "$BRD" == "cmoda7"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_puf/tcl/bd_fsm2_pcmbpspl_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_puf/tcl/bd_fsm2_pcmbpspl_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "zybo"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_puf/tcl/bd_fsm2_pczynqpspl_qspi_zybo.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_zybo.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_puf/tcl/bd_fsm2_pczynqpspl_zybo.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_zybo.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "pynqz2"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_puf/tcl/bd_fsm2_pczynqpspl_qspi_pynqz2.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_puf/tcl/bd_fsm2_pczynqpspl_pynqz2.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 fi
@@ -461,8 +461,8 @@ printf "
 ## vivado sources
 mkdir vivado_src
 mkdir vivado_src/include
-cp "$REPO_puf/verilog/include/fsm.vh" ./vivado_src/include/fsm.cp.vh
-cp "$REPO_puf/verilog/include/constantes.vh" ./vivado_src/include/constantes.cp.vh
+cp "$REPO_fpga/verilog/include/fsm.vh" ./vivado_src/include/fsm.cp.vh
+cp "$REPO_fpga/verilog/include/constantes.vh" ./vivado_src/include/constantes.cp.vh
 
 if test $PINMAP_SET -eq 0
 then
@@ -785,8 +785,8 @@ fi
 
 ## sdk sources
 mkdir sdk_src
-cp "$REPO_puf/c-xilinx/sdk/include/fsm.h" ./sdk_src/fsm.cp.h
-cp "$REPO_puf/c-xilinx/sdk/template_fsm.c" ./romatrix.c
+cp "$REPO_fpga/c-xilinx/sdk/include/fsm.h" ./sdk_src/fsm.cp.h
+cp "$REPO_fpga/c-xilinx/sdk/template_fsm.c" ./romatrix.c
 
 printf "
 #define DATA_WIDTH			%d

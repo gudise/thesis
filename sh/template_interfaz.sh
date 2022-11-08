@@ -1,4 +1,4 @@
-PROJNAME="project_templatefsm"
+PROJNAME="project_template_interfaz"
 PROJDIR="./"
 BRD="pynqz2"
 BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
@@ -21,7 +21,7 @@ do
 Este script copia en el directorio actual los tres ficheros necesarios para implementar un sistema de comunicacion pc (.py) <-> microprocesador (.c) <-> FSM en FPGA (.v), ademas de un script .tcl generado por Vivado para reconstruir el blockDesign que contiene los modulos GPIO necesarios para la comunicacion. Al incluir el nombre de la placa, el script copia los ficheros correctos para implementar el diseno (en ausencia de nombre se considera por defecto 'zybo'.\n.
 	Opciones:
 		-help
-		-projname [\"project_templatefsm2\"]
+		-projname [\"project_template_interfaz\"]
 		-board [zybo | pynqz2 | cmoda7]
 		-njobs [4]
 		-qspi
@@ -110,27 +110,27 @@ if test "$BRD" == "cmoda7"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_fpga/tcl/bd_fsm2_pcmbpspl_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_cmoda7.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "zybo"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_zybo.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_qspi_zybo.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_zybo.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_zybo.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "pynqz2"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_qspi_pynqz2.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_qspi_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_fpga/tcl/bd_fsm2_pczynqpspl_pynqz2.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_pynqz2.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 fi
@@ -151,7 +151,7 @@ regenerate_bd_layout
 
 update_compile_order -fileset sources_1
 
-add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/editame_fsm.v ${PROJDIR}/vivado_src/include/fsm.cp.vh ${PROJDIR}/vivado_src/include/constantes.cp.vh}
+add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/editame_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh}
 
 update_compile_order -fileset sources_1
 
@@ -287,7 +287,7 @@ source ${PROJDIR}/partial_flows/launchsdk.tcl
 ## python script
 printf "import serial
 import time
-import mymod.fsm
+from fpga.interfaz_pc import *
 
 buffer_in_width = $BUFFER_IN_WIDTH
 buffer_out_width = $BUFFER_OUT_WIDTH
@@ -300,23 +300,23 @@ print(\"\\\nvalor introducido:\\\t\", end='')
 entrada = int(input())
 
 ## enviamos el valor a la FPGA (convertido en un 'bit string')
-mymod.fsm.scan(fpga, mymod.int_to_bitstr(entrada), buffer_in_width)
+scan(fpga, int_to_bitstr(entrada), buffer_in_width)
 
 ## leemos el valor devuelto (convertido en un 'int')
-resultado = mymod.bitstr_to_int(mymod.fsm.calc(fpga, buffer_out_width))
+resultado = bitstr_to_int(calc(fpga, buffer_out_width))
 
 print(f\"valor devuelto:\\\t\\\t{resultado}\\\n\")
 
 fpga.close()
-" > editame_fsm.py
+" > editame_interfaz.py
 
 
 ## vivado sources
 mkdir vivado_src
 mkdir vivado_src/include
-cp "$REPO_fpga/verilog/template_fsm.v" ./vivado_src/editame_fsm.v
-cp "$REPO_fpga/verilog/include/fsm.vh" ./vivado_src/include/fsm.cp.vh
-cp "$REPO_fpga/verilog/include/constantes.vh" ./vivado_src/include/constantes.cp.vh
+cp "$REPO_fpga/verilog/interfaz_pl_frontend.v" ./vivado_src/editame_interfaz_pl_frontend.v
+cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
+cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
 
 ((aux=$DATA_WIDTH-1))
 printf "
@@ -331,11 +331,11 @@ module TOP (
 	output[$aux:0]	data_out
 );
 
-	TEMPLATE_FSM #(
+	INTERFAZ_PL_FRONTEND #(
 		.DATA_WIDTH($DATA_WIDTH),
 		.BUFFER_IN_WIDTH($BUFFER_IN_WIDTH),
 		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
-	) fsm_0 (
+	) interfaz_pl_0 (
 		.clock(clock),
 		.ctrl_in(ctrl_in),
 		.ctrl_out(ctrl_out),
@@ -349,14 +349,14 @@ endmodule
 
 ## sdk sources
 mkdir sdk_src
-cp "$REPO_fpga/c-xilinx/sdk/include/fsm.h" ./sdk_src/fsm.cp.h
-cp "$REPO_fpga/c-xilinx/sdk/template_fsm.c" ./editame_fsm.c
+cp "$REPO_fpga/c-xilinx/sdk/include/interfaz_ps_backend.h" ./sdk_src/interfaz_ps_backend.cp.h
+cp "$REPO_fpga/c-xilinx/sdk/interfaz_ps_frontend.c" ./editame_interfaz_ps_frontend.c
 
 printf "
 #define DATA_WIDTH			%d
 #define BUFFER_IN_WIDTH		%d
 #define BUFFER_OUT_WIDTH	%d
-" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/fsm_parameters.h
+" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
 
 if test "$brd" == "cmoda7"
 then
@@ -372,8 +372,8 @@ then
 
 fi
 
-echo $xuart | cat - editame_fsm.c > temp && mv temp editame_fsm.c
-mv editame_fsm.c ./sdk_src/editame_fsm.c
+echo $xuart | cat - editame_interfaz_ps_frontend.c > temp && mv temp editame_interfaz_ps_frontend.c
+mv editame_interfaz_ps_frontend.c ./sdk_src/editame_interfaz_ps_frontend.c
 
 
 ## echo log

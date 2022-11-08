@@ -1,19 +1,19 @@
 #ifdef XUARTPS_H
 	#define XUart_Send(x, y, z)	XUartPs_Send(x, y, z)
 	#define XUart_Recv(x, y, z)	XUartPs_Recv(x, y, z)
-    #define XUart   XUartPs
+	#define XUart   XUartPs
 
 #elif defined XUARTLITE_H
 	#define XUart_Send(x, y, z) XUartLite_Send(x, y, z)
 	#define XUart_Recv(x, y, z)	XUartLite_Recv(x, y, z)
-    #define XUart   XUartLite
+	#define XUart   XUartLite
 
 #endif
 
-#define OCT0    1           // 256^0
-#define OCT1    256         // 256^1
-#define OCT2    65536       // 256^2
-#define OCT3    16777216    // 256^3
+#define OCT0	1		   // 256^0
+#define OCT1	256		 // 256^1
+#define OCT2	65536	   // 256^2
+#define OCT3	16777216	// 256^3
 #define OCT(x)	OCT0*(x==0)+OCT1*(x==1)+OCT2*(x==2)+OCT3*(x==3)
 
 #define IDLE 		1
@@ -29,13 +29,13 @@
 #define cmd_idle 		105  //'i'
 #define cmd_reset 		114  //'r'
 #define cmd_calc 		99   //'c'
-#define cmd_end	        101  //'e'
-#define cmd_scan	    115	 //'s'
+#define cmd_end			101  //'e'
+#define cmd_scan		115	 //'s'
 #define cmd_print		112  //'p'
 
-#define cmd_idle_sync    22	 //SYN
+#define cmd_idle_sync	22	 //SYN
 #define cmd_reset_sync   13	 //'\n'
-#define cmd_calc_sync     2
+#define cmd_calc_sync	 2
 #define cmd_scan_sync	  3
 #define cmd_print_sync	  4
 
@@ -47,13 +47,13 @@ void	send_octeto(XUart* Uart, u8 octeto[], int octeto_size);
 u8		recv_u8(XUart* Uart);
 void	recv_octeto(XUart* Uart, u8 octeto_in[], int buffer_in_width);
 
-void    config_UART(XUart* Uart, int uart_id);
-void    config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int GPIO_CTRL_ID, int GPIO_DATA_ID);
+void	config_UART(XUart* Uart, int uart_id);
+void	config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int GPIO_CTRL_ID, int GPIO_DATA_ID);
 
-void	fsm_calc_cycle();
-void	fsm_reset_cycle();
-void	fsm_scan_cycle();
-void	fsm_print_cycle();
+void	calc_cycle();
+void	reset_cycle();
+void	scan_cycle();
+void	print_cycle();
 
 
 
@@ -63,16 +63,16 @@ void u32_to_4u8(u32 in, u8 out[4])
 
 	aux=in;
 
-    out[3] = aux/OCT3;
-    aux = aux%OCT3;
-    
-    out[2] = aux/OCT2;
-    aux = aux%OCT2;
-    
-    out[1] = aux/OCT1;
-    aux = aux%OCT1;
-    
-    out[0] = aux;
+	out[3] = aux/OCT3;
+	aux = aux%OCT3;
+	
+	out[2] = aux/OCT2;
+	aux = aux%OCT2;
+	
+	out[1] = aux/OCT1;
+	aux = aux%OCT1;
+	
+	out[0] = aux;
 }
 
 
@@ -132,57 +132,57 @@ void recv_octeto(XUart* Uart, u8 octeto_in[], int buffer_in_width)
 void config_UART(XUart* Uart, int uart_id) {
 
 #ifdef XUARTPS_H
-    XUartPs_Config *Config;
+	XUartPs_Config *Config;
 	
-    Config = XUartPs_LookupConfig(uart_id);
-    XUartPs_CfgInitialize(Uart, Config, Config->BaseAddress);
-    XUartPs_SetBaudRate(Uart, 9600);
+	Config = XUartPs_LookupConfig(uart_id);
+	XUartPs_CfgInitialize(Uart, Config, Config->BaseAddress);
+	XUartPs_SetBaudRate(Uart, 9600);
 #endif
 
 #ifdef XUARTLITE_H
-    XUartLite_Config *Config;
+	XUartLite_Config *Config;
 	
-    Config = XUartLite_LookupConfig(uart_id);
-    XUartLite_CfgInitialize(Uart, Config, Config->RegBaseAddr);
+	Config = XUartLite_LookupConfig(uart_id);
+	XUartLite_CfgInitialize(Uart, Config, Config->RegBaseAddr);
 #endif
 }
 
 
 void config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int ctrl_id, int data_id) {
 
-    XGpio_Initialize(gpio_ctrl, ctrl_id);
-    XGpio_SetDataDirection(gpio_ctrl, 1, 0xF); //cmd: fabric->ps
-    XGpio_SetDataDirection(gpio_ctrl, 2, 0x0); //cmd: ps->fabric
+	XGpio_Initialize(gpio_ctrl, ctrl_id);
+	XGpio_SetDataDirection(gpio_ctrl, 1, 0xF); //cmd: fabric->ps
+	XGpio_SetDataDirection(gpio_ctrl, 2, 0x0); //cmd: ps->fabric
 
-    XGpio_Initialize(gpio_data, data_id);
-    XGpio_SetDataDirection(gpio_data, 1, 0xF); //data_out: fabric->ps
-    XGpio_SetDataDirection(gpio_data, 2, 0x0); //data_out: ps->fabric
+	XGpio_Initialize(gpio_data, data_id);
+	XGpio_SetDataDirection(gpio_data, 1, 0xF); //data_out: fabric->ps
+	XGpio_SetDataDirection(gpio_data, 2, 0x0); //data_out: ps->fabric
 }
 
 
-void fsm_calc_cycle(XGpio *gpio_ctrl) {
+void calc_cycle(XGpio *gpio_ctrl) {
 
 	u32 ctrl_out;
 
  	XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_calc);
-     while(1) {
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_calc_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_calc_sync)
+			 break;
+	 }
 	 
-     XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
-     while(1) {
+	 XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_idle_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_idle_sync)
+			 break;
+	 }
 }
 
 
-void fsm_scan_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_in[], int buffer_in_width, int data_width) {
+void scan_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_in[], int buffer_in_width, int data_width) {
 
 	u32 ctrl_out, data_in;
 	int i, N=buffer_in_width/data_width+(buffer_in_width%data_width>0);
@@ -208,17 +208,17 @@ void fsm_scan_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_in[], int buff
  		}
 	}
 
-     XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
-     while(1) {
+	 XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_idle_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_idle_sync)
+			 break;
+	 }
 }
 
 
-void fsm_print_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_out[], int buffer_out_width, int data_width) {
+void print_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_out[], int buffer_out_width, int data_width) {
 
 	u32 ctrl_out, data_out;
 	u8 aux[4];
@@ -267,33 +267,33 @@ void fsm_print_cycle(XGpio *gpio_ctrl, XGpio *gpio_data, u8 octeto_out[], int bu
  		}
  	}
 
-     XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
-     while(1) {
+	 XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_idle_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_idle_sync)
+			 break;
+	 }
 }
 
 
-void fsm_reset_cycle(XGpio *gpio_ctrl) {
+void reset_cycle(XGpio *gpio_ctrl) {
 
 	u32 ctrl_out;
 
  	XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_reset);
-     while(1) {
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_reset_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_reset_sync)
+			 break;
+	 }
 
-     XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
-     while(1) {
+	 XGpio_DiscreteWrite(gpio_ctrl, 2, cmd_idle);
+	 while(1) {
 
-    	 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
-         if(ctrl_out==cmd_idle_sync)
-             break;
-     }
+		 ctrl_out = XGpio_DiscreteRead(gpio_ctrl, 1);
+		 if(ctrl_out==cmd_idle_sync)
+			 break;
+	 }
 }

@@ -1,6 +1,6 @@
-`include "constantes.cp.vh"
+`include "interfaz_pl_define.cp.vh"
 
-module TEMPLATE_FSM #(
+module INTERFAZ_PL_FRONTEND #(
     //parametros
     parameter   DATA_WIDTH = 32,
     parameter   BUFFER_IN_WIDTH = 16,
@@ -25,8 +25,8 @@ module TEMPLATE_FSM #(
 	
     //variables internas estandsr
     reg[3:0] state=`IDLE;
-    reg[1:0] estable=`LOW;
-    reg[1:0] estacionario=`LOW;
+    reg[1:0] busy_frontend=`LOW;
+    reg[1:0] busy_backend=`LOW;
     reg[7:0] ctrl_in_reg;
     reg[DATA_WIDTH-1:0] data_in_reg;
     reg[7:0] contador_std;
@@ -51,12 +51,12 @@ module TEMPLATE_FSM #(
      
     //definicion de estados
     always @(posedge clock) begin
-        estable[1] <= estable[0];        
+        busy_frontend[1] <= busy_frontend[0];        
         case (state)
             `IDLE: begin
                 //condicion de estabilidad de 'IDLE'
-                if(calc_end==0) estable[0] <= 1;
-                else estable[0] <= 0;
+                if(calc_end==0) busy_frontend[0] <= 1;
+                else busy_frontend[0] <= 0;
                 
                 //definicion de 'IDLE'
                 calc_end <= 0;
@@ -67,8 +67,8 @@ module TEMPLATE_FSM #(
 			
             `RST: begin
                 //condicion de estabilidad de 'RST'
-                if(calc_end==0) estable[0] <= 1;
-                else estable[0] <= 0;
+                if(calc_end==0) busy_frontend[0] <= 1;
+                else busy_frontend[0] <= 0;
                 
                 //definicion de 'RST'
                 calc_end <= 0;
@@ -79,8 +79,8 @@ module TEMPLATE_FSM #(
             
             `CALC: begin
                 //condicion de estabilidad de 'CALC'
-                if(calc_end) estable[0] <= 1;
-                else estable[0] <= 0;
+                if(calc_end) busy_frontend[0] <= 1;
+                else busy_frontend[0] <= 0;
                 
                 //definicion de 'CALC'
                 if(!calc_end) begin
@@ -97,6 +97,6 @@ module TEMPLATE_FSM #(
         endcase
     end
 
-    `include "fsm.cp.vh"
+    `include "interfaz_pl_backend.cp.vh"
     
 endmodule

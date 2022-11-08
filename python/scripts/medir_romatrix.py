@@ -6,7 +6,7 @@ import serial
 import time
 import numpy as np
 import math
-import mymod.fsm
+import fpga
 
 
 out_name = "rawdata.mtz"
