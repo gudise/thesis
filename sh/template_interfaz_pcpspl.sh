@@ -11,6 +11,7 @@ USBPORT="ttys4"
 BUFFER_IN_WIDTH=8
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
+PY_INTERACTIVO=0
 
 i=2
 for opcion
@@ -28,6 +29,7 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 		-dw [32], data_width (tamano del bus gpio)
 		-biw [8], buffer_in_width (bits significativos de la palabra de entrada data_in)
 		-bow [32], buffer_out_width (bits significativos de la palabra de salida data_out)
+		-py_interactivo, esta opción permite cambiar el programa python de muestra (por defecto 'testbench').
 		-linux, utilizar esta opcion si Vivado esta instalado en un SO linux. De otro modo el formato de los PATH sera el de Windows y los script tcl fallaran
 		
 "
@@ -85,6 +87,10 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 		elif test "$opcion" == "-bow"
 		then
 			BUFFER_OUT_WIDTH="${!i}"
+			
+		elif test "$opcion" == "-py_interactivo"
+		then
+			PY_INTERACTIVO=1
 			
 		elif test "$opcion" == "-linux"
 		then
@@ -285,6 +291,8 @@ source ${PROJDIR}/partial_flows/launchsdk.tcl
 
 
 ## python script
+if test $PY_INTERACTIVO -eq 1
+then
 printf "import serial
 import time
 from fpga.interfaz_pc import *
@@ -309,6 +317,44 @@ print(f\"valor devuelto:\\\t\\\t{resultado}\\\n\")
 
 fpga.close()
 " > editame_interfaz.py
+else
+printf "import serial
+import time
+import random
+from tqdm import tqdm
+from fpga.interfaz_pc import *
+
+buffer_in_width = 8
+buffer_out_width = 32
+
+random.seed(time.time())
+valores_test = [random.randint(0, 2**buffer_in_width-1) for i in range(1000)]
+valores_check = [i+1 for i in valores_test]
+
+fpga = serial.Serial(port=\"/dev/ttys17\", baudrate=9600, bytesize=8)
+time.sleep(.1)
+
+success = 0
+fail = 0
+for i in tqdm(range(1000)):
+
+	## enviamos el valor a la FPGA (convertido en un 'bit string')
+	scan(fpga, int_to_bitstr(valores_test[i]), buffer_in_width)
+
+	## leemos el valor devuelto (convertido en un 'int')
+	resultado = bitstr_to_int(calc(fpga, buffer_out_width))
+	
+	if resultado == valores_check[i]:
+		success+=1
+	else:
+		fail+=1
+
+fpga.close()
+
+print(f\"\\\n Success: {success}\\\n Fail: {fail}\\\n\\\n\")
+" > editame_interfaz.py
+fi
+
 
 
 ## vivado sources
@@ -356,39 +402,32 @@ printf "#define DATA_WIDTH			%d
 #define BUFFER_OUT_WIDTH	%d
 " $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
 
-if test "$brd" == "cmoda7"
+if test "$BRD" == "cmoda7"
 then
 	xuart="#include \"xuartlite.h\""
 	
-elif test "$brd" == "zybo"
+elif test "$BRD" == "zybo"
 then
 	xuart="#include \"xuartps.h\""
 	
-elif test "$brd" == "pynqz2"
+elif test "$BRD" == "pynqz2"
 then
 	xuart="#include \"xuartps.h\""
-
 fi
 
-echo $xuart | cat - editame_interfaz_ps_frontend.c > temp && mv temp editame_interfaz_ps_frontend.c
-mv editame_interfaz_ps_frontend.c ./sdk_src/editame_interfaz_ps_frontend.c
+echo $xuart | cat - interfaz_ps_backend.cp.c > temp && mv temp interfaz_ps_backend.cp.c
+mv interfaz_ps_backend.cp.c ./sdk_src/interfaz_ps_backend.cp.c
 
 
 ## echo log
 echo ""
-
 echo " fpga part: ${PARTNUMBER}"
-
 echo ""
-
 echo " sdk source files: ${PROJDIR}/sdk_src/"
-
 echo ""
 echo ""
-
 echo " ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerda editar
  'partial_flows/setupdesign.tcl' (comando 'add_files') para reflejar este cambio!"
-
 echo ""
 
 if test $QSPI == 1
