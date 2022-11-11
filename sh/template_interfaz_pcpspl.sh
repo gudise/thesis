@@ -349,11 +349,9 @@ endmodule
 
 ## sdk sources
 mkdir sdk_src
-cp "$REPO_fpga/c-xilinx/sdk/include/interfaz_ps_backend.h" ./sdk_src/interfaz_ps_backend.cp.h
-cp "$REPO_fpga/c-xilinx/sdk/interfaz_ps_frontend.c" ./editame_interfaz_ps_frontend.c
+cp "$REPO_fpga/c-xilinx/sdk/interfaz_ps_backend.c" ./interfaz_ps_backend.cp.c
 
-printf "
-#define DATA_WIDTH			%d
+printf "#define DATA_WIDTH			%d
 #define BUFFER_IN_WIDTH		%d
 #define BUFFER_OUT_WIDTH	%d
 " $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
@@ -385,6 +383,7 @@ echo ""
 
 echo " sdk source files: ${PROJDIR}/sdk_src/"
 
+echo ""
 echo ""
 
 echo " ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerda editar

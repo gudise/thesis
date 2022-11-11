@@ -1,3 +1,12 @@
+#ifndef XUARTPS_H
+	#ifndef XUARTLITE_H
+		#include "xuartps.h"
+	#endif
+#endif
+#include "xparameters.h"
+#include "xil_printf.h"
+#include "xgpio.h"
+
 #ifdef XUARTPS_H
 	#define XUart_Send(x, y, z)	XUartPs_Send(x, y, z)
 	#define XUart_Recv(x, y, z)	XUartPs_Recv(x, y, z)
@@ -40,6 +49,17 @@
 #define cmd_print_sync	  4
 
 
+#include "interfaz_ps_define.h"
+
+
+#define UART_DEVICE_ID	XPAR_XUARTPS_0_DEVICE_ID
+#define GPIO_CTRL_ID	XPAR_AXI_GPIO_CTRL_DEVICE_ID
+#define GPIO_DATA_ID	XPAR_AXI_GPIO_DATA_DEVICE_ID
+
+//descomentar para utilizar la interfaz UART de PuTTY
+//#define PUTTY
+
+
 void	u32_to_4u8(u32 in, u8 out[4]);
 u32		u8_to_u32(u8 in[4]);
 void	send_u8(XUart* Uart, u8 data);
@@ -48,12 +68,129 @@ u8		recv_u8(XUart* Uart);
 void	recv_octeto(XUart* Uart, u8 octeto_in[], int buffer_in_width);
 
 void	config_UART(XUart* Uart, int uart_id);
-void	config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int GPIO_CTRL_ID, int GPIO_DATA_ID);
+void	config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int ctrl_id, int data_id);
 
 void	calc_cycle();
 void	reset_cycle();
 void	scan_cycle();
 void	print_cycle();
+
+
+XUart Uart;
+XGpio gpio_ctrl;
+XGpio gpio_data;
+int main(void)
+{
+	int state=IDLE, i;
+	char program_end=0;
+	char busy;
+	u8 ctrl_in=0;
+	u8 octeto_in[BUFFER_IN_WIDTH/8+(BUFFER_IN_WIDTH%8>0)];
+	u8 octeto_out[BUFFER_OUT_WIDTH/8+(BUFFER_OUT_WIDTH%8>0)];
+
+	config_UART(&Uart, UART_DEVICE_ID);
+	
+	config_GPIO(&gpio_ctrl, &gpio_data, GPIO_CTRL_ID, GPIO_DATA_ID);
+	
+	while(1) {
+		
+		switch(state) {
+			case IDLE:
+
+				XUart_Recv(&Uart, &ctrl_in, 1);
+				
+				switch(ctrl_in) {
+					
+					case cmd_reset:
+						state = RST;
+						break;
+						
+					case cmd_calc:
+						state = CALC;
+						break;
+						
+					case cmd_scan:
+						state = SCAN;
+						break;
+
+					case cmd_end:
+						program_end = 1;
+						break;
+
+					default:
+						state = IDLE;
+						break;
+				}
+				break;
+				
+					case RST:
+						busy=1;
+						while(busy) {
+							
+							reset_cycle(&gpio_ctrl);
+							
+							busy = 0;
+						}
+						#ifdef PUTTY
+						xil_printf("\n");
+						#endif
+						
+						#ifndef PUTTY
+						send_u8(&Uart, cmd_reset_sync);
+						#endif
+						
+						state = IDLE;
+						
+						break;
+						
+					case CALC:
+						busy=1;
+						while(busy) {
+
+							scan_cycle(&gpio_ctrl, &gpio_data, octeto_in, BUFFER_IN_WIDTH, DATA_WIDTH);
+
+							calc_cycle(&gpio_ctrl);
+
+							print_cycle(&gpio_ctrl, &gpio_data, octeto_out, BUFFER_OUT_WIDTH, DATA_WIDTH);
+
+							busy = 0;
+						}
+
+						state = PRINT;
+
+						break;
+
+					case SCAN:
+
+						recv_octeto(&Uart, octeto_in, BUFFER_IN_WIDTH);
+
+						state = IDLE;
+
+						break;
+
+					case PRINT:
+
+						#ifdef PUTTY
+						for(i=0; i<BUFFER_OUT_WIDTH/8+(BUFFER_OUT_WIDTH%8>0); i++)
+							xil_printf("%d\t", octeto_out[i]);
+						#endif
+						
+						#ifndef PUTTY
+						send_octeto(&Uart, octeto_out, BUFFER_OUT_WIDTH/8+(BUFFER_OUT_WIDTH%8>0));
+						#endif
+						
+						state = IDLE;
+						
+						break;
+		}
+		ctrl_in=0;
+		
+		if(program_end)
+			break;
+	}
+	
+	return 0;
+}
 
 
 
