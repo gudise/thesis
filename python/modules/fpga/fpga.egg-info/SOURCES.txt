@@ -1,0 +1,10 @@
+setup.py
+fpga/__init__.py
+fpga/auxiliar.py
+fpga.egg-info/PKG-INFO
+fpga.egg-info/SOURCES.txt
+fpga.egg-info/dependency_links.txt
+fpga.egg-info/not-zip-safe
+fpga.egg-info/top_level.txt
+fpga/interfaz_pc/__init__.py
+fpga/interfaz_pc/interfaz_pc_backend.py
