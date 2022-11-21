@@ -10,18 +10,18 @@ OCT1 =	256			# 256^1
 OCT2 =	65536		# 256^2
 OCT3 =	16777216	# 256^3
 
-cmd_idle =		105 #'i'
-cmd_reset =		114 #'r'
-cmd_calc =		99	#'c'
-cmd_end =		101 #'e'
-cmd_scan =		115 #'s'
-cmd_print =		112 #'p'
+cmd_idle =		    0
+cmd_reset =		    1
+cmd_calc =		    2
+cmd_scan =		    3
+cmd_print =		    4
+cmd_end =		    5
 
-cmd_idle_sync =		22 #SYN
-cmd_reset_sync =	13 #'\n'
-cmd_calc_sync =		2  #ETX
-cmd_scan_sync =		3  #ETX
-cmd_print_sync =	4  #ETX
+cmd_idle_sync =	    6
+cmd_reset_sync =    7
+cmd_calc_sync =     8
+cmd_scan_sync =     9
+cmd_print_sync =    10
 
 
 def int_to_bytestr(entrada):

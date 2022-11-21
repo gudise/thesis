@@ -12,6 +12,7 @@ BUFFER_IN_WIDTH=8
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
 PY_INTERACTIVO=0
+CLK_NAME="/processing_system7_0/FCLK_CLK0 (100 MHz)"
 
 i=2
 for opcion
@@ -23,7 +24,7 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 	Opciones:
 		-help
 		-projname [\"project_template_interfaz\"]
-		-board [zybo | pynqz2 | cmoda7]
+		-board [zybo | pynqz2 | cmoda7_15t | cmoda7_35t]
 		-njobs [4]
 		-qspi
 		-dw [32], data_width (tamano del bus gpio)
@@ -41,12 +42,21 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 			
 		elif test "$opcion" == "-board"
 		then
-			if test "${!i}" == "cmoda7"
+			if test "${!i}" == "cmoda7_15t"
 			then
-				BRD="cmoda7"
+				BRD="cmoda7_15t"
 				PARTNUMBER="xc7a15tcpg236-1"
 				BOARDPART="digilentinc.com:cmod_a7-15t:part0:1.1"
 				MEMPART="mx25l3233"
+				CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
+				
+			elif test "${!i}" == "cmoda7_35t"
+			then
+				BRD="cmoda7_35t"
+				PARTNUMBER="xc7a35tcpg236-1"
+				BOARDPART="digilentinc.com:cmod_a7-35t:part0:1.1"
+				MEMPART="mx25l3233"
+				CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
 					
 			elif test "${!i}" == "zybo"
 			then
@@ -112,13 +122,22 @@ fi
 
 ## block design
 mkdir ./block_design
-if test "$BRD" == "cmoda7"
+if test "$BRD" == "cmoda7_15t"
 then
 	if test $QSPI == 1
 	then
-		cp "$REPO_fpga/tcl/bd_interfaz_qspi_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_qspi_cmoda7_15t.tcl" ./block_design/bd_design_1.tcl
 	else
-		cp "$REPO_fpga/tcl/bd_interfaz_cmoda7.tcl" ./block_design/bd_design_1.tcl
+		cp "$REPO_fpga/tcl/bd_interfaz_cmoda7_15t.tcl" ./block_design/bd_design_1.tcl
+	fi
+	
+elif test "$BRD" == "cmoda7_35t"
+then
+	if test $QSPI == 1
+	then
+		cp "$REPO_fpga/tcl/bd_interfaz_qspi_cmoda7_35t.tcl" ./block_design/bd_design_1.tcl
+	else
+		cp "$REPO_fpga/tcl/bd_interfaz_cmoda7_35t.tcl" ./block_design/bd_design_1.tcl
 	fi
 	
 elif test "$BRD" == "zybo"
@@ -175,7 +194,7 @@ connect_bd_net [get_bd_pins TOP_0/ctrl_in] [get_bd_pins axi_gpio_ctrl/gpio2_io_o
 
 connect_bd_net [get_bd_pins TOP_0/ctrl_out] [get_bd_pins axi_gpio_ctrl/gpio_io_i]
 
-apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {Clk \"/processing_system7_0/FCLK_CLK0 (100 MHz)\" }  [get_bd_pins TOP_0/clock]
+apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {Clk ${CLK_NAME} }  [get_bd_pins TOP_0/clock]
 
 regenerate_bd_layout
 
@@ -222,7 +241,45 @@ wait_on_run synth_1
 
 " > ./partial_flows/genbitstream.tcl
 
-if test $QSPI -eq 1 && test $BRD = "cmoda7"
+if test $QSPI -eq 1 && test $BRD = "cmoda7_15t"
+then
+printf "
+file mkdir ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1
+
+file mkdir ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new
+
+close [ open ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc w ]
+
+add_files -fileset constrs_1 ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc
+
+set_property target_constrs_file ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]
+
+set_property used_in_synthesis false [get_files  ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1/new/bitstreamconfig.xdc]
+
+update_compile_order -fileset sources_1
+
+update_module_reference design_1_TOP_0_0
+
+open_run synth_1 -name synth_1
+
+startgroup
+
+set_property BITSTREAM.CONFIG.CONFIGRATE 6 [get_designs synth_1]
+
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [get_designs synth_1]
+
+set_property config_mode SPIx4 [current_design]
+
+endgroup
+
+save_constraints
+
+close_design
+
+" >> ./partial_flows/genbitstream.tcl
+fi
+
+if test $QSPI -eq 1 && test $BRD = "cmoda7_35t"
 then
 printf "
 file mkdir ${PROJDIR}/${PROJNAME}/${PROJNAME}.srcs/constrs_1
@@ -402,7 +459,11 @@ printf "#define DATA_WIDTH			%d
 #define BUFFER_OUT_WIDTH	%d
 " $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
 
-if test "$BRD" == "cmoda7"
+if test "$BRD" == "cmoda7_15t"
+then
+	xuart="#include \"xuartlite.h\""
+	
+elif test "$BRD" == "cmoda7_35t"
 then
 	xuart="#include \"xuartlite.h\""
 	

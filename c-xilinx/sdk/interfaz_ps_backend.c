@@ -36,24 +36,29 @@
 #define PRINT		8
 #define PRINT_SYNC	9
 
-#define cmd_idle 		105  //'i'
-#define cmd_reset 		114  //'r'
-#define cmd_calc 		99   //'c'
-#define cmd_end			101  //'e'
-#define cmd_scan		115	 //'s'
-#define cmd_print		112  //'p'
+#define cmd_idle 		0 
+#define cmd_reset 		1 
+#define cmd_calc 		2 
+#define cmd_scan		3
+#define cmd_print		4
+#define cmd_end			5
 
-#define cmd_idle_sync	22	 //SYN
-#define cmd_reset_sync   13	 //'\n'
-#define cmd_calc_sync	 2
-#define cmd_scan_sync	  3
-#define cmd_print_sync	  4
+#define cmd_idle_sync	6
+#define cmd_reset_sync  7
+#define cmd_calc_sync	8
+#define cmd_scan_sync	9
+#define cmd_print_sync	10
 
 
 #include "interfaz_ps_define.h"
 
 
-#define UART_DEVICE_ID	XPAR_XUARTPS_0_DEVICE_ID
+#ifdef XUARTPS_H
+	#define UART_DEVICE_ID	XPAR_XUARTPS_0_DEVICE_ID
+#elif defined XUARTLITE_H
+	#define UART_DEVICE_ID	XPAR_UARTLITE_0_DEVICE_ID
+#endif
+
 #define GPIO_CTRL_ID	XPAR_AXI_GPIO_CTRL_DEVICE_ID
 #define GPIO_DATA_ID	XPAR_AXI_GPIO_DATA_DEVICE_ID
 
@@ -100,6 +105,7 @@ int main(void)
 
 				XUart_Recv(&Uart, &ctrl_in, 1);
 				
+				#ifndef PUTTY
 				switch(ctrl_in) {
 					
 					case cmd_reset:
@@ -122,6 +128,33 @@ int main(void)
 						state = IDLE;
 						break;
 				}
+				#endif
+				
+				#ifdef PUTTY
+				switch(ctrl_in) {
+					
+					case 'r':
+						state = RST;
+						break;
+						
+					case 'c':
+						state = CALC;
+						break;
+						
+					case 's':
+						state = SCAN;
+						break;
+
+					case 'e':
+						program_end = 1;
+						break;
+
+					default:
+						state = IDLE;
+						break;
+				}
+				#endif
+				
 				break;
 				
 					case RST:

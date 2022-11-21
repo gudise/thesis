@@ -44,7 +44,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project project_1 myproj -part xc7a15tcpg236-1
-   set_property BOARD_PART digilentinc.com:cmod_a7-15t:part0:1.1 [current_project]
+   set_property BOARD_PART digilentinc.com:cmod_a7-35t:part0:1.1 [current_project]
 }
 
 
@@ -311,6 +311,8 @@ proc create_root_design { parentCell } {
   set axi_gpio_data [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_data ]
   set_property -dict [ list \
    CONFIG.C_ALL_INPUTS {1} \
+   CONFIG.C_ALL_OUTPUTS_2 {1} \
+   CONFIG.C_IS_DUAL {1} \
  ] $axi_gpio_data
 
   # Create instance: axi_uartlite_0, and set properties
