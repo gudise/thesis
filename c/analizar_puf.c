@@ -94,7 +94,7 @@ int main(int N_opcion, char** opcion)
 			desv_frec_esperada  =	1.0,
 			factorx			 	=	1.0,
 			factory			 	=	1.0,
-			cteT				=	0;
+			ftemp				=	0;
 	int	 	N_prec	=	1,
 			N_rep	=	1,
 			N_inst	=	1,
@@ -487,7 +487,7 @@ int main(int N_opcion, char** opcion)
 						if(j+1<N_opcion)
 						{
 							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "frec desv fcorr ftemp"))
-								sscanf(opcion[j+1], "%lf", &cteT);
+								sscanf(opcion[j+1], "%lf", &ftemp);
 						}
 					}
 				}
@@ -1023,7 +1023,7 @@ int main(int N_opcion, char** opcion)
 								x_coord = m%Nx;
 								y_coord = m/Nx;
 								
-								pufarray_temp->elemento[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, cteT);//valores nominales y acoplo termico
+								pufarray_temp->elemento[0][j][k][l][m] = frec_nominal->elemento[x_coord][y_coord] + ran1_gauss(0, frec_nominal->elemento[x_coord][y_coord]*ftemp/10000);//valores nominales y acoplo termico
 								
 								if(fcorr==1)
 									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;
@@ -1047,7 +1047,7 @@ int main(int N_opcion, char** opcion)
 						{
 							for(int m=0; m<N_cells; m++)
 							{
-								pufarray_temp->elemento[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m] + ran1_gauss(0, cteT);
+								pufarray_temp->elemento[0][j][k][l][m]=rawdata->elemento[(j*N_rep+k)*N_pdl+l][m] + ran1_gauss(0, rawdata->elemento[(j*N_rep+k)*N_pdl+l][m]*ftemp/10000);
 								
 								if(fcorr==1)
 									pufarray_temp->elemento[0][j][k][l][m] += factorx*x_coord;

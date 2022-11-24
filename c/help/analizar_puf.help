@@ -177,8 +177,9 @@
 			El valor medio de la distribución se multiplica por las coordenadas X*Y y por 'factor'.
 
 	ftemp [0.0]
-		Constante de acoplo térmico, esta cantidad se utiliza como varianza de una distribución aleatoria que
-		modifica el valor nominal de las celdas simuladas.
+		Este factor simula una constante de acoplo térmico para los elementos físicos que constituyen la PUF.
+		A los valores nominales caracterísiticos de la PUF se suma un número aleatorio gaussiano cuya varianza es la
+		diezmilésima parte del valor nominal multiplicado por 'ftemp'.
 
 
  -nretos 1
