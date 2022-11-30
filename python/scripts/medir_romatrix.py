@@ -21,7 +21,7 @@ puerto = '/dev/ttyS1'
 baudrate = 9600
 for i, opt in enumerate(sys.argv):
 	if opt == "-help":
-		with open(f"{os.environ['REPO_puf']}/python/scripts/help/medir_romatrix.help", "r") as f:
+		with open(f"{os.environ['REPO_fpga']}/python/scripts/help/medir_romatrix.help", "r") as f:
 			print(f.read())
 		exit()
 		
