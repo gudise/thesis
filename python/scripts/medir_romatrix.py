@@ -99,7 +99,7 @@ for i in pdl:
 buffer_sel_ro=[]
 for i in osc:
 	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
-	
+
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
 pinta_progreso(0, N_total, barra=40)
