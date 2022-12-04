@@ -32,8 +32,8 @@
 		sel_ro_width -> selector de osciladores (por defecto 8)
 		sel_pdl_width -> selector de PDL (por defecto 5)
 		
-	Notar que esta opción no es discrecional: tiene que coincidir con el tamaño de la trama utilizado en el 
-	diseño de 'romatrix'.
+	Notar que esta opción no es discrecional: tiene que coincidir con el tamaño de la trama (buffer_in_width)
+	utilizado en el diseño de 'romatrix'.
 
 
  -buffer_out_width(bow) 32

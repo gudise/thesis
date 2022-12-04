@@ -24,7 +24,7 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 	Opciones:
 		-help
 		-projname [\"project_template_interfaz\"]
-		-board [zybo | pynqz2 | cmoda7_15t | cmoda7_35t]
+		-board [pynqz2 | zybo | cmoda7_15t | cmoda7_35t]
 		-njobs [4]
 		-qspi
 		-dw [32], data_width (tamano del bus gpio)
@@ -71,8 +71,7 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 				PARTNUMBER="xc7z020clg400-1"
 				BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
 				MEMPART="?"
-
-		fi
+			fi
 	
 		elif test "$opcion" == "-njobs"
 		then
@@ -365,10 +364,10 @@ print(\"\\\nvalor introducido:\\\t\", end='')
 entrada = int(input())
 
 ## enviamos el valor a la FPGA (convertido en un 'bit string')
-scan(fpga, int_to_bitstr(entrada), buffer_in_width)
+scan(fpga, intToBitstr(entrada), buffer_in_width)
 
 ## leemos el valor devuelto (convertido en un 'int')
-resultado = bitstr_to_int(calc(fpga, buffer_out_width))
+resultado = bitstrToInt(calc(fpga, buffer_out_width))
 
 print(f\"valor devuelto:\\\t\\\t{resultado}\\\n\")
 
@@ -396,10 +395,10 @@ fail = 0
 for i in tqdm(range(1000)):
 
 	## enviamos el valor a la FPGA (convertido en un 'bit string')
-	scan(fpga, int_to_bitstr(valores_test[i]), buffer_in_width)
+	scan(fpga, intToBitstr(valores_test[i]), buffer_in_width)
 
 	## leemos el valor devuelto (convertido en un 'int')
-	resultado = bitstr_to_int(calc(fpga, buffer_out_width))
+	resultado = bitstrToInt(calc(fpga, buffer_out_width))
 	
 	if resultado == valores_check[i]:
 		success+=1
@@ -491,7 +490,7 @@ echo " ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerd
  'partial_flows/setupdesign.tcl' (comando 'add_files') para reflejar este cambio!"
 echo ""
 
-if test $QSPI == 1
+if test $QSPI -eq 1
 then
 	echo "q-spi part: ${MEMPART}"
 	

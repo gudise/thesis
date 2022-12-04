@@ -22,7 +22,10 @@ void main(int N_opcion, char** opcion)
 	
 	sscanf(opcion[1], "%d", &Nestados);
 	
-	printf("%d", N_bits_MUX(Nestados));
+	if(Nestados>1)
+		printf("%d", N_bits_MUX(Nestados));
+	else
+		printf("%d", 1);
     
     //return 0;
 }

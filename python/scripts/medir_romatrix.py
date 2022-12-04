@@ -6,12 +6,13 @@ import serial
 import time
 import numpy as np
 import math
-import fpga
+from fpga import pinta_progreso
+from fpga.interfazpcbackend import *
 
 
 out_name = "rawdata.mtz"
-osc = []
-pdl = []
+osc = range(1)
+pdl = range(1)
 sel_ro_width = 8
 sel_pdl_width = 5
 buffer_out_width = 32
@@ -36,6 +37,7 @@ for i, opt in enumerate(sys.argv):
 		buffer_out_width = int(sys.argv[i+1])
 
 	if opt == "-osc_range" or opt == "-or":
+		osc=[]
 		for j in range(i+1, len(sys.argv), 1):
 			if sys.argv[j][0] == '-':
 				break
@@ -50,6 +52,7 @@ for i, opt in enumerate(sys.argv):
 				osc = range(osc[0], osc[1], osc[2])
 
 	if opt == "-pdl_range" or opt == "-pr":
+		pdl=[]
 		for j in range(i+1, len(sys.argv), 1):
 			if sys.argv[j][0] == '-':
 				break
@@ -91,15 +94,15 @@ time.sleep(.1)
 
 buffer_sel_pdl=[]
 for i in pdl:
-	buffer_sel_pdl.append(mymod.resize_array(mymod.int_to_bitstr(i), sel_pdl_width))
+	buffer_sel_pdl.append(resizeArray(intToBitstr(i), sel_pdl_width))
 
 buffer_sel_ro=[]
 for i in osc:
-	buffer_sel_ro.append(mymod.resize_array(mymod.int_to_bitstr(i), sel_ro_width))
+	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
 	
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
-mymod.pinta_progreso(0, N_total, barra=40)
+pinta_progreso(0, N_total, barra=40)
 medidas=[]
 for i in range(N_instancias):
 	for j in range(N_repeticiones):
@@ -107,14 +110,14 @@ for i in range(N_instancias):
 			for l in range(N_osciladores_por_instancia):
 				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k]
 
-				mymod.fsm.scan(fpga, buffer_in, buffer_in_width)
+				scan(fpga, buffer_in, buffer_in_width)
 		
-				medidas.append(mymod.bitstr_to_int(mymod.fsm.calc(fpga, buffer_out_width)))
+				medidas.append(bitstrToInt(calc(fpga, buffer_out_width)))
 			
 			contador+=N_osciladores_por_instancia
-			mymod.pinta_progreso(contador, N_total, barra=40)
+			pinta_progreso(contador, N_total, barra=40)
 
-mymod.pinta_progreso(N_total, N_total, barra=40)
+pinta_progreso(N_total, N_total, barra=40)
 	
 fpga.close()
 

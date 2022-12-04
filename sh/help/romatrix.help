@@ -25,10 +25,10 @@
 	Pinta esta ayuda
 		
 		
- -projname "project_romatrixfsm2"
+ -projname "project_romatrix"
 		
 		
- -board zybo | pynqz2 | cmoda7
+ -board pynqz2 | zybo | cmoda7_15t | cmoda7_35t
 		
 		
  -njobs 4
