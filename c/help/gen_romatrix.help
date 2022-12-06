@@ -22,21 +22,34 @@ Opciones:
 			lut6_mr(multirouting) --> 4*N_inv_N_osciladores
 
 
- -config [x] {x, y}
+ -directriz y | x
  
-	direccion en la que se colocaran los inversores de cada oscilador
+	esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del eje 'y')
 
 
- -directriz [x] ¤ {x, y}
+ -pinmap "no"
  
-	esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del eje 'x')
-
-
- -pinmap [I0:A1,I1:A2,...]
- 
-	esta opcion permite cambiar la asignacion de puertos de la LUT. La nomenclatura 'Ix:Ay' es lenguaje XDC y debe
-	respetarse. Recordar que el numero de entradas 'Ix' depende del tipo de LUT utilizado. La nomenclatura de los
-	puertos de cada LUT es A1,A2,A3,A4,A5,A6.
+	esta opcion permite cambiar la asignacion de puertos de cada LUT que componen los anillos. Esta opción debe darse
+	entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
+	asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
+	inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado.
+	Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor	se dejará
+	sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT
+	utilizado. La nomenclatura de los puertos de cada LUT es A1,A2,A3,A4,A5,A6. Algunos ejemplos son:
+	
+		-pinmap "no"
+			Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+			
+		-pinmap "I0:A5;I0:A6;I0:A4"
+			Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este diseño corresponde 
+			al ruteado más compacto en una fpga Zynq7000.
+		
+		-pinmap "I0:A5;no;I0:A4"
+			Parecido al anterior, pero ahora no fijamos el segundo inversor.
+		
+		-pinmap "I0:A1,I1:A2,I2:A3,I3:A4,I5:A6"
+			Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
+			selección de PDL (en una lut tipo LUT6).
 
 
  -minsel [0]

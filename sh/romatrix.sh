@@ -8,10 +8,8 @@ QSPI=0
 MEMPART=""
 DETAILR=0
 TIPO="lut1"
-CONFIG="x"
 DIRECTRIZ="y"
-PINMAP="I0:A1"
-PINMAP_SET=0
+PINMAP="no"
 MINSEL=0
 NINV=3
 NOSC=2
@@ -87,10 +85,6 @@ do
 	then
 		TIPO="${!i}"
 		
-	elif test "$opcion" = "-config"
-	then
-		CONFIG="${!i}"
-		
 	elif test "$opcion" = "-directriz"
 	then
 		DIRECTRIZ="${!i}"
@@ -98,7 +92,6 @@ do
 	elif test "$opcion" = "-pinmap"
 	then
 		PINMAP="${!i}"
-		PINMAP_SET=1
 		
 	elif test "$opcion" = "-minsel"
 	then
@@ -520,40 +513,7 @@ mkdir vivado_src/include
 cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
 cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
 
-if test $PINMAP_SET -eq 0
-then
-	if test $TIPO = "lut2"
-	then
-		PINMAP="I0:A1,I1:A2"
-	
-	elif test $TIPO = "lut3"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3"
-		
-	elif test $TIPO = "lut3mr"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3"
-		
-	elif test $TIPO = "lut4"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3,I3:A4"
-		
-	elif test $TIPO = "lut5"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3,I3:A4,I4:A5"
-		
-	elif test $TIPO = "lut6"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3,I3:A4,I4:A5,I5:A6"
-		
-	elif test $TIPO = "lut6mr"
-	then
-		PINMAP="I0:A1,I1:A2,I2:A3,I3:A4,I4:A5,I5:A6"
-		
-	fi
-fi
-
-gen_romatrix.x -out "romatrix" -config $CONFIG -directriz $DIRECTRIZ -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -XOSincr $XOSincr -XOSmax $XOSmax -YOSincr $YOSincr -YOSmax $YOSmax -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
+gen_romatrix.x -out "romatrix" -directriz $DIRECTRIZ -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -XOSincr $XOSincr -XOSmax $XOSmax -YOSincr $YOSincr -YOSmax $YOSmax -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
 		
 mv romatrix.v ./vivado_src/
 
