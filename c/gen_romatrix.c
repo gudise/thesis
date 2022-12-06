@@ -150,8 +150,10 @@ int main(int N_opcion, char** opcion)
         
         if( strcmp(opcion[i], "-resolucion")==0 )
             sscanf(opcion[i+1], "%d", &resolucion);
-    } // fin de lectura de opciones
+    } 
+	// fin de lectura de opciones
     
+	
 	if(N_osciladores_fijados==0)
 	{
 		N_osciladores_fijados=1;
