@@ -20,6 +20,7 @@ N_osciladores_por_instancia = 0
 N_repeticiones = 1
 puerto = '/dev/ttyS1'
 baudrate = 9600
+verbose = 0
 for i, opt in enumerate(sys.argv):
 	if opt == "-help":
 		with open(f"{os.environ['REPO_fpga']}/python/scripts/help/medir_romatrix.help", "r") as f:
@@ -77,6 +78,9 @@ for i, opt in enumerate(sys.argv):
 		
 	if opt=="-baudrate":
 		baudrate = int(sys.argv[i+1])
+		
+	if opt=="-v":
+		verbose = 1
 
 
 if N_osciladores_por_instancia==0:
@@ -102,7 +106,8 @@ for i in osc:
 
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
-pinta_progreso(0, N_total, barra=40)
+if not verbose:
+	pinta_progreso(0, N_total, barra=40)
 medidas=[]
 for i in range(N_instancias):
 	for j in range(N_repeticiones):
@@ -113,11 +118,17 @@ for i in range(N_instancias):
 				scan(fpga, buffer_in, buffer_in_width)
 		
 				medidas.append(bitstrToInt(calc(fpga, buffer_out_width)))
+				
+				if verbose:
+					print(f" {contador*N_osciladores_por_instancia+l}/{N_total}:\tosc {i*N_osciladores_por_instancia+l}, rep {j}, pdl {k} ->\t{buffer_sel_pdl[k]}")
 			
 			contador+=N_osciladores_por_instancia
-			pinta_progreso(contador, N_total, barra=40)
+			
+			if not verbose:
+				pinta_progreso(contador, N_total, barra=40)
 
-pinta_progreso(N_total, N_total, barra=40)
+if not verbose:
+	pinta_progreso(N_total, N_total, barra=40)
 	
 fpga.close()
 

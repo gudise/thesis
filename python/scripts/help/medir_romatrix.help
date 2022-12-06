@@ -76,4 +76,9 @@
  -baudrate 9600
  
 	Esta opción permite cambiar la tasa de transeferencia de la comunicación.
+	
+	
+ -v
+ 
+	Verbose.
  
