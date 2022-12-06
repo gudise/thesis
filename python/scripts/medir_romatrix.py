@@ -120,7 +120,7 @@ for i in range(N_instancias):
 				medidas.append(bitstrToInt(calc(fpga, buffer_out_width)))
 				
 				if verbose:
-					print(f" {contador*N_osciladores_por_instancia+l}/{N_total}:\tosc {i*N_osciladores_por_instancia+l}, rep {j}, pdl {k} ->\t{buffer_sel_pdl[k]}")
+					print(f" {contador*N_osciladores_por_instancia+l+1}/{N_total}:\tosc {i*N_osciladores_por_instancia+l}, rep {j}, pdl {k} ->\t{buffer_sel_pdl[k]}")
 			
 			contador+=N_osciladores_por_instancia
 			
