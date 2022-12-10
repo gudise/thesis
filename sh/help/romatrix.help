@@ -55,13 +55,15 @@
 		
  -pinmap "no"
  
-	esta opcion permite cambiar la asignacion de puertos de cada LUT que componen los anillos. Esta opción debe darse
-	entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
-	asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
-	inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado.
-	Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor	se dejará
-	sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT
-	utilizado. La nomenclatura de los puertos de cada LUT es A1,A2,A3,A4,A5,A6. Algunos ejemplos son:
+	esta opcion permite cambiar la asignacion de puertos de cada LUT que componen los anillos. Esta opción
+	debe darse entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro
+	lado, cada asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos
+	asignaciones que inversores componen cada anillo, los inversores restantes se fijarán igual que el último
+	inversor especificado. Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el
+	correspondiente inversor se dejará sin fijar (a elección del software de diseño). Recordar que el numero
+	de entradas 'Ix' depende del tipo de LUT utilizado. La nomenclatura de los pines de cada LUT es
+	A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al propagador de las oscilaciones. El resto de puertos
+	('I1' a 'I5') se utilizan o no en función del tipo de LUT (ver opción '-tipo'). Algunos ejemplos son:
 	
 		-pinmap "no"
 			Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
@@ -109,6 +111,15 @@
 
 		
  -Ymax 20
+ 
+ 
+ -pblock "0,0 100,100"
+ 
+	Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
+	elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
+	acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
+	rectángulo de restricción, indicados con el formato: X0,Y0 X1,Y1. El diseñador es responsable de que la fpga
+	utilizada disponga de recursos suficientes en el bloque descrito. Esta opción debe darse entre comillas.
 
 		
  -resolucion 1000000

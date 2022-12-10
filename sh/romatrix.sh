@@ -18,6 +18,7 @@ XOSincr=1
 XOSmax=20
 YOSincr=1
 YOSmax=20
+PBLOCK="no"
 RESOLUCION=1000000
 DATA_WIDTH=32
 BUFFER_IN_WIDTH=0
@@ -124,6 +125,10 @@ do
 	elif test "$opcion" = "-Ymax"
 	then
 		YOSmax=${!i}
+		
+	elif test "$opcion" = "-pblock"
+	then
+		PBLOCK=${!i}
 		
 	elif test "$opcion" = "-resolucion"
 	then
@@ -268,6 +273,12 @@ fi
 ## partial flows (tcl)
 mkdir ./partial_flows
 
+VIVADO_FILES="${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/romatrix_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/romatrix.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh"
+if test "$PBLOCK" != "no"
+then
+	VIVADO_FILES="$VIVADO_FILES ${PROJDIR}/vivado_src/pblock.xdc"
+fi
+
 printf "
 create_project ${PROJNAME} ${PROJDIR}/${PROJNAME} -part $PARTNUMBER
 
@@ -279,7 +290,7 @@ update_compile_order -fileset sources_1
 
 regenerate_bd_layout
 
-add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/romatrix_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/romatrix.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh}
+add_files -norecurse {$VIVADO_FILES}
 
 update_compile_order -fileset sources_1
 
@@ -799,6 +810,18 @@ printf "
 	
 endmodule
 " >> vivado_src/romatrix_interfaz_pl_frontend.v
+fi
+
+if test "$PBLOCK" != "no"
+then
+	IFS=' ' read -ra PBLOCK_CORNERS <<< $PBLOCK
+	IFS=',' read -ra PBLOCK_CORNER_0 <<< ${PBLOCK_CORNERS[0]}
+	IFS=',' read -ra PBLOCK_CORNER_1 <<< ${PBLOCK_CORNERS[1]}
+
+printf "create_pblock pblock_TOP_0
+add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0]]
+resize_pblock [get_pblocks pblock_TOP_0] -add {SLICE_X${PBLOCK_CORNER_0[0]}Y${PBLOCK_CORNER_0[1]}:SLICE_X${PBLOCK_CORNER_1[0]}Y${PBLOCK_CORNER_1[1]}}
+" >> vivado_src/pblock.xdc
 fi
 
 
