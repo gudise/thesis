@@ -351,7 +351,7 @@ if test $PY_INTERACTIVO -eq 1
 then
 printf "import serial
 import time
-from fpga.interfaz_pc import *
+from fpga.interfazpcbackend import *
 
 buffer_in_width = $BUFFER_IN_WIDTH
 buffer_out_width = $BUFFER_OUT_WIDTH
@@ -378,7 +378,8 @@ printf "import serial
 import time
 import random
 from tqdm import tqdm
-from fpga.interfaz_pc import *
+from fpga import pinta_progreso
+from fpga.interfazpcbackend import *
 
 buffer_in_width = 8
 buffer_out_width = 32
