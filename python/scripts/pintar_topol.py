@@ -131,6 +131,8 @@ plt.tick_params(axis='y', which='both', right=False, left=False, labelleft=False
 for pos in ['right', 'top', 'bottom', 'left']:
 	plt.gca().spines[pos].set_visible(False)
 
+plt.axis('square')
+	
 if pdf == 0:
 	plt.show()
 else:
