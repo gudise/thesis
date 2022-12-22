@@ -22,7 +22,7 @@ Opciones:
 			lut6_mr(multirouting) --> 4*N_inv_N_osciladores
 
 
- -directriz y | x
+ -directriz y | x 		OBSOLETO (borrar)
  
 	esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del eje 'y')
 
@@ -64,27 +64,27 @@ Opciones:
 	numero de inversores de cada oscilador
 
 
- -XOSincr [1]
+ -XOSincr [1] 		OBSOLETO (borrar)
  
 	distancia entre las coordenadas X de dos osciladores adyacentes
 
 
- -YOSincr [1]
+ -YOSincr [1]		OBSOLETO (borrar)
  
 	distancia entre las coordenadas Y de dos osciladores adyacentes
 
 
- -XOSmax [20]
+ -XOSmax [20]		OBSOLETO (borrar)
  
 	coordenada X maxima de la matriz de osciladores implementada
 
 
- -YOSmax [20]
+ -YOSmax [20]		OBSOLETO (borrar)
  
 	coordenada Y maxima de la matriz de osciladores implementada
 
 
- -Nosc [10]
+ -Nosc [10]		OBSOLETO (borrar: utilizar solo 'posmap')
  
 	numero de osciladores de la matriz. Si Nosc=-1, la matriz se llenara hasta completar las celdas indicadas en
 	XOSmax, YOSmax

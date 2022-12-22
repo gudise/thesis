@@ -8,16 +8,11 @@ QSPI=0
 MEMPART=""
 DETAILR=0
 TIPO="lut1"
-DIRECTRIZ="y"
 PINMAP="no"
 MINSEL=0
 NINV=3
-NOSC=2
-POSMAP="0,0"
-XOSincr=1
-XOSmax=20
-YOSincr=1
-YOSmax=20
+NOSC=0
+POSMAP="1,1;10,10;2,1;20;y"
 PBLOCK="no"
 RESOLUCION=1000000
 DATA_WIDTH=32
@@ -86,10 +81,6 @@ do
 	then
 		TIPO="${!i}"
 		
-	elif test "$opcion" = "-directriz"
-	then
-		DIRECTRIZ="${!i}"
-		
 	elif test "$opcion" = "-pinmap"
 	then
 		PINMAP="${!i}"
@@ -102,29 +93,9 @@ do
 	then
 		NINV=${!i}
 		
-	elif test "$opcion" = "-Nosc"
-	then
-		NOSC=${!i}
-		
 	elif test "$opcion" = "-posmap"
 	then
-		POSMAP=${!i}
-		
-	elif test "$opcion" = "-Xincr"
-	then
-		XOSincr=${!i}
-		
-	elif test "$opcion" = "-Xmax"
-	then
-		XOSmax=${!i}
-		
-	elif test "$opcion" = "-Yincr"
-	then
-		YOSincr=${!i}
-		
-	elif test "$opcion" = "-Ymax"
-	then
-		YOSmax=${!i}
+		POSMAP="${!i}"
 		
 	elif test "$opcion" = "-pblock"
 	then
@@ -151,6 +122,13 @@ do
 		WINDOWS_STYLE=0
 	fi
 	i=$((i+1))
+done
+
+POSMAP=`gen_romatrix_osc_locations.py -posmap "$POSMAP"`
+NOSC=0
+for i in $POSMAP
+do
+	((NOSC+=1))
 done
 
 if test $BUFFER_IN_WIDTH = 0
@@ -524,7 +502,7 @@ mkdir vivado_src/include
 cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
 cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
 
-gen_romatrix.x -out "romatrix" -directriz $DIRECTRIZ -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -XOSincr $XOSincr -XOSmax $XOSmax -YOSincr $YOSincr -YOSmax $YOSmax -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
+gen_romatrix.x -out "romatrix" -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
 		
 mv romatrix.v ./vivado_src/
 
