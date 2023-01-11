@@ -1,0 +1,101 @@
+ Este programa crea todos los ficheros necesarios (.v .xdc .ino) para implementar una matriz de osciladores de anillo en FPGA y medir sus frecuencias de oscilacion utilizando una interfaz Arduino. Para medir la frecuencia de un oscilador se mide el tiempo que le cuesta a este realizar 'resolucion' oscilaciones
+-------------------------------------------
+
+Opciones:
+
+ -out "romatrix"
+ 
+	Todas las salidas del programa tendran este nombre seguido de la extension correspondiente
+
+
+ -tipo lut1 | lut2 | lut3 | lut4 | lut5 | lut6
+ 
+	si esta opcion esta presente, se modifica la clase de LUT que constiuye un inversor (por defecto se toma 
+	'lut1'). Las matrices de osciladores modificados admiten un array de configuracion (ademas de la seleccion de
+	osciladores):
+		Bits de configuracion:
+			lut3 --> 2*N_inv*N_osciladores
+			lut4 --> 3*N_inv_N_osciladores
+			lut5 --> 4*N_inv_N_osciladores
+			lut6 --> 5*N_inv*N_osciladores
+
+
+ -directriz y | x 		OBSOLETO (borrar)
+ 
+	esta opcion indica la direccion de crecimiento de la matriz (por defecto a lo largo del eje 'y')
+
+
+ -pinmap "no"
+ 
+	esta opcion permite cambiar la asignacion de puertos de cada LUT que componen los anillos. Esta opción debe darse
+	entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
+	asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
+	inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado.
+	Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor	se dejará
+	sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT
+	utilizado. La nomenclatura de los puertos de cada LUT es A1,A2,A3,A4,A5,A6. Algunos ejemplos son:
+	
+		-pinmap "no"
+			Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+			
+		-pinmap "I0:A5;I0:A6;I0:A4"
+			Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este diseño corresponde 
+			al ruteado más compacto en una fpga Zynq7000.
+		
+		-pinmap "I0:A5;no;I0:A4"
+			Parecido al anterior, pero ahora no fijamos el segundo inversor.
+		
+		-pinmap "I0:A1,I1:A2,I2:A3,I3:A4,I5:A6"
+			Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
+			selección de PDL (en una lut tipo LUT6).
+
+
+ -minsel [0]
+ 
+	con esta opcion se realizará una seleccion minima (unicamente 5 bits), que comparten todos los inversores de
+	cada oscilador. Para activar 'minsel' podemos escribir '-minsel 1', o simplemente '-minsel'. '-minsel 0' (la
+	opción por defecto) equivale a no utilizar esta opción
+
+
+ -Ninv [3]
+ 
+	numero de inversores de cada oscilador
+
+
+ -XOSincr [1] 		OBSOLETO (borrar)
+ 
+	distancia entre las coordenadas X de dos osciladores adyacentes
+
+
+ -YOSincr [1]		OBSOLETO (borrar)
+ 
+	distancia entre las coordenadas Y de dos osciladores adyacentes
+
+
+ -XOSmax [20]		OBSOLETO (borrar)
+ 
+	coordenada X maxima de la matriz de osciladores implementada
+
+
+ -YOSmax [20]		OBSOLETO (borrar)
+ 
+	coordenada Y maxima de la matriz de osciladores implementada
+
+
+ -Nosc [10]		OBSOLETO (borrar: utilizar solo 'posmap')
+ 
+	numero de osciladores de la matriz. Si Nosc=-1, la matriz se llenara hasta completar las celdas indicadas en
+	XOSmax, YOSmax
+
+
+ -posmap [x0,y0 x1,y1 ...]
+ 
+	esta opcion permite indicar explícitamente las posiciones de (la primera puerta, i.e., de la puerta AND) de cada
+	oscilador. Si no se indican tantos pares x,y como osciladores haya, el resto de osciladores hasta llegar a Nosc
+	se escribirán de acuerdo con los criterios establecidos en OSincr y OSmax. Si no se indica esta opción en
+	absoluto se utiliza x0=0, y0=0
+
+
+ -resolucion [1000000]
+ 
+	numero de ciclos de medicion para cada oscilador;

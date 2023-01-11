@@ -33,7 +33,6 @@ int main(int N_opcion, char** opcion)
 		YOS_max =	20,
 		N_osciladores =	10,
 		resolucion =	1000000,
-		N_claves =		100,
 		*pos_oscilador[2],
 		*pos_oscilador_fijado[2],
 		N_osciladores_fijados,

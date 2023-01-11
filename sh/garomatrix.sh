@@ -7,7 +7,7 @@ NJOBS=4
 QSPI=0
 MEMPART=""
 DETAILR=0
-TIPO="lut1"
+TIPO="lut3"
 PINMAP="no"
 MINSEL=0
 NINV=3
@@ -25,7 +25,7 @@ for opcion
 do
 	if test "$opcion" = "-help"
 	then
-		tabs 4; cat "$REPO_fpga/sh/help/romatrix.help"
+		tabs 4; cat "$REPO_fpga/sh/help/garomatrix.help"
 		exit
 		
 	elif test "$opcion" = "-projname"
@@ -136,62 +136,32 @@ then
 	aux=`calc_nbits.x $NOSC`
 	if test $MINSEL = 0
 	then
-		if test $TIPO = "lut1"
-		then
-			BUFFER_IN_WIDTH=$aux
-		elif test "$TIPO" = "lut2"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV))
-		elif test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+2*$NINV))
-		elif test $TIPO = "lut3mr"
+		if test "$TIPO" = "lut3"
 		then
 			((BUFFER_IN_WIDTH=$aux+$NINV))
 		elif test $TIPO = "lut4"
 		then
-			((BUFFER_IN_WIDTH=$aux+3*$NINV))
+			((BUFFER_IN_WIDTH=$aux+$NINV+$NINV))
 		elif test $TIPO = "lut5"
 		then
-			((BUFFER_IN_WIDTH=$aux+4*$NINV))
+			((BUFFER_IN_WIDTH=$aux+2*$NINV+$NINV))
 		elif test $TIPO = "lut6"
 		then
-			((BUFFER_IN_WIDTH=$aux+5*$NINV))
-		elif test $TIPO = "lut6mr"
-		then
-			((BUFFER_IN_WIDTH=$aux+2*$NINV))
-		elif test $TIPO = "lut6_2"
-		then
-			((BUFFER_IN_WIDTH=$aux+5*$NINV))
+			((BUFFER_IN_WIDTH=$aux+3*$NINV+$NINV))
 		fi
 	else
-		if test $TIPO = "lut1"
+		if test "$TIPO" = "lut3"
 		then
-			BUFFER_IN_WIDTH=$aux
-		elif test "$TIPO" = "lut2"
-		then
-			((BUFFER_IN_WIDTH=$aux+1))
-		elif test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+2))
-		elif test $TIPO = "lut3mr"
-		then
-			((BUFFER_IN_WIDTH=$aux))
+			((BUFFER_IN_WIDTH=$aux+$NINV))
 		elif test $TIPO = "lut4"
 		then
-			((BUFFER_IN_WIDTH=$aux+3))
+			((BUFFER_IN_WIDTH=$aux+1+$NINV))
 		elif test $TIPO = "lut5"
 		then
-			((BUFFER_IN_WIDTH=$aux+4))
+			((BUFFER_IN_WIDTH=$aux+2+$NINV))
 		elif test $TIPO = "lut6"
 		then
-			((BUFFER_IN_WIDTH=$aux+5))
-		elif test $TIPO = "lut6mr"
-		then
-			((BUFFER_IN_WIDTH=$aux+2))
-		elif test $TIPO = "lut6_2"
-		then
-			((BUFFER_IN_WIDTH=$aux+5))
+			((BUFFER_IN_WIDTH=$aux+3+$NINV))
 		fi
 	fi
 fi
@@ -251,7 +221,7 @@ fi
 ## partial flows (tcl)
 mkdir ./partial_flows
 
-VIVADO_FILES="${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/romatrix_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/romatrix.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh"
+VIVADO_FILES="${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/garomatrix_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/garomatrix.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh"
 if test "$PBLOCK" != "no"
 then
 	VIVADO_FILES="$VIVADO_FILES ${PROJDIR}/vivado_src/pblock.xdc"
@@ -419,20 +389,20 @@ startgroup
 for((i=0; i<$NOSC; i=i+1))
 do
 	printf "
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_${i}_0]
-set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_${i}_0 }]
-set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_${i} }]
-set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_${i} }]
+route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_0]
+set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_0 }]
+set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_0 design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/AND_${i} }]
+set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_0 design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/AND_${i} }]
 " >> ./partial_flows/genbitstream.tcl
 
 	for((j=1; j<$NINV; j=j+1))
 	do
 		((aux = $j-1))
 		printf "
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_${i}_${j}]
-set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_${i}_${j} }]
-set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_${j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_${aux} }]
-set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_${j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_${i}_${aux} }]
+route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_${j}]
+set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_${j} }]
+set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${aux} }]
+set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${aux} }]
 " >> ./partial_flows/genbitstream.tcl
 	done
 done
@@ -502,9 +472,9 @@ mkdir vivado_src/include
 cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
 cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
 
-gen_romatrix.py -out "romatrix" -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
+gen_garomatrix.py -out "garomatrix" -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
 		
-mv romatrix.v ./vivado_src/
+mv garomatrix.v ./vivado_src/
 
 ((aux=$DATA_WIDTH-1))
 printf "\`timescale 1ns / 1ps
@@ -518,11 +488,11 @@ module TOP (
 	output[$aux:0]	data_out
 );
 
-	ROMATRIX_INTERFAZ_PL_FRONTEND #(
+	GAROMATRIX_INTERFAZ_PL_FRONTEND #(
 		.DATA_WIDTH($DATA_WIDTH),
 		.BUFFER_IN_WIDTH($BUFFER_IN_WIDTH),
 		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
-	) romatrix_interfaz_pl_frontend (
+	) garomatrix_interfaz_pl_frontend (
 		.clock(clock),
 		.ctrl_in(ctrl_in),
 		.ctrl_out(ctrl_out),
@@ -538,7 +508,7 @@ then
 printf "\`include \"interfaz_pl_define.cp.vh\"
 
 
-module ROMATRIX_INTERFAZ_PL_FRONTEND #(
+module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
 	//parametros
 	parameter   DATA_WIDTH = 32,
 	parameter   BUFFER_IN_WIDTH = 16,
@@ -577,27 +547,29 @@ module ROMATRIX_INTERFAZ_PL_FRONTEND #(
 		
 		data_in_reg <= data_in;
 	end
-" > vivado_src/romatrix_interfaz_pl_frontend.v
-if test $TIPO = "lut1"
+" > vivado_src/garomatrix_interfaz_pl_frontend.v
+if test $TIPO = "lut3"
 then
 printf "
 	//asignaciones combinacionales/submodulos
-	ROMATRIX romatrix (
+	GAROMATRIX garomatrix (
 		.clock(clock),
+		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):0]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 else
 printf "
 	//asignaciones combinacionales/submodulos
-	ROMATRIX romatrix (
+	GAROMATRIX garomatrix (
 		.clock(clock),
-		.sel(buffer_in),
+		.sel(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
+		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 fi
 printf "
 	always @(posedge out_ro) begin
@@ -657,13 +629,13 @@ printf "
 	\`include \"interfaz_pl_backend.cp.vh\"
 	
 endmodule
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 
 else
 printf "\`include \"interfaz_pl_define.cp.vh\"
 
 
-module ROMATRIX_INTERFAZ_PL_FRONTEND #(
+module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
 	//parametros
 	parameter   DATA_WIDTH = 32,
 	parameter   BUFFER_IN_WIDTH = 16,
@@ -702,30 +674,32 @@ module ROMATRIX_INTERFAZ_PL_FRONTEND #(
 		
 		data_in_reg <= data_in;
 	end
-" > vivado_src/romatrix_interfaz_pl_frontend.v
-if test $TIPO = "lut1"
+" > vivado_src/garomatrix_interfaz_pl_frontend.v
+if test $TIPO = "lut3"
 then
 printf "
 	//asignaciones combinacionales/submodulos
-	ROMATRIX romatrix (
+	GAROMATRIX garomatrix (
 		.clock(clock),
-		.sel_ro(buffer_in),
+		.sel_ro(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
+		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 else
 aux=`calc_nbits.x $NOSC`
 printf "
 	//asignaciones combinacionales/submodulos
-	ROMATRIX romatrix (
+	GAROMATRIX garomatrix (
 		.clock(clock),
 		.sel_ro(buffer_in[$((aux-1)):0]),
-		.sel(buffer_in[$((BUFFER_IN_WIDTH-1)):$aux]),
+		.sel(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):$aux]),
+		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 fi
 printf "
 	always @(posedge out_ro) begin
@@ -785,7 +759,7 @@ printf "
 	\`include \"interfaz_pl_backend.cp.vh\"
 	
 endmodule
-" >> vivado_src/romatrix_interfaz_pl_frontend.v
+" >> vivado_src/garomatrix_interfaz_pl_frontend.v
 fi
 
 if test "$PBLOCK" != "no"
