@@ -1,0 +1,81 @@
+ 
+ Script para medir la frecuencia de 'romatrix'. El resultado se guarda en formato de matriz '.mtz', donde
+ cada fila contiene las medidas de todos los osciladores seleccionados para una instancia, repetición y pdl
+ determinada.
+ 
+ Uso:
+ ----
+ 
+ medir_romatrix.py [-help] [-out] [-trama_selector] [-buffer_out_width] [-osc_range] [-pdl_range]
+				   [-osc_por_instancia] [-nrep] [-puerto] [-baudrate] 
+
+ Opciones:
+ ---------
+ 
+ -help
+ 
+	Pinta esta ayuda.
+
+
+ -out "rawdata.mtz"
+ 
+	Nombre del fichero de salida.
+ 
+ 
+ -trama_selector(ts) 4 0 3 
+ 
+	Esta opción permite configurar la palabra binaria que se envía a la FPGA para solicitar una medida. Esta 
+	palabra consta de dos partes: la primera contiene el número del oscilador que solicitamos, la segunda 
+	el número de la PDL que solicitamos y la tercera el polinomio de Galois a ejecutar:
+	{sel_ro_width} {sel_pdl_width} {sel_polinomio_width}
+
+	Notar que esta opción no es discrecional: tiene que coincidir con el tamaño de la trama (buffer_in_width)
+	utilizado en el diseño de 'romatrix'.
+
+
+ -buffer_out_width(bow) 32
+ 
+	Esta opción controla el tamaño de las palabras binarias que salen de la FPGA (FPGA->PC). Debe coincidir
+	con el tamaño determinado durante el diseño del hardware.
+ 
+
+ -osc_range(or) [0] 1 [1]
+ 
+	Esta opción controla qué osciladores medir. Funciona como la función 'range' de python: el primer número 
+	es el oscilador inicial, el segundo el oscilador final (no incluido), y el tercero el salto entre
+	osciladores.
+ 
+ 
+ -pdl_range(pr) [0] 1 [1]
+ 
+	Esta opción controla qué pdl medir. Funciona como la función 'range' de python: el primer número 
+	es la pdl inicial, el segundo la pdl final (no incluida), y el tercero el salto entre
+	pdl.
+ 
+
+ -osc_por_instancia(opi) {N_osciladores}
+ 
+	Número de osciladores por instancia (en caso de que una sola matriz se utilice para emular varias
+	instancias.
+ 
+
+ -nrep 1
+ 
+	Número de veces que se repite cada medida (para estadística).
+ 
+ 
+ -puerto 1
+
+	Esta opción permite cambiar el número del puerto serie al cual está conectado la FPGA. Este dato puede 
+	consultarse en el administrador de dispositivos de Windows -> puertos (COM y LPT) -> COM{puerto}.
+
+
+ -baudrate 9600
+ 
+	Esta opción permite cambiar la tasa de transeferencia de la comunicación.
+	
+	
+ -v
+ 
+	Verbose.
+ 

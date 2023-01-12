@@ -11,8 +11,8 @@ TIPO="lut1"
 PINMAP="no"
 MINSEL=0
 NINV=3
+POSMAP="1,1;10,10;2,1;10;y"
 NOSC=0
-POSMAP="1,1;10,10;2,1;20;y"
 PBLOCK="no"
 RESOLUCION=1000000
 DATA_WIDTH=32
@@ -124,76 +124,60 @@ do
 	i=$((i+1))
 done
 
-POSMAP=`gen_romatrix_osc_locations.py -posmap "$POSMAP"`
+POSMAP=`gen_osc_locations.py -posmap "$POSMAP"`
 NOSC=0
 for i in $POSMAP
 do
 	((NOSC+=1))
 done
 
+NBITSOSC=`calc_nbits.x $NOSC`
+if test $MINSEL = 0
+then
+	if test $TIPO = "lut1"
+	then
+		NBITSPDL=0
+	elif test "$TIPO" = "lut2"
+	then
+		NBITSPDL=$NINV
+	elif test "$TIPO" = "lut3"
+	then
+		NBITSPDL=$((2*NINV))
+	elif test $TIPO = "lut4"
+	then
+		NBITSPDL=$((3*NINV))
+	elif test $TIPO = "lut5"
+	then
+		NBITSPDL=$((4*NINV))
+	elif test $TIPO = "lut6"
+	then
+		NBITSPDL=$((5*NINV))
+	fi
+else
+	if test $TIPO = "lut1"
+	then
+		NBITSPDL=0
+	elif test "$TIPO" = "lut2"
+	then
+		NBITSPDL=1
+	elif test "$TIPO" = "lut3"
+	then
+		NBITSPDL=2
+	elif test $TIPO = "lut4"
+	then
+		NBITSPDL=3
+	elif test $TIPO = "lut5"
+	then
+		NBITSPDL=4
+	elif test $TIPO = "lut6"
+	then
+		NBITSPDL=5
+	fi
+fi
+
 if test $BUFFER_IN_WIDTH = 0
 then
-	aux=`calc_nbits.x $NOSC`
-	if test $MINSEL = 0
-	then
-		if test $TIPO = "lut1"
-		then
-			BUFFER_IN_WIDTH=$aux
-		elif test "$TIPO" = "lut2"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV))
-		elif test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+2*$NINV))
-		elif test $TIPO = "lut3mr"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV))
-		elif test $TIPO = "lut4"
-		then
-			((BUFFER_IN_WIDTH=$aux+3*$NINV))
-		elif test $TIPO = "lut5"
-		then
-			((BUFFER_IN_WIDTH=$aux+4*$NINV))
-		elif test $TIPO = "lut6"
-		then
-			((BUFFER_IN_WIDTH=$aux+5*$NINV))
-		elif test $TIPO = "lut6mr"
-		then
-			((BUFFER_IN_WIDTH=$aux+2*$NINV))
-		elif test $TIPO = "lut6_2"
-		then
-			((BUFFER_IN_WIDTH=$aux+5*$NINV))
-		fi
-	else
-		if test $TIPO = "lut1"
-		then
-			BUFFER_IN_WIDTH=$aux
-		elif test "$TIPO" = "lut2"
-		then
-			((BUFFER_IN_WIDTH=$aux+1))
-		elif test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+2))
-		elif test $TIPO = "lut3mr"
-		then
-			((BUFFER_IN_WIDTH=$aux))
-		elif test $TIPO = "lut4"
-		then
-			((BUFFER_IN_WIDTH=$aux+3))
-		elif test $TIPO = "lut5"
-		then
-			((BUFFER_IN_WIDTH=$aux+4))
-		elif test $TIPO = "lut6"
-		then
-			((BUFFER_IN_WIDTH=$aux+5))
-		elif test $TIPO = "lut6mr"
-		then
-			((BUFFER_IN_WIDTH=$aux+2))
-		elif test $TIPO = "lut6_2"
-		then
-			((BUFFER_IN_WIDTH=$aux+5))
-		fi
-	fi
+	BUFFER_IN_WIDTH=$((NBITSOSC+NBITSPDL))
 fi
 
 
@@ -488,14 +472,6 @@ source ${PROJDIR}/partial_flows/launchsdk.tcl
 " > mkhwdplatform.tcl
 
 
-## log info
-aux=`calc_nbits.x $NOSC`
-printf "
- sel_ro_width = $aux
- 
- sel_pdl_width = $(($BUFFER_IN_WIDTH-$aux))
-"
-
 ## vivado sources
 mkdir vivado_src
 mkdir vivado_src/include
@@ -715,13 +691,12 @@ printf "
 	);
 " >> vivado_src/romatrix_interfaz_pl_frontend.v
 else
-aux=`calc_nbits.x $NOSC`
 printf "
 	//asignaciones combinacionales/submodulos
 	ROMATRIX romatrix (
 		.clock(clock),
-		.sel_ro(buffer_in[$((aux-1)):0]),
-		.sel(buffer_in[$((BUFFER_IN_WIDTH-1)):$aux]),
+		.sel_ro(buffer_in[$((NBITSOSC-1)):0]),
+		.sel(buffer_in[$((BUFFER_IN_WIDTH-1)):$NBITSOSC]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
@@ -832,12 +807,18 @@ echo $xuart | cat - interfaz_ps_backend.cp.c > temp && mv temp interfaz_ps_backe
 mv interfaz_ps_backend.cp.c ./sdk_src/interfaz_ps_backend.cp.c
 
 
-## echo log
-echo ""
-echo " fpga part: ${PARTNUMBER}"
-echo ""
-echo " sdk source files: ${PROJDIR}/sdk_src/"
-echo ""
+## log info
+printf "
+ Trama del selector(ts): $NBITSOSC $NBITSPDL
+ sel_ro_width = $NBITSOSC
+ sel_pdl_width = $NBITSPDL
+ biw = $BUFFER_IN_WIDTH
+ 
+ fpga part: ${PARTNUMBER}
+ 
+ sdk source files: ${PROJDIR}/sdk_src/
+ 
+"
 
 if test $QSPI -eq 1
 then

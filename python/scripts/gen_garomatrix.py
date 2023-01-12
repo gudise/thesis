@@ -188,6 +188,7 @@ with open(out_name, "w") as f:
 					ocupacion_celda=0
 				if aux == N_inv-1:
 					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT3 #(8'h95) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(out_ro[{i}]), .I2(polinomio[{aux}]));\n") # ojo aquí.
+					#f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT1 #(2'b01) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # ojo aquí.
 					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 					
 					ocupacion_celda+=1

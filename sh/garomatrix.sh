@@ -1,4 +1,4 @@
-PROJNAME="project_romatrix"
+PROJNAME="project_garomatrix"
 PROJDIR="./"
 BRD="pynqz2"
 BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
@@ -12,13 +12,14 @@ PINMAP="no"
 MINSEL=0
 NINV=3
 NOSC=0
-POSMAP="1,1;10,10;2,1;20;y"
+POSMAP="1,1;10,10;2,1;10;y"
 PBLOCK="no"
 RESOLUCION=1000000
 DATA_WIDTH=32
 BUFFER_IN_WIDTH=0
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
+FRECSAMPLE=10.0
 
 i=2
 for opcion
@@ -105,6 +106,10 @@ do
 	then
 		RESOLUCION=${!i}
 		
+	elif test "$opcion" = "-frecsample"
+	then
+		FRECSAMPLE=${!i}
+		
 	elif test "$opcion" = "-dw"
 	then
 		DATA_WIDTH="${!i}"
@@ -124,46 +129,49 @@ do
 	i=$((i+1))
 done
 
-POSMAP=`gen_romatrix_osc_locations.py -posmap "$POSMAP"`
+POSMAP=`gen_osc_locations.py -posmap "$POSMAP"`
 NOSC=0
 for i in $POSMAP
 do
 	((NOSC+=1))
 done
 
+NBITSOSC=`calc_nbits.x $NOSC`
+if test $MINSEL = 0
+then
+	if test "$TIPO" = "lut3"
+	then
+		NBITSPDL=0
+	elif test $TIPO = "lut4"
+	then
+		NBITSPDL=$NINV
+	elif test $TIPO = "lut5"
+	then
+		NBITSPDL=$((2*NINV))
+	elif test $TIPO = "lut6"
+	then
+		NBITSPDL=$((3*NINV))
+	fi
+else
+	if test "$TIPO" = "lut3"
+	then
+		NBITSPDL=0
+	elif test $TIPO = "lut4"
+	then
+		NBITSPDL=1
+	elif test $TIPO = "lut5"
+	then
+		NBITSPDL=2
+	elif test $TIPO = "lut6"
+	then
+		NBITSPDL=3
+	fi
+fi
+NBITSPOL=$NINV
+
 if test $BUFFER_IN_WIDTH = 0
 then
-	aux=`calc_nbits.x $NOSC`
-	if test $MINSEL = 0
-	then
-		if test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV))
-		elif test $TIPO = "lut4"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV+$NINV))
-		elif test $TIPO = "lut5"
-		then
-			((BUFFER_IN_WIDTH=$aux+2*$NINV+$NINV))
-		elif test $TIPO = "lut6"
-		then
-			((BUFFER_IN_WIDTH=$aux+3*$NINV+$NINV))
-		fi
-	else
-		if test "$TIPO" = "lut3"
-		then
-			((BUFFER_IN_WIDTH=$aux+$NINV))
-		elif test $TIPO = "lut4"
-		then
-			((BUFFER_IN_WIDTH=$aux+1+$NINV))
-		elif test $TIPO = "lut5"
-		then
-			((BUFFER_IN_WIDTH=$aux+2+$NINV))
-		elif test $TIPO = "lut6"
-		then
-			((BUFFER_IN_WIDTH=$aux+3+$NINV))
-		fi
-	fi
+	BUFFER_IN_WIDTH=$((NBITSOSC+NBITSPDL+NBITSPOL))
 fi
 
 
@@ -257,6 +265,20 @@ connect_bd_net [get_bd_pins TOP_0/ctrl_in] [get_bd_pins axi_gpio_ctrl/gpio2_io_o
 connect_bd_net [get_bd_pins TOP_0/ctrl_out] [get_bd_pins axi_gpio_ctrl/gpio_io_i]
 
 apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {Clk \"/processing_system7_0/FCLK_CLK0 (100 MHz)\" }  [get_bd_pins TOP_0/clock]
+
+startgroup
+create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0
+endgroup
+set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {$FRECSAMPLE} CONFIG.MMCM_DIVCLK_DIVIDE {2} CONFIG.MMCM_CLKFBOUT_MULT_F {15.625} CONFIG.MMCM_CLKOUT0_DIVIDE_F {78.125} CONFIG.CLKOUT1_JITTER {290.478} CONFIG.CLKOUT1_PHASE_ERROR {133.882}] [get_bd_cells clk_wiz_0]
+
+startgroup
+create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0
+endgroup
+set_property -dict [list CONFIG.CONST_VAL {0}] [get_bd_cells xlconstant_0]
+
+connect_bd_net [get_bd_pins xlconstant_0/dout] [get_bd_pins clk_wiz_0/reset]
+connect_bd_net [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins clk_wiz_0/clk_in1]
+connect_bd_net [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins TOP_0/clock_sample]
 
 regenerate_bd_layout
 
@@ -386,9 +408,20 @@ open_run synth_1 -name synth_1
 startgroup
 " >> ./partial_flows/genbitstream.tcl
 
+
 for((i=0; i<$NOSC; i=i+1))
 do
+	aux=""
+	for((j=0; j<$NINV; j=j+1))
+	do
+		aux="$aux design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_$i_$j"
+	done
 	printf "
+route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/out_ro_0[$i]]
+set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/out_ro_0[$i] }]
+set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/ff_$i design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/AND_$i $aux }]
+set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/ff_$i design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/AND_$i $aux }]
+
 route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_0]
 set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_0 }]
 set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_0 design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/AND_${i} }]
@@ -397,12 +430,11 @@ set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfa
 
 	for((j=1; j<$NINV; j=j+1))
 	do
-		((aux = $j-1))
 		printf "
 route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_${j}]
 set_property is_route_fixed 1 [get_nets {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/w_${i}_${j} }]
-set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${aux} }]
-set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${aux} }]
+set_property is_bel_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_$((j-1))}]
+set_property is_loc_fixed 1 [get_cells {design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_${j} design_1_i/TOP_0/inst/garomatrix_interfaz_pl_frontend/garomatrix/inv_${i}_$((j-1))}]
 " >> ./partial_flows/genbitstream.tcl
 	done
 done
@@ -458,14 +490,6 @@ source ${PROJDIR}/partial_flows/launchsdk.tcl
 " > mkhwdplatform.tcl
 
 
-## log info
-aux=`calc_nbits.x $NOSC`
-printf "
- sel_ro_width = $aux
- 
- sel_pdl_width = $(($BUFFER_IN_WIDTH-$aux))
-"
-
 ## vivado sources
 mkdir vivado_src
 mkdir vivado_src/include
@@ -482,6 +506,7 @@ printf "\`timescale 1ns / 1ps
 
 module TOP (
 	input		clock,
+	input		clock_sample,
 	input[7:0]	ctrl_in,
 	output[7:0]	ctrl_out,
 	input[$aux:0]	data_in,
@@ -494,6 +519,7 @@ module TOP (
 		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
 	) garomatrix_interfaz_pl_frontend (
 		.clock(clock),
+		.clock_sample(clock_sample),
 		.ctrl_in(ctrl_in),
 		.ctrl_out(ctrl_out),
 		.data_in(data_in),
@@ -509,16 +535,17 @@ printf "\`include \"interfaz_pl_define.cp.vh\"
 
 
 module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
-	//parametros
+	// parametros
 	parameter   DATA_WIDTH = 32,
 	parameter   BUFFER_IN_WIDTH = 16,
 	parameter   BUFFER_OUT_WIDTH = 16
 	) (
-	//I/O estandar
-	input						  clock,
-	input[7:0]					  ctrl_in,
-	output reg[7:0]				  ctrl_out,
-	input[DATA_WIDTH-1:0]		 data_in,
+	// I/O 
+	input						clock,
+	input						clock_sample,
+	input[7:0]					ctrl_in,
+	output reg[7:0]				ctrl_out,
+	input[DATA_WIDTH-1:0]		data_in,
 	output reg[DATA_WIDTH-1:0]	data_out
 	);
 
@@ -553,7 +580,7 @@ then
 printf "
 	//asignaciones combinacionales/submodulos
 	GAROMATRIX garomatrix (
-		.clock(clock),
+		.clock(clock_sample),
 		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):0]),
 		.enable(enable_ro),
 		.out(out_ro)
@@ -563,7 +590,7 @@ else
 printf "
 	//asignaciones combinacionales/submodulos
 	GAROMATRIX garomatrix (
-		.clock(clock),
+		.clock(clock_sample),
 		.sel(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
 		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
 		.enable(enable_ro),
@@ -572,12 +599,14 @@ printf "
 " >> vivado_src/garomatrix_interfaz_pl_frontend.v
 fi
 printf "
-	always @(posedge out_ro) begin
+	always @(posedge clock_sample) begin
 		if(enable_ro==0)
 			contador_ro<=0;
-		else
-			contador_ro <= contador_ro+1;
-	end	
+		else begin
+			if(out_ro==1'b1) contador_ro <= contador_ro+1;
+			else contador_ro <= contador_ro+32'hFFFFFFFF;
+		end
+	end
 	 
 	//definicion de estados
 	always @(posedge clock) begin
@@ -636,16 +665,17 @@ printf "\`include \"interfaz_pl_define.cp.vh\"
 
 
 module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
-	//parametros
+	// parametros
 	parameter   DATA_WIDTH = 32,
 	parameter   BUFFER_IN_WIDTH = 16,
 	parameter   BUFFER_OUT_WIDTH = 16
 	) (
-	//I/O estandar
-	input						  clock,
-	input[7:0]					  ctrl_in,
-	output reg[7:0]				  ctrl_out,
-	input[DATA_WIDTH-1:0]		 data_in,
+	// I/O
+	input						clock,
+	input						clock_sample,
+	input[7:0]					ctrl_in,
+	output reg[7:0]				ctrl_out,
+	input[DATA_WIDTH-1:0]		data_in,
 	output reg[DATA_WIDTH-1:0]	data_out
 	);
 	
@@ -680,7 +710,7 @@ then
 printf "
 	//asignaciones combinacionales/submodulos
 	GAROMATRIX garomatrix (
-		.clock(clock),
+		.clock(clock_sample),
 		.sel_ro(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
 		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
 		.enable(enable_ro),
@@ -688,26 +718,27 @@ printf "
 	);
 " >> vivado_src/garomatrix_interfaz_pl_frontend.v
 else
-aux=`calc_nbits.x $NOSC`
 printf "
 	//asignaciones combinacionales/submodulos
 	GAROMATRIX garomatrix (
-		.clock(clock),
-		.sel_ro(buffer_in[$((aux-1)):0]),
-		.sel(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):$aux]),
-		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
+		.clock(clock_sample),
+		.sel_ro(buffer_in[$((NBITSOSC-1)):0]),
+		.sel(buffer_in[$((NBITSOSC+NBITSPDL-1)):$NBITSOSC]),
+		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((NBITSOSC+NBITSPDL))]),
 		.enable(enable_ro),
 		.out(out_ro)
 	);
 " >> vivado_src/garomatrix_interfaz_pl_frontend.v
 fi
 printf "
-	always @(posedge out_ro) begin
+	always @(posedge clock_sample) begin
 		if(enable_ro==0)
 			contador_ro<=0;
-		else
-			contador_ro <= contador_ro+1;
-	end	
+		else begin
+			if(out_ro==1'b1) contador_ro <= contador_ro+1;
+			else contador_ro <= contador_ro+32'hFFFFFFFF;
+		end
+	end
 	 
 	//definicion de estados
 	always @(posedge clock) begin
@@ -806,12 +837,19 @@ echo $xuart | cat - interfaz_ps_backend.cp.c > temp && mv temp interfaz_ps_backe
 mv interfaz_ps_backend.cp.c ./sdk_src/interfaz_ps_backend.cp.c
 
 
-## echo log
-echo ""
-echo " fpga part: ${PARTNUMBER}"
-echo ""
-echo " sdk source files: ${PROJDIR}/sdk_src/"
-echo ""
+## log info
+printf "
+ Trama del selector(ts): $NBITSOSC $NBITSPDL $NBITSPOL
+ sel_ro_width = $NBITSOSC
+ sel_pdl_width = $NBITSPDL
+ sel_polinomio_width = $NBITSPOL
+ biw = $BUFFER_IN_WIDTH
+ 
+ fpga part: ${PARTNUMBER}
+ 
+ sdk source files: ${PROJDIR}/sdk_src/
+ 
+"
 
 if test $QSPI -eq 1
 then

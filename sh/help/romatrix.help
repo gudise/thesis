@@ -43,7 +43,7 @@
 	comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
 		
 		
- -tipo lut1 | lut2 | lut3 | lut3mr | lut4 | lut5 | lut6 | lut6mr | lut6_2
+ -tipo lut1 | lut2 | lut3 | lut4 | lut5 | lut6
 		
 		
  -pinmap "no"
@@ -82,7 +82,7 @@
  -Ninv 3
 		
 		
- -posmap "1,1;10,10;2,1;20;y"
+ -posmap "1,1;10,10;2,1;10;y"
  
 	Opción par aespecificar la matriz de osciladores. Puede constar de varios dominios independientes. El 
 	formato es el siguiente:
@@ -133,11 +133,10 @@
  -biw <auto>
  
 	buffer_in_width (bits significativos de la palabra de entrada data_in). Si esta opcion se omite
-		el script calcula automáticamente cuántos bits son necesarios para: (i) seleccionar el oscilador de la
-		matriz y (ii) seleccionar la configuración de cada inversor. La trama del buffer de entrada será: [biw-1:x]
-		para la configuración, y [x-1:0] para seleccionar el oscilador.
+	el script calcula automáticamente cuántos bits son necesarios para: (i) seleccionar el oscilador de la
+	matriz y (ii) seleccionar la configuración de cada inversor.
 
-		
+
  -bow 32
  
 	buffer_out_width (bits significativos de la palabra de salida data_out)

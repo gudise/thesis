@@ -15,6 +15,8 @@ osc = range(1)
 pdl = range(1)
 sel_ro_width = 4
 sel_pdl_width = 0
+sel_polinomio_width = 3
+polinomio = 0
 buffer_out_width = 32
 N_osciladores_por_instancia = 0
 N_repeticiones = 1
@@ -33,6 +35,7 @@ for i, opt in enumerate(sys.argv):
 	if opt == "-trama_selector" or opt == "-ts":
 		sel_ro_width = int(sys.argv[i+1])
 		sel_pdl_width = int(sys.argv[i+2])
+		sel_polinomio_width = int(sys.argv[i+3])
 		
 	if opt == "-buffer_out_width" or opt=="-bow":
 		buffer_out_width = int(sys.argv[i+1])
@@ -67,6 +70,9 @@ for i, opt in enumerate(sys.argv):
 			elif len(pdl) == 3:
 				pdl = range(pdl[0], pdl[1], pdl[2])
 				
+	if opt == "-polinomio":
+		polinomio = sys.argv[i+1]
+				
 	if opt == "-osc_por_instancia" or opt=="-opi":
 		N_osciladores_por_instancia = int(sys.argv[i+1])
 		
@@ -86,7 +92,7 @@ for i, opt in enumerate(sys.argv):
 if N_osciladores_por_instancia==0:
 	N_osciladores_por_instancia = len(osc)
 
-buffer_in_width = sel_ro_width+sel_pdl_width
+buffer_in_width = sel_ro_width+sel_pdl_width+sel_polinomio_width
 N_osciladores = len(osc)
 N_pdl = len(pdl)
 N_instancias = N_osciladores//N_osciladores_por_instancia
@@ -96,13 +102,15 @@ print(f"\n N_instancias = {N_instancias}\n N_repeticiones = {N_repeticiones}\n N
 fpga = serial.Serial(port=puerto, baudrate=baudrate, bytesize=8)
 time.sleep(.1)
 
-buffer_sel_ro=[]
-for i in osc:
-	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
-
 buffer_sel_pdl=[]
 for i in pdl:
 	buffer_sel_pdl.append(resizeArray(intToBitstr(i), sel_pdl_width))
+
+buffer_sel_ro=[]
+for i in osc:
+	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
+	
+buffer_sel_polinomio = resizeArray(intToBitstr(0), sel_polinomio_width)
 
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
@@ -113,7 +121,7 @@ for i in range(N_instancias):
 	for j in range(N_repeticiones):
 		for k in range(N_pdl):
 			for l in range(N_osciladores_por_instancia):
-				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k]
+				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k] + buffer_sel_polinomio
 
 				scan(fpga, buffer_in, buffer_in_width)
 		
