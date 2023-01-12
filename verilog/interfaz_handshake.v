@@ -7,12 +7,11 @@
 module HANDSHAKE_MASTER #(
 	parameter WIDTH=32
 ) (
-	input clock,
-	input ack,
-	output reg sync
-	
-	input[WIDTH-1:0] data_in,
-	output reg[WIDTH-1:0] data_out
+	input					clock,
+	output reg				sync=1'b0,
+	input					ack,
+	input[WIDTH-1:0]		data_in,
+	output reg[WIDTH-1:0]	data_out
 );
 
 	always @(posedge clock) begin
@@ -42,12 +41,11 @@ endmodule
 module HANDSHAKE_SLAVE #(
 	parameter WIDTH=32
 ) (
-	input clock,
-	input sync,
-	output reg ack
-	
-	input[WIDTH-1:0] data_in,
-	output reg[WIDTH-1:0] data_out
+	input					clock,
+	input					sync,
+	output reg				ack=1'b0,
+	input[WIDTH-1:0]		data_in,
+	output reg[WIDTH-1:0]	data_out
 );
 
 	always @(posedge clock) begin

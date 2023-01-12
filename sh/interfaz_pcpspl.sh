@@ -175,7 +175,7 @@ regenerate_bd_layout
 
 update_compile_order -fileset sources_1
 
-add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/editame_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh}
+add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/interfaz_pspl.cp.v ${PROJDIR}/vivado_src/contador.cp.v}
 
 update_compile_order -fileset sources_1
 
@@ -416,10 +416,8 @@ fi
 
 ## vivado sources
 mkdir vivado_src
-mkdir vivado_src/include
-cp "$REPO_fpga/verilog/interfaz_pl_frontend.v" ./vivado_src/editame_interfaz_pl_frontend.v
-cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
-cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
+cp "$REPO_fpga/verilog/interfaz_pspl.v" ./vivado_src/interfaz_pspl.cp.v
+cp "$REPO_fpga/verilog/contador.v" ./vivado_src/contador.cp.v
 
 ((aux=$DATA_WIDTH-1))
 printf "
@@ -433,6 +431,21 @@ module TOP (
 	input[$aux:0]	data_in,
 	output[$aux:0]	data_out
 );
+	wire sync;
+	wire ack;
+	wire[$BUFFER_IN_WIDTH-1:0] buffer_in;
+	wire[$BUFFER_OUT_WIDTH-1:0] buffer_out;
+
+	CONTADOR #(
+		.IN_WIDTH($BUFFER_IN_WIDTH),
+		.OUT_WIDTH($BUFFER_OUT_WIDTH)
+	) contador (
+		.clock(clock),
+		.sync(sync),
+		.ack(ack),
+		.data_in(buffer_in),
+		.data_out(buffer_out)
+	);
 
 	INTERFAZ_PL_FRONTEND #(
 		.DATA_WIDTH($DATA_WIDTH),
@@ -443,7 +456,11 @@ module TOP (
 		.ctrl_in(ctrl_in),
 		.ctrl_out(ctrl_out),
 		.data_in(data_in),
-		.data_out(data_out)
+		.data_out(data_out),
+		.sync(sync),
+		.ack(ack),
+		.buffer_in(buffer_in),
+		.buffer_out(buffer_out)
 	);
 	
 endmodule
