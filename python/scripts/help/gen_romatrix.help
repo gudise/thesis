@@ -99,3 +99,8 @@ Opciones:
  -resolucion [1000000]
  
 	numero de ciclos de medicion para cada oscilador;
+	
+ -debug
+ 
+	Si esta opción está presente, se implementará una matriz de divisores de reloj de frecuencia conocida, lo
+	que permite depurar el diseño al conocer qué resultados deben salir.

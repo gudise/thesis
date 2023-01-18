@@ -1,17 +1,17 @@
 module CLOCK_DIVIDER #(
-	parameter val_ini=1'b0,		// valor inicial del reloj de salida
-	parameter factor=5	// frec. salida = entrada/(2*factor)
+	parameter FDIV=0 // Factor de division: frec_out = frec_in/(2*(FDIV+1))
 ) (
-	input clock,
-	output reg out=val_ini
+	input clock_in,
+	output reg clock_out=0
 );
-	integer contador=0;
+	reg[31:0] contador=0;
 	
-	always @(posedge clock) begin
-		contador <= contador+1;
-		if(contador == factor) begin
-			out <= ~out;
-			contador=0;
+	always @(posedge clock_in) begin
+		if(contador<FDIV)
+			contador <= contador+1;
+		else begin
+			clock_out <= !clock_out;
+			contador <= 0;
 		end
 	end
 

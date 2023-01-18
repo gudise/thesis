@@ -1,6 +1,6 @@
 setup.py
 fpga/__init__.py
-fpga/interfazpcbackend.py
+fpga/interfazpcps.py
 fpga.egg-info/PKG-INFO
 fpga.egg-info/SOURCES.txt
 fpga.egg-info/dependency_links.txt

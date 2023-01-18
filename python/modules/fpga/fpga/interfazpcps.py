@@ -10,18 +10,16 @@ OCT1 =	256			# 256^1
 OCT2 =	65536		# 256^2
 OCT3 =	16777216	# 256^3
 
-cmd_idle =		    0
-cmd_reset =		    1
-cmd_calc =		    2
-cmd_scan =		    3
-cmd_print =		    4
-cmd_end =		    5
+cmd_idle =			0
+cmd_calc =			1
+cmd_scan =			2
+cmd_print =			3
+cmd_end =			4
 
-cmd_idle_sync =	    6
-cmd_reset_sync =    7
-cmd_calc_sync =     8
-cmd_scan_sync =     9
-cmd_print_sync =    10
+cmd_idle_sync =		5
+cmd_calc_sync =		6
+cmd_scan_sync =		7
+cmd_print_sync =	8
 
 
 def intToBytestr(entrada):
@@ -291,17 +289,6 @@ def calc(serialport, buffer_out_width):
 	sendU8(serialport, cmd_calc)
 	bytestr = receiveBytestr(serialport, bytestr_size)
 	return bytestrToBitstr(bytestr, buffer_out_width)
-		
-		
-def reset(serialport):
-	"""
-	Esta funcion dispara un ciclo RDY->RST->RDY a una fsmuart conectada a traves de 'serialport'
-	"""
-	sendU8(serialport, cmd_reset)
-	while 1:
-		read = receiveU8(serialport)
-		if read==cmd_reset_sync:
-			break
 
 
 def scan(serialport, bitstr_in, buffer_in_width):
@@ -313,7 +300,7 @@ def scan(serialport, bitstr_in, buffer_in_width):
 		
 	sendU8(serialport, cmd_scan)
 	sendBytestr(serialport, bitstrToBytestr(bitstr_in, buffer_in_width))
-	
+
 
 def end(serialport):
 	sendU8(serialport, cmd_end)

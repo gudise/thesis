@@ -351,7 +351,7 @@ if test $PY_INTERACTIVO -eq 1
 then
 printf "import serial
 import time
-from fpga.interfazpcbackend import *
+from fpga.interfazpcps import *
 
 buffer_in_width = $BUFFER_IN_WIDTH
 buffer_out_width = $BUFFER_OUT_WIDTH
@@ -379,7 +379,7 @@ import time
 import random
 from tqdm import tqdm
 from fpga import pinta_progreso
-from fpga.interfazpcbackend import *
+from fpga.interfazpcps import *
 
 buffer_in_width = 8
 buffer_out_width = 32
@@ -412,16 +412,13 @@ print(f\"\\\n Success: {success}\\\n Fail: {fail}\\\n\\\n\")
 " > editame_interfaz.py
 fi
 
-
-
 ## vivado sources
 mkdir vivado_src
 cp "$REPO_fpga/verilog/interfaz_pspl.v" ./vivado_src/interfaz_pspl.cp.v
 cp "$REPO_fpga/verilog/contador.v" ./vivado_src/contador.cp.v
 
 ((aux=$DATA_WIDTH-1))
-printf "
-\`timescale 1ns / 1ps
+printf "\`timescale 1ns / 1ps
 
 
 module TOP (
@@ -435,6 +432,22 @@ module TOP (
 	wire ack;
 	wire[$BUFFER_IN_WIDTH-1:0] buffer_in;
 	wire[$BUFFER_OUT_WIDTH-1:0] buffer_out;
+	
+	INTERFAZ_PSPL #(
+		.DATA_WIDTH($DATA_WIDTH),
+		.BUFFER_IN_WIDTH($BUFFER_IN_WIDTH),
+		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
+	) interfaz_pspl (
+		.clock(clock),
+		.ctrl_in(ctrl_in),
+		.ctrl_out(ctrl_out),
+		.data_in(data_in),
+		.data_out(data_out),
+		.sync(sync),
+		.ack(ack),
+		.buffer_in(buffer_in),
+		.buffer_out(buffer_out)
+	);
 
 	CONTADOR #(
 		.IN_WIDTH($BUFFER_IN_WIDTH),
@@ -446,22 +459,6 @@ module TOP (
 		.data_in(buffer_in),
 		.data_out(buffer_out)
 	);
-
-	INTERFAZ_PL_FRONTEND #(
-		.DATA_WIDTH($DATA_WIDTH),
-		.BUFFER_IN_WIDTH($BUFFER_IN_WIDTH),
-		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
-	) interfaz_pl_0 (
-		.clock(clock),
-		.ctrl_in(ctrl_in),
-		.ctrl_out(ctrl_out),
-		.data_in(data_in),
-		.data_out(data_out),
-		.sync(sync),
-		.ack(ack),
-		.buffer_in(buffer_in),
-		.buffer_out(buffer_out)
-	);
 	
 endmodule
 " > vivado_src/top.v
@@ -469,12 +466,12 @@ endmodule
 
 ## sdk sources
 mkdir sdk_src
-cp "$REPO_fpga/c-xilinx/sdk/interfaz_ps_backend.c" ./interfaz_ps_backend.cp.c
+cp "$REPO_fpga/c-xilinx/sdk/interfaz_pcps-pspl.c" ./interfaz_pcps-pspl.cp.c
 
 printf "#define DATA_WIDTH			%d
 #define BUFFER_IN_WIDTH		%d
 #define BUFFER_OUT_WIDTH	%d
-" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
+" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_pcps-pspl_define.h
 
 if test "$BRD" == "cmoda7_15t"
 then
@@ -493,8 +490,8 @@ then
 	xuart="#include \"xuartps.h\""
 fi
 
-echo $xuart | cat - interfaz_ps_backend.cp.c > temp && mv temp interfaz_ps_backend.cp.c
-mv interfaz_ps_backend.cp.c ./sdk_src/interfaz_ps_backend.cp.c
+echo $xuart | cat - interfaz_pcps-pspl.cp.c > temp && mv temp interfaz_pcps-pspl.cp.c
+mv interfaz_pcps-pspl.cp.c ./sdk_src/interfaz_pcps-pspl.cp.c
 
 
 ## echo log

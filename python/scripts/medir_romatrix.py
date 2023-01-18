@@ -7,7 +7,7 @@ import time
 import numpy as np
 import math
 from fpga import pinta_progreso
-from fpga.interfazpcbackend import *
+from fpga.interfazpcps import *
 
 
 out_name = "rawdata.mtz"
@@ -114,9 +114,9 @@ for i in range(N_instancias):
 		for k in range(N_pdl):
 			for l in range(N_osciladores_por_instancia):
 				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k]
-
+				
 				scan(fpga, buffer_in, buffer_in_width)
-		
+				
 				medidas.append(bitstrToInt(calc(fpga, buffer_out_width)))
 				
 				if verbose:
