@@ -19,7 +19,7 @@ DATA_WIDTH=32
 BUFFER_IN_WIDTH=0
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
-FRECSAMPLE=10.0
+FRECSAMPLE=4
 
 i=2
 for opcion
@@ -106,7 +106,7 @@ do
 	then
 		RESOLUCION=${!i}
 		
-	elif test "$opcion" = "-frecsample"
+	elif test "$opcion" = "-fs"
 	then
 		FRECSAMPLE=${!i}
 		
@@ -167,11 +167,11 @@ else
 		NBITSPDL=3
 	fi
 fi
-NBITSPOL=$NINV
+NBITSPOLY=$NINV
 
 if test $BUFFER_IN_WIDTH = 0
 then
-	BUFFER_IN_WIDTH=$((NBITSOSC+NBITSPDL+NBITSPOL))
+	BUFFER_IN_WIDTH=$((NBITSOSC+NBITSPDL+NBITSPOLY))
 fi
 
 
@@ -229,7 +229,7 @@ fi
 ## partial flows (tcl)
 mkdir ./partial_flows
 
-VIVADO_FILES="${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/garomatrix_interfaz_pl_frontend.v ${PROJDIR}/vivado_src/garomatrix.v ${PROJDIR}/vivado_src/include/interfaz_pl_backend.cp.vh ${PROJDIR}/vivado_src/include/interfaz_pl_define.cp.vh"
+VIVADO_FILES="${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/interfaz_pspl.cp.v ${PROJDIR}/vivado_src/garomatrix.v ${PROJDIR}/vivado_src/medidor_bias.cp.v ${PROJDIR}/vivado_src/clock_divider.cp.v"
 if test "$PBLOCK" != "no"
 then
 	VIVADO_FILES="$VIVADO_FILES ${PROJDIR}/vivado_src/pblock.xdc"
@@ -265,20 +265,6 @@ connect_bd_net [get_bd_pins TOP_0/ctrl_in] [get_bd_pins axi_gpio_ctrl/gpio2_io_o
 connect_bd_net [get_bd_pins TOP_0/ctrl_out] [get_bd_pins axi_gpio_ctrl/gpio_io_i]
 
 apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {Clk \"/processing_system7_0/FCLK_CLK0 (100 MHz)\" }  [get_bd_pins TOP_0/clock]
-
-startgroup
-create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0
-endgroup
-set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {$FRECSAMPLE} CONFIG.MMCM_DIVCLK_DIVIDE {2} CONFIG.MMCM_CLKFBOUT_MULT_F {15.625} CONFIG.MMCM_CLKOUT0_DIVIDE_F {78.125} CONFIG.CLKOUT1_JITTER {290.478} CONFIG.CLKOUT1_PHASE_ERROR {133.882}] [get_bd_cells clk_wiz_0]
-
-startgroup
-create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0
-endgroup
-set_property -dict [list CONFIG.CONST_VAL {0}] [get_bd_cells xlconstant_0]
-
-connect_bd_net [get_bd_pins xlconstant_0/dout] [get_bd_pins clk_wiz_0/reset]
-connect_bd_net [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins clk_wiz_0/clk_in1]
-connect_bd_net [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins TOP_0/clock_sample]
 
 regenerate_bd_layout
 
@@ -492,306 +478,100 @@ source ${PROJDIR}/partial_flows/launchsdk.tcl
 
 ## vivado sources
 mkdir vivado_src
-mkdir vivado_src/include
-cp "$REPO_fpga/verilog/include/interfaz_pl_backend.vh" ./vivado_src/include/interfaz_pl_backend.cp.vh
-cp "$REPO_fpga/verilog/include/interfaz_pl_define.vh" ./vivado_src/include/interfaz_pl_define.cp.vh
+cp "$REPO_fpga/verilog/interfaz_pspl.v" ./vivado_src/interfaz_pspl.cp.v
+cp "$REPO_fpga/verilog/medidor_bias.v" ./vivado_src/medidor_bias.cp.v
+cp "$REPO_fpga/verilog/clock_divider.v" ./vivado_src/clock_divider.cp.v
 
 gen_garomatrix.py -out "garomatrix" -Ninv $NINV -Nosc $NOSC -posmap $POSMAP -tipo $TIPO -pinmap $PINMAP -minsel $MINSEL -resolucion $RESOLUCION
 		
 mv garomatrix.v ./vivado_src/
 
-((aux=$DATA_WIDTH-1))
+if test $NOSC -eq 1
+then
+	aux=""
+else
+	aux=".sel_ro(buffer_in[$((NBITSOSC-1)):0]),"
+fi
+if test $TIPO = "lut3"
+then
+	aux1=""
+else
+	aux1=".sel_pdl(buffer_in[$((NBITSOSC+NBITSPDL-1)):$NBITSOSC]),"
+fi
 printf "\`timescale 1ns / 1ps
 
 
 module TOP (
 	input		clock,
-	input		clock_sample,
 	input[7:0]	ctrl_in,
 	output[7:0]	ctrl_out,
-	input[$aux:0]	data_in,
-	output[$aux:0]	data_out
+	input[$((DATA_WIDTH-1)):0]	data_in,
+	output[$((DATA_WIDTH-1)):0]	data_out
 );
+	wire[$((BUFFER_IN_WIDTH-1)):0] buffer_in;
+	wire[$((BUFFER_OUT_WIDTH-1)):0] buffer_out;
+	wire sync;
+	wire ack;
+	wire out_ro;
+	wire clock_s;
+	reg enable_medidor=0;
+	
+	always @(posedge clock) begin
+		case ({sync,ack})
+			2'b10:
+				enable_medidor <= 1;
+				
+			default:
+				enable_medidor <= 0;
+		endcase
+	end
 
-	GAROMATRIX_INTERFAZ_PL_FRONTEND #(
+	INTERFAZ_PSPL #(
 		.DATA_WIDTH($DATA_WIDTH),
 		.BUFFER_IN_WIDTH($BUFFER_IN_WIDTH),
 		.BUFFER_OUT_WIDTH($BUFFER_OUT_WIDTH)
-	) garomatrix_interfaz_pl_frontend (
+	) interfaz_pspl (
 		.clock(clock),
-		.clock_sample(clock_sample),
 		.ctrl_in(ctrl_in),
 		.ctrl_out(ctrl_out),
 		.data_in(data_in),
-		.data_out(data_out)
+		.data_out(data_out),
+		.sync(sync),
+		.ack(ack),
+		.buffer_in(buffer_in),
+		.buffer_out(buffer_out)
+	);
+	
+	CLOCK_DIVIDER #(
+		.FDIV($FRECSAMPLE) // Factor de division: frec_out = frec_in/(2*(FDIV+1))
+	) clock_divider (
+		.clock_in(clock),
+		.clock_out(clock_s)
+	);
+	
+	GAROMATRIX garomatrix (
+		.clock(clock),
+		.enable(1'b1),
+		.clock_s(clock_s),
+		.sel_poly(buffer_in[$((BUFFER_IN_WIDTH-1)):$((NBITSOSC+NBITSPDL))]),
+		$aux
+		$aux1
+		.out(out_ro)
+	);
+	
+	MEDIDOR_BIAS #(
+		.OUT_WIDTH($BUFFER_OUT_WIDTH),
+		.RESOL($RESOLUCION)
+	) medidor_bias (
+		.clock(clock_s),
+		.enable(enable_medidor),
+		.muestra(out_ro),
+		.lock(ack),
+		.out(buffer_out)
 	);
 	
 endmodule
 " > vivado_src/top.v
-
-if test $NOSC -eq 1
-then
-printf "\`include \"interfaz_pl_define.cp.vh\"
-
-
-module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
-	// parametros
-	parameter   DATA_WIDTH = 32,
-	parameter   BUFFER_IN_WIDTH = 16,
-	parameter   BUFFER_OUT_WIDTH = 16
-	) (
-	// I/O 
-	input						clock,
-	input						clock_sample,
-	input[7:0]					ctrl_in,
-	output reg[7:0]				ctrl_out,
-	input[DATA_WIDTH-1:0]		data_in,
-	output reg[DATA_WIDTH-1:0]	data_out
-	);
-
-	//buffer de entrada/salida
-	reg[BUFFER_IN_WIDTH-1:0] buffer_in;
-	reg[BUFFER_OUT_WIDTH-1:0] buffer_out;
-
-	//variables internas estandar
-	reg[3:0] state=\`IDLE;
-	reg[1:0] busy_frontend=\`LOW;
-	reg[1:0] busy_backend=\`LOW;
-	reg[7:0] ctrl_in_reg;
-	reg[DATA_WIDTH-1:0] data_in_reg;
-	reg[7:0] contador_std;
-	reg calc_end;
-	
-	//variables internas custom
-	reg[31:0] contador=0;
-	reg[31:0] contador_ro;
-	reg enable_ro=0;
-	wire out_ro;
-	
-	//registro de input
-	always @(posedge clock) begin
-		ctrl_in_reg <= ctrl_in;
-		
-		data_in_reg <= data_in;
-	end
-" > vivado_src/garomatrix_interfaz_pl_frontend.v
-if test $TIPO = "lut3"
-then
-printf "
-	//asignaciones combinacionales/submodulos
-	GAROMATRIX garomatrix (
-		.clock(clock_sample),
-		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):0]),
-		.enable(enable_ro),
-		.out(out_ro)
-	);
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-else
-printf "
-	//asignaciones combinacionales/submodulos
-	GAROMATRIX garomatrix (
-		.clock(clock_sample),
-		.sel(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
-		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
-		.enable(enable_ro),
-		.out(out_ro)
-	);
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-fi
-printf "
-	always @(posedge clock_sample) begin
-		if(enable_ro==0)
-			contador_ro<=0;
-		else begin
-			if(out_ro==1'b1) contador_ro <= contador_ro+1;
-			else contador_ro <= contador_ro+32'hFFFFFFFF;
-		end
-	end
-	 
-	//definicion de estados
-	always @(posedge clock) begin
-		busy_frontend[1] <= busy_frontend[0];		
-		case (state)
-			\`IDLE: begin
-				//condicion de estabilidad de 'IDLE'
-				if(calc_end==0 && contador==0 && contador_ro==0) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'IDLE'
-				calc_end <= 0;
-				contador<=0;
-				enable_ro <= 0;
-			end
-			
-			\`RST: begin
-				//condicion de estabilidad de 'RST'
-				if(calc_end==0 && contador==0 && contador_ro==0) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'RST'
-				calc_end <= 0;
-				contador<=0;
-				enable_ro <= 0;
-			end
-			
-			\`CALC: begin
-				//condicion de estabilidad de 'CALC'
-				if(calc_end) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'CALC'
-				if(!calc_end) begin
-					if(contador==0)
-						enable_ro <= 1;
-						
-					if(contador<=1000000)
-						contador <= contador+1;
-					else begin
-						calc_end <= 1;
-						buffer_out <= contador_ro;
-					end
-				end
-			end
-		endcase
-	end
-
-	\`include \"interfaz_pl_backend.cp.vh\"
-	
-endmodule
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-
-else
-printf "\`include \"interfaz_pl_define.cp.vh\"
-
-
-module GAROMATRIX_INTERFAZ_PL_FRONTEND #(
-	// parametros
-	parameter   DATA_WIDTH = 32,
-	parameter   BUFFER_IN_WIDTH = 16,
-	parameter   BUFFER_OUT_WIDTH = 16
-	) (
-	// I/O
-	input						clock,
-	input						clock_sample,
-	input[7:0]					ctrl_in,
-	output reg[7:0]				ctrl_out,
-	input[DATA_WIDTH-1:0]		data_in,
-	output reg[DATA_WIDTH-1:0]	data_out
-	);
-	
-	//buffer de entrada/salida
-	reg[BUFFER_IN_WIDTH-1:0] buffer_in;
-	reg[BUFFER_OUT_WIDTH-1:0] buffer_out;
-	
-	//variables internas estandar
-	reg[3:0] state=\`IDLE;
-	reg[1:0] busy_frontend=\`LOW;
-	reg[1:0] busy_backend=\`LOW;
-	reg[7:0] ctrl_in_reg;
-	reg[DATA_WIDTH-1:0] data_in_reg;
-	reg[7:0] contador_std;
-	reg calc_end;
-	
-	//variables internas custom
-	reg[31:0] contador=0;
-	reg[31:0] contador_ro;
-	reg enable_ro=0;
-	wire out_ro;
-	
-	//registro de input
-	always @(posedge clock) begin
-		ctrl_in_reg <= ctrl_in;
-		
-		data_in_reg <= data_in;
-	end
-" > vivado_src/garomatrix_interfaz_pl_frontend.v
-if test $TIPO = "lut3"
-then
-printf "
-	//asignaciones combinacionales/submodulos
-	GAROMATRIX garomatrix (
-		.clock(clock_sample),
-		.sel_ro(buffer_in[$((BUFFER_IN_WIDTH-NINV-1)):0]),
-		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((BUFFER_IN_WIDTH-NINV))]),
-		.enable(enable_ro),
-		.out(out_ro)
-	);
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-else
-printf "
-	//asignaciones combinacionales/submodulos
-	GAROMATRIX garomatrix (
-		.clock(clock_sample),
-		.sel_ro(buffer_in[$((NBITSOSC-1)):0]),
-		.sel(buffer_in[$((NBITSOSC+NBITSPDL-1)):$NBITSOSC]),
-		.polinomio(buffer_in[$((BUFFER_IN_WIDTH-1)):$((NBITSOSC+NBITSPDL))]),
-		.enable(enable_ro),
-		.out(out_ro)
-	);
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-fi
-printf "
-	always @(posedge clock_sample) begin
-		if(enable_ro==0)
-			contador_ro<=0;
-		else begin
-			if(out_ro==1'b1) contador_ro <= contador_ro+1;
-			else contador_ro <= contador_ro+32'hFFFFFFFF;
-		end
-	end
-	 
-	//definicion de estados
-	always @(posedge clock) begin
-		busy_frontend[1] <= busy_frontend[0];		
-		case (state)
-			\`IDLE: begin
-				//condicion de estabilidad de 'IDLE'
-				if(calc_end==0 && contador==0 && contador_ro==0) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'IDLE'
-				calc_end <= 0;
-				contador<=0;
-				enable_ro <= 0;
-			end
-			
-			\`RST: begin
-				//condicion de estabilidad de 'RST'
-				if(calc_end==0 && contador==0 && contador_ro==0) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'RST'
-				calc_end <= 0;
-				contador<=0;
-				enable_ro <= 0;
-			end
-			
-			\`CALC: begin
-				//condicion de estabilidad de 'CALC'
-				if(calc_end) busy_frontend[0] <= 1;
-				else busy_frontend[0] <= 0;
-				
-				//definicion de 'CALC'
-				if(!calc_end) begin
-					if(contador==0)
-						enable_ro <= 1;
-						
-					if(contador<=1000000)
-						contador <= contador+1;
-					else begin
-						calc_end <= 1;
-						buffer_out <= contador_ro;
-					end
-				end
-			end
-		endcase
-	end
-
-	\`include \"interfaz_pl_backend.cp.vh\"
-	
-endmodule
-" >> vivado_src/garomatrix_interfaz_pl_frontend.v
-fi
 
 if test "$PBLOCK" != "no"
 then
@@ -808,13 +588,13 @@ fi
 
 ## sdk sources
 mkdir sdk_src
-cp "$REPO_fpga/c-xilinx/sdk/interfaz_ps_backend.c" ./interfaz_ps_backend.cp.c
+cp "$REPO_fpga/c-xilinx/sdk/interfaz_pcps-pspl.c" ./interfaz_pcps-pspl.cp.c
 
 printf "
 #define DATA_WIDTH			%d
 #define BUFFER_IN_WIDTH		%d
 #define BUFFER_OUT_WIDTH	%d
-" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_ps_define.h
+" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_pcps-pspl_define.h
 
 if test "$BRD" == "cmoda7_15t"
 then
@@ -833,17 +613,21 @@ then
 	xuart="#include \"xuartps.h\""
 fi
 
-echo $xuart | cat - interfaz_ps_backend.cp.c > temp && mv temp interfaz_ps_backend.cp.c
-mv interfaz_ps_backend.cp.c ./sdk_src/interfaz_ps_backend.cp.c
+echo $xuart | cat - interfaz_pcps-pspl.cp.c > temp && mv temp interfaz_pcps-pspl.cp.c
+mv interfaz_pcps-pspl.cp.c ./sdk_src/interfaz_pcps-pspl.cp.c
 
 
 ## log info
 printf "
- Trama del selector(ts): $NBITSOSC $NBITSPDL $NBITSPOL
+ N_osc = $NOSC
+ N_pdl = $((2**NBITSPDL))
+ 
+ Trama del selector(ts): $NBITSOSC $NBITSPDL $NBITSPOLY
  sel_ro_width = $NBITSOSC
  sel_pdl_width = $NBITSPDL
- sel_polinomio_width = $NBITSPOL
+ sel_polinomio_width = $NBITSPOLY
  biw = $BUFFER_IN_WIDTH
+ bow = $BUFFER_OUT_WIDTH
  
  fpga part: ${PARTNUMBER}
  

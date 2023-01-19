@@ -145,125 +145,86 @@ with open(out_name, "w") as f:
 		pinmap.append(pinmap[-1])
 		
 	f.write(f"//N_osciladores de Galois: {N_osciladores}\n\n")
+	
+	f.write("module GAROMATRIX (\n")
+	f.write("	input clock,\n")
+	f.write("	input enable,\n")
+	f.write("	input clock_s,\n")
+	f.write(f"	input[{N_inv-1}:0] sel_poly,\n")
+	
+	if N_osciladores > 1:
+		f.write(f"	input[{N_bits_MUX(N_osciladores)-1}:0] sel_ro,\n")
 		
-	if tipo == "lut3":
-		f.write("module GAROMATRIX (\n")
-		f.write("	input clock,\n")
-		if N_osciladores > 1:
-			f.write(f"	input[{N_bits_MUX(N_osciladores)-1}:0] sel_ro,\n")
-
-		f.write(f"	input[{N_inv-1}:0] polinomio,\n")
-		f.write("	input enable,\n")
-		f.write("	output out\n")
-		f.write("	);\n\n")
-		f.write(f"	(* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *) wire[{N_osciladores-1}:0] out_ro;\n")
-		f.write(f"	wire[{N_osciladores-1}:0] out_ro_sampled;\n")
-		f.write(f"	reg[{N_osciladores-1}:0] enable_ro;\n")
-		for i in range(N_osciladores):
-			f.write(f"\n	wire[{N_inv-1}:0] w_{i};")
-		if N_osciladores>1:
-			f.write("\n\n	assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[sel_ro]=1;\n")
-			f.write("	end\n")
+	if tipo != "lut3":
+		if not minsel:
+			f.write(f"	input[{N_inv-1}:0] sel_pdl,\n")
 		else:
-			f.write("\n\n	assign out = enable? out_ro_sampled[0] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[0]=1;\n")
-			f.write("	end\n")
-		f.write("\n\n")
-		
+			f.write(f"	input[0:0] sel_pdl,\n")
+	
+	f.write("	output out\n")
+	f.write("	);\n\n")
+	f.write(f"	wire[{N_osciladores-1}:0] out_ro;\n")
+	f.write(f"	wire[{N_osciladores-1}:0] out_ro_sampled;\n")
+	f.write("	(* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
+	f.write(f"	wire[{N_inv-1}:0]\n")
+	for i in range(1, N_osciladores, 1):
+		f.write(f"		w_{i-1},\n")
+	f.write(f"		w_{N_osciladores-1};\n")
+	f.write("\n")
+
+	if N_osciladores>1:
+		f.write("	assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
+	else:
+		f.write("	assign out = enable? out_ro_sampled[0] : clock;\n")
+	f.write("\n\n")
+	
+	if tipo == "lut3":
 		for i in range(N_osciladores):
 			celda=[pos_oscilador[0][i],pos_oscilador[1][i]]
-			f.write(f"    (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-			
-			contador=0
-			aux=0
+			f.write(f"	(* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[0]}*) LUT3 #(8'h95) inv_{i}_{0}(.O(w_{i}[{0}]), .I0(w_{i}[{N_inv-1}]), .I1(w_{i}[{N_inv-1}]), .I2(sel_poly[{0}]));\n")
+			aux=1
 			ocupacion_celda=1
 			while True:
 				if ocupacion_celda==4:
 					celda[1]+=1
 					ocupacion_celda=0
-				if aux == N_inv-1:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT3 #(8'h95) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(out_ro[{i}]), .I2(polinomio[{aux}]));\n") # ojo aquí.
-					#f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT1 #(2'b01) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # ojo aquí.
-					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
+				if aux == N_inv:
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) inv_{i}(.O(out_ro[{i}]), .I0(w_{i}[{N_inv-1}]));\n") # INV final
+					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 					
 					ocupacion_celda+=1
 					
 					break
+					
+				f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT3 #(8'h95) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{N_inv-1}]), .I2(sel_poly[{aux}]));\n")
 				
-				f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT3 #(8'h95) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(out_ro[{i}]), .I2(polinomio[{aux}]));\n")
-				
-				contador+=2
 				ocupacion_celda+=1
 				aux+=1
 				
 			f.write("\n")
-		f.write("endmodule\n")
 
 	elif tipo == "lut4":
-		f.write("module GAROMATRIX (\n")
-		f.write("	input clock,\n")
-		if N_osciladores > 1:
-			f.write(f"	input[{N_bits_MUX(N_osciladores)-1}:0] sel_ro,\n")
-		if not minsel:
-			f.write(f"	input[{N_inv-1}:0] sel,\n")
-		else:
-			f.write(f"	input[0:0] sel,\n")
-		f.write(f"	input[{N_inv-1}:0] polinomio,\n")
-		f.write("	input enable,\n")
-		f.write("	output out\n")
-		f.write("	);\n\n")
-		f.write(f"	(* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *) wire[{N_osciladores-1}:0] out_ro;\n")
-		f.write(f"	wire[{N_osciladores-1}:0] out_ro_sampled;\n")
-		f.write(f"	reg[{N_osciladores-1}:0] enable_ro;\n")
-		for i in range(N_osciladores):
-			f.write(f"\n	wire[{N_inv-1}:0] w_{i};")
-		
-		if N_osciladores>1:
-			f.write("\n\n	assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[sel_ro]=1;\n")
-			f.write("	end\n")
-		else:
-			f.write("\n\n	assign out = enable? out_ro_sampled[0] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[0]=1;\n")
-			f.write("	end\n")
-		f.write("\n\n")
-		
 		for i in range(N_osciladores):
 			celda=[pos_oscilador[0][i],pos_oscilador[1][i]]
-			f.write(f"    (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-			
 			contador=0
 			aux=0
-			ocupacion_celda=1
+			ocupacion_celda=0
 			while True:
 				if ocupacion_celda==4:
 					celda[1]+=1
 					ocupacion_celda=0
 				if aux == N_inv-1:
-					if not minsel:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-					else:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) inv_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 					
 					ocupacion_celda+=1
 					
 					break
 						
 				if not minsel:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}]));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_poly[{aux}]), .I3(sel_pdl[{contador}]));\n")
 				else:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT4 #(16'h555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_poly[{aux}]), .I3(sel_pdl[0]));\n")
 						
 				contador+=1
 				ocupacion_celda+=1
@@ -271,68 +232,28 @@ with open(out_name, "w") as f:
 						
 			f.write("\n")
 
-		f.write("endmodule\n")
-	
 	elif tipo == "lut5":
-		f.write("module GAROMATRIX (\n")
-		f.write("	input clock,\n")
-		if N_osciladores > 1:
-			f.write(f"	input[{N_bits_MUX(N_osciladores)-1}:0] sel_ro,\n")
-		if not minsel:
-			f.write(f"	input[{2*N_inv-1}:0] sel,\n")
-		else:
-			f.write(f"	input[1:0] sel,\n")
-		f.write(f"	input[{N_inv-1}:0] polinomio,\n")
-		f.write("	input enable,\n")
-		f.write("	output out\n")
-		f.write("	);\n\n")
-		f.write(f"	(* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *) wire[{N_osciladores-1}:0] out_ro;\n")
-		f.write(f"	wire[{N_osciladores-1}:0] out_ro_sampled;\n")
-		f.write(f"	reg[{N_osciladores-1}:0] enable_ro;\n")
-		for i in range(N_osciladores):
-			f.write(f"\n	wire[{N_inv-1}:0] w_{i};")
-		
-		if N_osciladores>1:
-			f.write("\n\n	assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[sel_ro]=1;\n")
-			f.write("	end\n")
-		else:
-			f.write("\n\n	assign out = enable? out_ro_sampled[0] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[0]=1;\n")
-			f.write("	end\n")
-		f.write("\n\n")
-		
 		for i in range(N_osciladores):
 			celda=[pos_oscilador[0][i],pos_oscilador[1][i]]
-			f.write(f"    (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-			
 			contador=0
 			aux=0
-			ocupacion_celda=1
+			ocupacion_celda=0
 			while True:
 				if ocupacion_celda==4:
 					celda[1]+=1
 					ocupacion_celda=0
 				if aux == N_inv-1:
-					if not minsel:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}]), .I4(sel[{contador+1}]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-					else:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]), .I4(sel[1]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) inv_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 					
 					ocupacion_celda+=1
 					
 					break
-						
+					
 				if not minsel:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}, .I4(sel[{contador+1}])]));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_poly[{aux}]), .I3(sel_pdl[{contador}, .I4(sel_pdl[{contador+1}])]));\n")
 				else:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]), .I4(sel[1]));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT5 #(32'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_poly[{aux}]), .I3(sel_pdl[0]), .I4(sel_pdl[1]));\n")
 						
 				contador+=2
 				ocupacion_celda+=1
@@ -340,68 +261,28 @@ with open(out_name, "w") as f:
 						
 			f.write("\n")
 
-		f.write("endmodule\n")
-	
 	elif tipo == "lut6":
-		f.write("module GAROMATRIX (\n")
-		f.write("	input clock,\n")
-		if N_osciladores > 1:
-			f.write(f"	input[{N_bits_MUX(N_osciladores)-1}:0] sel_ro,\n")
-		if not minsel:
-			f.write(f"	input[{3*N_inv-1}:0] sel,\n")
-		else:
-			f.write(f"	input[2:0] sel,\n")
-		f.write(f"	input[{N_inv-1}:0] polinomio,\n")
-		f.write("	input enable,\n")
-		f.write("	output out\n")
-		f.write("	);\n\n")
-		f.write(f"	(* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *) wire[{N_osciladores-1}:0] out_ro;\n")
-		f.write(f"	wire[{N_osciladores-1}:0] out_ro_sampled;\n")
-		f.write(f"	reg[{N_osciladores-1}:0] enable_ro;\n")
-		for i in range(N_osciladores):
-			f.write(f"\n	wire[{N_inv-1}:0] w_{i};")
-		
-		if N_osciladores>1:
-			f.write("\n\n	assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[sel_ro]=1;\n")
-			f.write("	end\n")
-		else:
-			f.write("\n\n	assign out = enable? out_ro_sampled[0] : clock;\n")
-			f.write("\n	always @(*) begin\n")
-			f.write("		enable_ro = 0;\n")
-			f.write("		if(enable) enable_ro[0]=1;\n")
-			f.write("	end\n")
-		f.write("\n\n")
-		
 		for i in range(N_osciladores):
 			celda=[pos_oscilador[0][i],pos_oscilador[1][i]]
-			f.write(f"    (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-			
 			contador=0
 			aux=0
-			ocupacion_celda=1
+			ocupacion_celda=0
 			while True:
 				if ocupacion_celda==4:
 					celda[1]+=1
 					ocupacion_celda=0
 				if aux == N_inv-1:
-					if not minsel:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}]), .I4(sel[{contador+1}]), .I5(sel[{contador+2}]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-					else:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]), .I4(sel[1]), .I5(sel[2]));\n\n")
-						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) inv_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+					f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 						
 					ocupacion_celda+=1
 					
 					break
-						
+					
 				if not minsel:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[{contador}]), .I2(polinomio[{aux}]), .I3(sel[{contador}], .I4(sel[{contador+1}]), .I5(sel[{contador+2}])));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_poly[{aux}]), .I3(sel_pdl[{contador}], .I4(sel_pdl[{contador+1}]), .I5(sel_pdl[{contador+2}])));\n")
 				else:
-					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel[0]), .I2(polinomio[{aux}]), .I3(sel[0]), .I4(sel[1]), .I5(sel[2]));\n")
+					f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT6 #(64'h55555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_poly[{aux}]), .I3(sel_pdl[0]), .I4(sel_pdl[1]), .I5(sel_pdl[2]));\n")
 						
 				contador+=3
 				ocupacion_celda+=1
@@ -409,5 +290,4 @@ with open(out_name, "w") as f:
 						
 			f.write("\n")
 
-		f.write("endmodule\n")
-	
+	f.write("endmodule\n")

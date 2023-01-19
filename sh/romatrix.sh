@@ -496,7 +496,7 @@ if test $TIPO = "lut1"
 then
 	aux1=""
 else
-	aux1=".sel(buffer_in[$((BUFFER_IN_WIDTH-1)):$NBITSOSC]),"
+	aux1=".sel_pdl(buffer_in[$((BUFFER_IN_WIDTH-1)):$NBITSOSC]),"
 fi
 printf "\`timescale 1ns / 1ps
 
@@ -544,7 +544,8 @@ module TOP (
 	ROMATRIX romatrix (
 		.clock(clock),
 		.enable(1'b1),
-		.sel_ro(buffer_in),
+		$aux
+		$aux1
 		.out(out_ro)
 	);
 	

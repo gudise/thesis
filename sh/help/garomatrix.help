@@ -127,9 +127,13 @@
  -resolucion 1000000
  
  
- -frecsample 10.0
+ -fs 4
  
-	Frecuencia de muestreo de los osciladores de Galois.
+	Factor de división para el divisor de reloj. La frecuencia de muestreo real se calcula como:
+	
+		frec = 100 MHz/(2*(frecsample+1))
+		
+	De modo que la frecuencia de muestreo por defecto es 10 MHz.
 
 
  -dw 32

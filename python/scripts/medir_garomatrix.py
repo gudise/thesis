@@ -7,7 +7,7 @@ import time
 import numpy as np
 import math
 from fpga import pinta_progreso
-from fpga.interfazpcbackend import *
+from fpga.interfazpcps import *
 
 
 out_name = "rawdata.mtz"
