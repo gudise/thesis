@@ -8,6 +8,8 @@
  la comunicación con PS. 
 */
 
+`include "interfaz_pspl_define.vh"
+
 
 `define LOW		2'b00
 `define RISING	2'b01
@@ -141,15 +143,22 @@ module INTERFAZ_PSPL #(
 				ctrl_out <= `cmd_scan;
 				
 				if(ctrl_in_reg==`cmd_scan_sync) begin
-				
-					if(BUFFER_IN_WIDTH >= DATA_WIDTH*(contador_std+1))
-						buffer_in[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH] <= data_in_reg[DATA_WIDTH-1:0]; 
-					else begin
-						if(BUFFER_IN_WIDTH<=DATA_WIDTH)
-							buffer_in[BUFFER_IN_WIDTH-1 -: BUFFER_IN_WIDTH] <= data_in_reg[BUFFER_IN_WIDTH-1 -: BUFFER_IN_WIDTH];
-						else
-							buffer_in[BUFFER_IN_WIDTH-1 -: BUFFER_IN_WIDTH%DATA_WIDTH] <= data_in_reg[BUFFER_IN_WIDTH%DATA_WIDTH-1 -: BUFFER_IN_WIDTH%DATA_WIDTH];	
-					end
+					`ifdef DW_GT_BIW
+						buffer_in <= data_in;
+					
+					`elsif BIW_ALIGNED_DW
+						buffer_in[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH] <= data_in;
+						
+					`elsif BIW_MISALIGNED_DW
+						if(contador_std<BUFFER_IN_WIDTH/DATA_WIDTH)
+							buffer_in[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH] <= data_in;
+						else if(contador_std==BUFFER_IN_WIDTH/DATA_WIDTH)
+							buffer_in[BUFFER_IN_WIDTH-1 : BUFFER_IN_WIDTH-BUFFER_IN_WIDTH%DATA_WIDTH] <= data_in;
+							
+					`else
+						buffer_in <= data_in;
+						
+					`endif
 					
 					state <= `SCAN_SYNC;
 					busy_backend[0] <= 0;
@@ -181,15 +190,22 @@ module INTERFAZ_PSPL #(
 			`PRINT: begin
 				ctrl_out <= `cmd_print;
 								
-				if(BUFFER_OUT_WIDTH >= DATA_WIDTH*(contador_std+1))
+				`ifdef DW_GT_BOW
+					data_out <= buffer_out;
+					
+				`elsif BOW_ALIGNED_DW
 					data_out <= buffer_out[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH];
-				else begin
-					data_out <= 0;
-					if(BUFFER_OUT_WIDTH<=DATA_WIDTH)
-						data_out <= buffer_out[BUFFER_OUT_WIDTH-1 -: BUFFER_OUT_WIDTH];
-					else
-						data_out <= buffer_out[BUFFER_OUT_WIDTH-1 -: BUFFER_OUT_WIDTH%DATA_WIDTH];
-				end
+				
+				`elsif BOW_MISALIGNED_DW
+					if(contador_std<BUFFER_OUT_WIDTH/DATA_WIDTH)
+						data_out <= buffer_out[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH];
+					else if(contador_std==BUFFER_OUT_WIDTH/DATA_WIDTH)
+						data_out <= buffer_out[BUFFER_OUT_WIDTH-1 : BUFFER_OUT_WIDTH-BUFFER_OUT_WIDTH%DATA_WIDTH];
+				
+				`else
+					data_out <= buffer_out;
+				
+				`endif
 				
 				if(ctrl_in_reg==`cmd_print_sync) begin
 					state <= `PRINT_SYNC;

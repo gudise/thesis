@@ -174,6 +174,33 @@ then
 	BUFFER_IN_WIDTH=$((NBITSOSC+NBITSPDL+NBITSPOLY))
 fi
 
+if test $((BUFFER_IN_WIDTH%8)) -eq 0
+then
+	((OCTETO_IN_WIDTH=BUFFER_IN_WIDTH/8))
+else
+	((OCTETO_IN_WIDTH=BUFFER_IN_WIDTH/8+1))
+fi
+
+if test $((BUFFER_OUT_WIDTH%8)) -eq 0
+then
+	((OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH/8))
+else
+	((OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH/8+1))
+fi
+
+if test $((BUFFER_IN_WIDTH%DATA_WIDTH)) -eq 0
+then
+	((WORDS_IN_WIDTH=BUFFER_IN_WIDTH/DATA_WIDTH))
+else
+	((WORDS_IN_WIDTH=BUFFER_IN_WIDTH/DATA_WIDTH+1))
+fi
+
+if test $((BUFFER_OUT_WIDTH%DATA_WIDTH)) -eq 0
+then
+	((WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH/DATA_WIDTH))
+else
+	((WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH/DATA_WIDTH+1))
+fi
 
 ## projdir (directorio actual)
 if test $WINDOWS_STYLE = 1
@@ -590,11 +617,14 @@ fi
 mkdir sdk_src
 cp "$REPO_fpga/c-xilinx/sdk/interfaz_pcps-pspl.c" ./interfaz_pcps-pspl.cp.c
 
-printf "
-#define DATA_WIDTH			%d
-#define BUFFER_IN_WIDTH		%d
-#define BUFFER_OUT_WIDTH	%d
-" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_pcps-pspl_define.h
+printf "#define DATA_WIDTH			$DATA_WIDTH
+#define BUFFER_IN_WIDTH		$BUFFER_IN_WIDTH
+#define BUFFER_OUT_WIDTH	$BUFFER_OUT_WIDTH
+#define OCTETO_IN_WIDTH		$OCTETO_IN_WIDTH
+#define OCTETO_OUT_WIDTH	$OCTETO_OUT_WIDTH
+#define WORDS_IN_WIDTH		$WORDS_IN_WIDTH
+#define WORDS_OUT_WIDTH		$WORDS_OUT_WIDTH
+" > ./sdk_src/interfaz_pcps-pspl_define.h
 
 if test "$BRD" == "cmoda7_15t"
 then

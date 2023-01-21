@@ -7,8 +7,8 @@ NJOBS=4
 QSPI=0
 MEMPART=""
 DATA_WIDTH=32
-USBPORT="ttys4"
-BUFFER_IN_WIDTH=8
+USBPORT="ttyS4"
+BUFFER_IN_WIDTH=32
 BUFFER_OUT_WIDTH=32
 WINDOWS_STYLE=1
 PY_INTERACTIVO=0
@@ -28,7 +28,7 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 		-njobs [4]
 		-qspi
 		-dw [32], data_width (tamano del bus gpio)
-		-biw [8], buffer_in_width (bits significativos de la palabra de entrada data_in)
+		-biw [32], buffer_in_width (bits significativos de la palabra de entrada data_in)
 		-bow [32], buffer_out_width (bits significativos de la palabra de salida data_out)
 		-py_interactivo, esta opción permite cambiar el programa python de muestra (por defecto 'testbench').
 		-linux, utilizar esta opcion si Vivado esta instalado en un SO linux. De otro modo el formato de los PATH sera el de Windows y los script tcl fallaran
@@ -108,6 +108,53 @@ Este script copia en el directorio actual los tres ficheros necesarios para impl
 	i=$((i+1))
 done
 
+if test $((BUFFER_IN_WIDTH%8)) -eq 0
+then
+	((OCTETO_IN_WIDTH=BUFFER_IN_WIDTH/8))
+else
+	((OCTETO_IN_WIDTH=BUFFER_IN_WIDTH/8+1))
+fi
+
+if test $((BUFFER_OUT_WIDTH%8)) -eq 0
+then
+	((OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH/8))
+else
+	((OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH/8+1))
+fi
+
+if test $((BUFFER_IN_WIDTH%DATA_WIDTH)) -eq 0
+then
+	((WORDS_IN_WIDTH=BUFFER_IN_WIDTH/DATA_WIDTH))
+else
+	((WORDS_IN_WIDTH=BUFFER_IN_WIDTH/DATA_WIDTH+1))
+fi
+
+if test $((BUFFER_OUT_WIDTH%DATA_WIDTH)) -eq 0
+then
+	((WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH/DATA_WIDTH))
+else
+	((WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH/DATA_WIDTH+1))
+fi
+
+if test $DATA_WIDTH -ge $BUFFER_IN_WIDTH
+then
+	DW_GT_BIW='`define DW_GT_BIW'
+elif test $((BUFFER_IN_WIDTH%DATA_WIDTH)) -eq 0
+then
+	BIW_ALIGNED_DW='`define BIW_ALIGNED_DW'
+else
+	BIW_MISALIGNED_DW='`define BIW_MISALIGNED_DW'
+fi
+
+if test $DATA_WIDTH -ge $BUFFER_OUT_WIDTH
+then
+	DW_GT_BOW='`define DW_GT_BOW'
+elif test $((BUFFER_OUT_WIDTH%DATA_WIDTH)) -eq 0
+then
+	BOW_ALIGNED_DW='`define BOW_ALIGNED_DW'
+else
+	BOW_MISALIGNED_DW='`define BOW_MISALIGNED_DW'
+fi
 
 ## projdir (directorio actual)
 if test $WINDOWS_STYLE = 1
@@ -175,7 +222,7 @@ regenerate_bd_layout
 
 update_compile_order -fileset sources_1
 
-add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/interfaz_pspl.cp.v ${PROJDIR}/vivado_src/contador.cp.v}
+add_files -norecurse {${PROJDIR}/vivado_src/top.v ${PROJDIR}/vivado_src/interfaz_pspl.cp.v ${PROJDIR}/vivado_src/contador.cp.v ${PROJDIR}/vivado_src/interfaz_pspl_define.vh}
 
 update_compile_order -fileset sources_1
 
@@ -381,14 +428,14 @@ from tqdm import tqdm
 from fpga import pinta_progreso
 from fpga.interfazpcps import *
 
-buffer_in_width = 8
-buffer_out_width = 32
+buffer_in_width = $BUFFER_IN_WIDTH
+buffer_out_width = $BUFFER_OUT_WIDTH
 
 random.seed(time.time())
 valores_test = [random.randint(0, 2**buffer_in_width-1) for i in range(1000)]
-valores_check = [i+1 for i in valores_test]
+valores_check = [(i+1)%%2**buffer_out_width for i in valores_test] # Puede que esto este mal.
 
-fpga = serial.Serial(port=\"/dev/ttys17\", baudrate=9600, bytesize=8)
+fpga = serial.Serial(port=\"/dev/${USBPORT}\", baudrate=9600, bytesize=8)
 time.sleep(.1)
 
 success = 0
@@ -417,7 +464,15 @@ mkdir vivado_src
 cp "$REPO_fpga/verilog/interfaz_pspl.v" ./vivado_src/interfaz_pspl.cp.v
 cp "$REPO_fpga/verilog/contador.v" ./vivado_src/contador.cp.v
 
-((aux=$DATA_WIDTH-1))
+printf "$DW_GT_BIW
+$BIW_ALIGNED_DW
+$BIW_MISALIGNED_DW
+$DW_GT_BOW
+$BOW_ALIGNED_DW
+$BOW_MISALIGNED_DW
+" > vivado_src/interfaz_pspl_define.vh
+
+
 printf "\`timescale 1ns / 1ps
 
 
@@ -425,8 +480,8 @@ module TOP (
 	input			clock,
 	input[7:0]		ctrl_in,
 	output[7:0]		ctrl_out,
-	input[$aux:0]	data_in,
-	output[$aux:0]	data_out
+	input[$((DATA_WIDTH-1)):0]	data_in,
+	output[$((DATA_WIDTH-1)):0]	data_out
 );
 	wire sync;
 	wire ack;
@@ -468,10 +523,14 @@ endmodule
 mkdir sdk_src
 cp "$REPO_fpga/c-xilinx/sdk/interfaz_pcps-pspl.c" ./interfaz_pcps-pspl.cp.c
 
-printf "#define DATA_WIDTH			%d
-#define BUFFER_IN_WIDTH		%d
-#define BUFFER_OUT_WIDTH	%d
-" $DATA_WIDTH $BUFFER_IN_WIDTH $BUFFER_OUT_WIDTH > ./sdk_src/interfaz_pcps-pspl_define.h
+printf "#define DATA_WIDTH			$DATA_WIDTH
+#define BUFFER_IN_WIDTH		$BUFFER_IN_WIDTH
+#define BUFFER_OUT_WIDTH	$BUFFER_OUT_WIDTH
+#define OCTETO_IN_WIDTH		$OCTETO_IN_WIDTH
+#define OCTETO_OUT_WIDTH	$OCTETO_OUT_WIDTH
+#define WORDS_IN_WIDTH		$WORDS_IN_WIDTH
+#define WORDS_OUT_WIDTH		$WORDS_OUT_WIDTH
+" > ./sdk_src/interfaz_pcps-pspl_define.h
 
 if test "$BRD" == "cmoda7_15t"
 then
@@ -494,16 +553,24 @@ echo $xuart | cat - interfaz_pcps-pspl.cp.c > temp && mv temp interfaz_pcps-pspl
 mv interfaz_pcps-pspl.cp.c ./sdk_src/interfaz_pcps-pspl.cp.c
 
 
-## echo log
-echo ""
-echo " fpga part: ${PARTNUMBER}"
-echo ""
-echo " sdk source files: ${PROJDIR}/sdk_src/"
-echo ""
-echo ""
-echo " ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerda editar
- 'partial_flows/setupdesign.tcl' (comando 'add_files') para reflejar este cambio!"
-echo ""
+## log info
+printf "
+ dw	=	$DATA_WIDTH
+ biw	=	$BUFFER_IN_WIDTH
+ bow	=	$BUFFER_OUT_WIDTH
+ oiw	=	$OCTETO_IN_WIDTH
+ oow	=	$OCTETO_OUT_WIDTH
+ wiw	=	$WORDS_IN_WIDTH
+ wow	=	$WORDS_OUT_WIDTH
+ 
+ fpga part: ${PARTNUMBER}
+ 
+ sdk source files: ${PROJDIR}/sdk_src/
+ 
+ ¡Si modificas las fuentes (cambias el nombre o añades archivos) recuerda editar
+ 'partial_flows/setupdesign.tcl' (comando 'add_files') para reflejar este cambio!
+ 
+"
 
 if test $QSPI -eq 1
 then
