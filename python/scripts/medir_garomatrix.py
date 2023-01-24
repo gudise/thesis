@@ -13,10 +13,14 @@ from fpga.interfazpcps import *
 out_name = "rawdata.mtz"
 osc = range(1)
 pdl = range(1)
+poly = 0
+resol = 20
+fdiv = 6
 sel_ro_width = 4
 sel_pdl_width = 0
-sel_polinomio_width = 3
-polinomio = 0
+sel_poly_width = 3
+sel_resol_width = 5
+sel_fdiv_width = 5
 buffer_out_width = 32
 N_osciladores_por_instancia = 0
 N_repeticiones = 1
@@ -35,7 +39,7 @@ for i, opt in enumerate(sys.argv):
 	if opt == "-trama_selector" or opt == "-ts":
 		sel_ro_width = int(sys.argv[i+1])
 		sel_pdl_width = int(sys.argv[i+2])
-		sel_polinomio_width = int(sys.argv[i+3])
+		sel_poly_width = int(sys.argv[i+3])
 		
 	if opt == "-buffer_out_width" or opt=="-bow":
 		buffer_out_width = int(sys.argv[i+1])
@@ -70,8 +74,14 @@ for i, opt in enumerate(sys.argv):
 			elif len(pdl) == 3:
 				pdl = range(pdl[0], pdl[1], pdl[2])
 				
-	if opt == "-polinomio":
-		polinomio = sys.argv[i+1]
+	if opt == "-poly":
+		poly = int(sys.argv[i+1])
+		
+	if opt=="-resol":
+		resol=int(sys.argv[i+1])
+		
+	if opt=="-fdiv":
+		fdiv=int(sys.argv[i+1])
 				
 	if opt == "-osc_por_instancia" or opt=="-opi":
 		N_osciladores_por_instancia = int(sys.argv[i+1])
@@ -80,7 +90,7 @@ for i, opt in enumerate(sys.argv):
 		N_repeticiones = int(sys.argv[i+1])
 		
 	if opt=="-puerto":
-		puerto = '/dev/ttyS'+sys.argv[i+1]
+		puerto = '/dev/tty'+sys.argv[i+1]
 		
 	if opt=="-baudrate":
 		baudrate = int(sys.argv[i+1])
@@ -92,7 +102,7 @@ for i, opt in enumerate(sys.argv):
 if N_osciladores_por_instancia==0:
 	N_osciladores_por_instancia = len(osc)
 
-buffer_in_width = sel_ro_width+sel_pdl_width+sel_polinomio_width
+buffer_in_width = sel_ro_width+sel_pdl_width+sel_poly_width+sel_resol_width+sel_fdiv_width
 N_osciladores = len(osc)
 N_pdl = len(pdl)
 N_instancias = N_osciladores//N_osciladores_por_instancia
@@ -110,7 +120,11 @@ buffer_sel_ro=[]
 for i in osc:
 	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
 	
-buffer_sel_polinomio = resizeArray(intToBitstr(0), sel_polinomio_width)
+buffer_sel_poly = resizeArray(intToBitstr(poly), sel_poly_width)
+
+buffer_sel_resol = resizeArray(intToBitstr(resol), sel_resol_width)
+
+buffer_sel_fdiv = resizeArray(intToBitstr(fdiv), sel_fdiv_width)
 
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
@@ -121,7 +135,7 @@ for i in range(N_instancias):
 	for j in range(N_repeticiones):
 		for k in range(N_pdl):
 			for l in range(N_osciladores_por_instancia):
-				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k] + buffer_sel_polinomio
+				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l]+buffer_sel_pdl[k]+buffer_sel_poly+buffer_sel_resol+buffer_sel_fdiv
 
 				scan(fpga, buffer_in, buffer_in_width)
 		

@@ -1,14 +1,17 @@
 /*
- Este modulo implementa un medidor de frecuencia para la senal 'clock_u' usando 'RESOL' ciclos de 'clock'. 
+ Este modulo implementa un medidor de frecuencia para la senal 'clock_u' usando 'RESOL' ciclos de 'clock'.
+ El tiempo de medida utilizado para resolver la frecuencia de la señal de llegada se puede modificar mediante
+ la variable de entrada 'resol'. Este es un número de 5 bits que contiene el exponente del valor máximo
+ del contador, i.e. el reloj de referencia girará 2^resol vueltas antes de terminar la medida.  
 */
 
 module MEDIDOR_FREC #(
-	parameter OUT_WIDTH=32,
-	parameter RESOL=1000 // ResoluciÃƒÂ³n de la medida. En el futuro podrÃƒÂ­a ser interesante hacer de este parÃƒÂ¡metro una variable de entrada.
+	parameter OUT_WIDTH=32
 ) (
 	input						clock,
 	input						enable,
 	input						clock_u,
+	input[4:0]                  resol, // Exponente base 2 de la variable de resolucion.
 	output reg					lock=0,
 	output reg[OUT_WIDTH-1:0]	out
 );
@@ -24,7 +27,7 @@ module MEDIDOR_FREC #(
 				lock <= 0;
 		end
 		else begin
-			if(contador<=RESOL) begin
+			if(contador<(32'd1<<resol)) begin
 				enable_u <= 1;
 				contador <= contador+1;
 			end

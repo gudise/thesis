@@ -5,10 +5,25 @@
  se hace a través de un protocolo 'handshake', de modo que cuando la interfaz dispone de un dato disponible
  sube una señal 'sync'->1; una vez los cálculos en PL han terminado, la interfaz espera recibir 'ack'->1. Por
  último, para reiniciar el ciclo de lectura, la interfaz bajará 'sync'->0, y cuando reciba 'ack'->0 proseguirá
- la comunicación con PS. 
+ la comunicación con PS.
+ 
+ Hay varias alternativas de compilación en función de la relación entre DATA_WIDTH, BUFFER_IN_WIDTH, y BUFFER_OUT_WIDTH.
+ Estas se implementan a través del archivo 'interfaz_pspl_define.vh' que se incluye en este módulo; en este fichero pueden
+ aparecer definidos uno los sigientes tres elementos para cada estado (SCAN/PRINT), los cuales modifican el código a sintetizar:
+ 	Estado 'SCAN' (leer datos PS->PL); se define uno o ninguno de los siguientes elementos:
+ 		 DW_GE_BIW			--> DATA_WIDTH es mayor o igual que BUFFER_IN_WIDTH	
+ 		 BIW_ALIGNED_DW		--> BUFFER_IN_WIDTH es mayor que DATA_WIDTH, pero están alineados (BUFFER_IN_WIDTH%DATA_WIDTH == 0)
+ 		 BIW_MISALIGNED_DW	--> BUFFER_IN_WIDTH es mayor que DATA_WIDTH, y no están alineados (BUFFER_IN_WIDTH%DATA_WIDTH != 0)
+ 		 
+  	Estado 'PRINT' (escribir datos PL->PS); se define uno o ninguno de los siguientes elementos:
+ 		 DW_GE_BOW			--> DATA_WIDTH es mayor o igual que BUFFER_OUT_WIDTH	
+ 		 BOW_ALIGNED_DW		--> BUFFER_OUT_WIDTH es mayor que DATA_WIDTH, pero están alineados (BUFFER_OUT_WIDTH%DATA_WIDTH == 0)
+ 		 BOW_MISALIGNED_DW	--> BUFFER_OUT_WIDTH es mayor que DATA_WIDTH, y no están alineados (BUFFER_OUT_WIDTH%DATA_WIDTH != 0)
+ 		 
+ En caso de que no se defina ninguna de estas cantidades, el comportamiento por defecto es DW_GE_BIW y DW_GE_BOW.
 */
 
-`include "interfaz_pspl_define.vh"
+`include "interfaz_pspl_config.vh"
 
 
 `define LOW		2'b00
@@ -143,7 +158,7 @@ module INTERFAZ_PSPL #(
 				ctrl_out <= `cmd_scan;
 				
 				if(ctrl_in_reg==`cmd_scan_sync) begin
-					`ifdef DW_GT_BIW
+					`ifdef DW_GE_BIW
 						buffer_in <= data_in;
 					
 					`elsif BIW_ALIGNED_DW
@@ -154,7 +169,6 @@ module INTERFAZ_PSPL #(
 							buffer_in[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH] <= data_in;
 						else if(contador_std==BUFFER_IN_WIDTH/DATA_WIDTH)
 							buffer_in[BUFFER_IN_WIDTH-1 : BUFFER_IN_WIDTH-BUFFER_IN_WIDTH%DATA_WIDTH] <= data_in;
-							
 					`else
 						buffer_in <= data_in;
 						
@@ -190,7 +204,7 @@ module INTERFAZ_PSPL #(
 			`PRINT: begin
 				ctrl_out <= `cmd_print;
 								
-				`ifdef DW_GT_BOW
+				`ifdef DW_GE_BOW
 					data_out <= buffer_out;
 					
 				`elsif BOW_ALIGNED_DW
@@ -201,7 +215,6 @@ module INTERFAZ_PSPL #(
 						data_out <= buffer_out[DATA_WIDTH*(contador_std+1)-1 -: DATA_WIDTH];
 					else if(contador_std==BUFFER_OUT_WIDTH/DATA_WIDTH)
 						data_out <= buffer_out[BUFFER_OUT_WIDTH-1 : BUFFER_OUT_WIDTH-BUFFER_OUT_WIDTH%DATA_WIDTH];
-				
 				`else
 					data_out <= buffer_out;
 				

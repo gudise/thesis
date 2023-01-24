@@ -1,29 +1,29 @@
-#include "xuartps.h"
+#include "interfaz_pcps-pspl_config.h"
+
 #ifndef XUARTPS_H
 	#ifndef XUARTLITE_H
 		#include "xuartps.h"
 	#endif
 #endif
 
-#include "xparameters.h"
-#include "xil_printf.h"
 #include "xgpio.h"
+#include "xparameters.h"
 
 #ifdef XUARTPS_H
 	#define XUart_Send(x, y, z)	XUartPs_Send(x, y, z)
 	#define XUart_Recv(x, y, z)	XUartPs_Recv(x, y, z)
 	#define XUart   XUartPs
+	#define UART_DEVICE_ID	XPAR_XUARTPS_0_DEVICE_ID
 #elif defined XUARTLITE_H
 	#define XUart_Send(x, y, z) XUartLite_Send(x, y, z)
 	#define XUart_Recv(x, y, z)	XUartLite_Recv(x, y, z)
 	#define XUart   XUartLite
+	#define UART_DEVICE_ID	XPAR_UARTLITE_0_DEVICE_ID
 #endif
 
-#define OCT0	1			// 256^0
-#define OCT1	256			// 256^1
-#define OCT2	65536		// 256^2
-#define OCT3	16777216	// 256^3
-#define OCT(x)	OCT0*(x==0)+OCT1*(x==1)+OCT2*(x==2)+OCT3*(x==3)
+#define GPIO_CTRL_ID	XPAR_AXI_GPIO_CTRL_DEVICE_ID
+#define GPIO_DATA_ID	XPAR_AXI_GPIO_DATA_DEVICE_ID
+
 
 #define IDLE 		1
 #define CALC 		2
@@ -43,7 +43,7 @@
 #define cmd_scan_sync	7
 #define cmd_print_sync	8
 
-#include "interfaz_pcps-pspl_define.h"
+
 #ifndef DATA_WIDTH
 	#define DATA_WIDTH			32
 #endif
@@ -64,45 +64,45 @@
 #endif
 #ifndef WORDS_OUT_WIDTH
 	#define WORDS_OUT_WIDTH		1
-#endif
-// Esto asegura que al menos habra unos valores por defecto de los parametros.
-
-#ifdef XUARTPS_H
-	#define UART_DEVICE_ID	XPAR_XUARTPS_0_DEVICE_ID
-#elif defined XUARTLITE_H
-	#define UART_DEVICE_ID	XPAR_UARTLITE_0_DEVICE_ID
-#endif
-
-#define GPIO_CTRL_ID	XPAR_AXI_GPIO_CTRL_DEVICE_ID
-#define GPIO_DATA_ID	XPAR_AXI_GPIO_DATA_DEVICE_ID
+#endif // Esto asegura que al menos habra unos valores por defecto para los parametros.
 
 
+// Funciones (encabezados)
+//// Config. perifericos
+void	config_UART();
+void	config_GPIO();
+//// Comm. PCPS
 void	send_u8(u8 data);
 void	send_octeto(u8 octeto_out[]);
 u8		recv_u8();
 void	recv_octeto(u8 octeto_in[]);
-void	config_UART(XUart* Uart, int uart_id);
-void	config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int ctrl_id, int data_id);
-
+//// Comm. PSPL
+void	idle_handshake();
+void	calc_handshake();
+void	scan_handshake();
+void	scan_sync_handshake();
+void	print_handshake();
+void	print_sync_handshake();
+//// Ciclo FSM
+void	scan_cycle(u32 words_in[]);
 void	calc_cycle();
-void scan_cycle(u32 words_in[]);
-void print_cycle(u32 words_out[]);
-void print_sync_handshake();
-void print_handshake();
-void idle_handshake();
-void scan_sync_handshake();
-void scan_handshake();
-void export_octeto_out(u32 words_out[], u8 octeto_out[]);
-void import_words_in(u8 octeto_in[], u32 words_in[]);
+void	print_cycle(u32 words_out[]);
+//// E/S PCPS
+void	import_words_in(u8 octeto_in[], u32 words_in[]);
+void	export_octeto_out(u32 words_out[], u8 octeto_out[]);
+//// Auxiliares
+void	u8_to_bin(u8 entrada, char salida[8]);
+void	u32_to_bin(u32 entrada, char salida[], int size);
+u32		bin_to_u32(char* entrada, int size);
+u8		bin_to_u8(char* entrada);
 
 
-const u32 OCT_exp[4]={1,256,65536,16777216};
-const u32 BIN_exp[32]={1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912,1073741824,2147483648}; //Ojo aqui: ¿u32 puede guardar el ultimo numero?
-
-
+// Variables globales
 XUart Uart;
 XGpio gpio_ctrl;
 XGpio gpio_data;
+
+// MAIN
 int main(void)
 {
 	int state=IDLE;
@@ -114,18 +114,17 @@ int main(void)
 	u32 words_out[WORDS_OUT_WIDTH];
 	u8 octeto_out[OCTETO_OUT_WIDTH];
 
-	config_UART(&Uart, UART_DEVICE_ID);
+	config_UART();
+	config_GPIO();
 	
-	config_GPIO(&gpio_ctrl, &gpio_data, GPIO_CTRL_ID, GPIO_DATA_ID);
-	
-	while(1) {
-		
-		switch(state) {
+	while(1)
+	{
+		switch(state)
+		{
 			case IDLE:
 				XUart_Recv(&Uart, &ctrl_in, 1);
-				
-				switch(ctrl_in) {
-					
+				switch(ctrl_in)
+				{
 					case cmd_calc:
 						state = CALC;
 						break;
@@ -133,68 +132,88 @@ int main(void)
 					case cmd_scan:
 						state = SCAN;
 						break;
-
+						
 					case cmd_end:
 						program_end = 1;
 						break;
-
+						
 					default:
 						state = IDLE;
 						break;
 				}
-				
 				break;
 				
-				case CALC:
-					busy=1;
-					while(busy) {
-						scan_cycle(words_in);
-						
-						calc_cycle();
-						
-						print_cycle(words_out);
-						
-						busy = 0;
-					}
+			case CALC:
+				busy=1;
+				while(busy)
+				{
+					scan_cycle(words_in);
+					calc_cycle();
+					print_cycle(words_out);
+					busy = 0;
+				}
+				state = PRINT;
+				break;
 					
-					state = PRINT;
-					
-					break;
-					
-					case SCAN:
-						recv_octeto(octeto_in);
-						import_words_in(octeto_in, words_in);
+			case SCAN:
+				recv_octeto(octeto_in);
+				import_words_in(octeto_in, words_in);
+				state = IDLE;
+				break;
 						
-						state = IDLE;
-						
-						break;
-						
-					case PRINT:
-						export_octeto_out(words_out, octeto_out);
-						send_octeto(octeto_out);
-						
-						state = IDLE;
-						
-						break;
+			case PRINT:
+				export_octeto_out(words_out, octeto_out);
+				send_octeto(octeto_out);
+				state = IDLE;
+				break;
 		}
 		ctrl_in=0;
-		
 		if(program_end)
 			break;
 	}
-	
 	return 0;
 }
 
 
+// Funciones (definiciones)
+//// Config. perifericos
+void config_UART()
+{
+	#ifdef XUARTPS_H
+	XUartPs_Config *Config;
+	
+	Config = XUartPs_LookupConfig(UART_DEVICE_ID);
+	XUartPs_CfgInitialize(&Uart, Config, Config->BaseAddress);
+	XUartPs_SetBaudRate(&Uart, 9600);
+	#endif
+	#ifdef XUARTLITE_H
+	XUartLite_Config *Config;
+	
+	Config = XUartLite_LookupConfig(UART_DEVICE_ID);
+	XUartLite_CfgInitialize(&Uart, Config, Config->RegBaseAddr);
+	#endif
+}
+
+void config_GPIO()
+{
+
+	XGpio_Initialize(&gpio_ctrl, GPIO_CTRL_ID);
+	XGpio_SetDataDirection(&gpio_ctrl, 1, 0xF); //cmd: fabric->ps
+	XGpio_SetDataDirection(&gpio_ctrl, 2, 0x0); //cmd: ps->fabric
+
+	XGpio_Initialize(&gpio_data, GPIO_DATA_ID);
+	XGpio_SetDataDirection(&gpio_data, 1, 0xF); //data_out: fabric->ps
+	XGpio_SetDataDirection(&gpio_data, 2, 0x0); //data_out: ps->fabric
+}
+
+//// Comm. PCPS
 void send_u8(u8 data)
 {
 	int j=0;
-
+	
 	while(j<1)
 		j+=XUart_Send(&Uart, &data, 1); //envia 1 byte (i.e. u8) al pc
 }
-
 
 void send_octeto(u8 octeto_out[])
 {
@@ -203,7 +222,6 @@ void send_octeto(u8 octeto_out[])
 	for(i=0; i<OCTETO_OUT_WIDTH; i++)
 		send_u8(octeto_out[i]);
 }
-
 
 u8 recv_u8()
 {
@@ -220,7 +238,6 @@ u8 recv_u8()
 	return result;
 }
 
-
 void recv_octeto(u8 octeto_in[])
 {
 	int i;
@@ -229,38 +246,19 @@ void recv_octeto(u8 octeto_in[])
 		octeto_in[i] = recv_u8(Uart);
 }
 
-
-void config_UART(XUart* Uart, int uart_id) {
-
-#ifdef XUARTPS_H
-	XUartPs_Config *Config;
-	
-	Config = XUartPs_LookupConfig(uart_id);
-	XUartPs_CfgInitialize(Uart, Config, Config->BaseAddress);
-	XUartPs_SetBaudRate(Uart, 9600);
-#endif
-
-#ifdef XUARTLITE_H
-	XUartLite_Config *Config;
-	
-	Config = XUartLite_LookupConfig(uart_id);
-	XUartLite_CfgInitialize(Uart, Config, Config->RegBaseAddr);
-#endif
-}
-
-
-void config_GPIO(XGpio* gpio_ctrl, XGpio* gpio_data, int ctrl_id, int data_id)
+//// Comm. PSPL
+void idle_handshake()
 {
+	u32 ctrl_out;
 
-	XGpio_Initialize(gpio_ctrl, ctrl_id);
-	XGpio_SetDataDirection(gpio_ctrl, 1, 0xF); //cmd: fabric->ps
-	XGpio_SetDataDirection(gpio_ctrl, 2, 0x0); //cmd: ps->fabric
-
-	XGpio_Initialize(gpio_data, data_id);
-	XGpio_SetDataDirection(gpio_data, 1, 0xF); //data_out: fabric->ps
-	XGpio_SetDataDirection(gpio_data, 2, 0x0); //data_out: ps->fabric
+	 XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_idle);
+	 while(1)
+	 {
+		 ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
+		 if(ctrl_out==cmd_idle_sync)
+			 break;
+	 }
 }
-
 
 void calc_handshake()
 {
@@ -275,6 +273,70 @@ void calc_handshake()
 	 }
 }
 
+void scan_handshake()
+{
+	u32 ctrl_out;
+
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan);
+	while(1)
+	{
+		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1); //xil_printf("%d\n", ctrl_out);
+		if(ctrl_out==cmd_scan)
+			break;
+	}
+}
+
+void scan_sync_handshake()
+{
+	u32 ctrl_out;
+
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan_sync);
+	while(1)
+	{
+		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
+		if(ctrl_out==cmd_scan_sync)
+			break;
+	}
+}
+
+void print_handshake()
+{
+	u32 ctrl_out;
+
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print);
+	while(1)
+	{
+		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
+		if(ctrl_out==cmd_print)
+			break;
+	}
+}
+
+void print_sync_handshake()
+{
+	u32 ctrl_out;
+
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print_sync);
+	while(1)
+	{
+		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
+		if(ctrl_out==cmd_print_sync)
+			break;
+	}
+}
+
+//// Ciclo FSM
+void scan_cycle(u32 words_in[])
+{
+	int i;
+	for(i=0; i<WORDS_IN_WIDTH; i++)
+	{
+		scan_handshake();
+		XGpio_DiscreteWrite(&gpio_data, 2, words_in[i]);
+		scan_sync_handshake();
+	}
+	idle_handshake();
+}
 
 void calc_cycle()
 {
@@ -283,70 +345,20 @@ void calc_cycle()
 	idle_handshake();
 }
 
-
-void u8_to_bin(u8 entrada, char salida[8])
+void print_cycle(u32 words_out[])
 {
-	/*
-	 * Esta funcion convierte un numero u8 (de 0 a 255) a formato binario, y guarda el
-	 * resultado en un string 'salida' en formato 'little endian' (salida[0] es el bit menos significativo).
-	 * */
-
 	int i;
-	for(i=0; i<8; i++)
+
+	for(i=0; i<WORDS_OUT_WIDTH; i++)
 	{
-		salida[i] = entrada%2;
-		entrada = entrada/2;
+		print_handshake();
+		words_out[i] = XGpio_DiscreteRead(&gpio_data, 1);
+		print_sync_handshake();
 	}
+	idle_handshake();
 }
 
-
-void u32_to_bin(u32 entrada, char salida[], int size)
-{
-	/*
-	 * Esta funcion convierte un numero u32 a formato binario, y guarda el
-	 * resultado en un string 'salida' en formato 'little endian' (salida[0]
-	 * es el bit menos significativo), truncado a 'size' bits (de modo que
-	 * 'salida' debe ser un array de tamano 'size').
-	 * */
-
-	int i;
-	for(i=0; i<size; i++)
-	{
-		salida[i] = entrada%2;
-		entrada = entrada/2;
-	}
-}
-
-
-u32 bin_to_u32(char* entrada, int size)
-{
-	/*
-	 * Esta funcion toma una palabra binaria de 'size' bits, y lo convierte a u32.
-	 * Obviamente size<=32.
-	 * */
-
-	int i;
-	u32 result=0;
-	for(i=0; i<size; i++)
-		result+=entrada[i]*BIN_exp[i];
-
-	return result;
-}
-
-u8 bin_to_u8(char* entrada)
-{
-	/*
-	 * Esta funcion toma una palabra binaria de 8 bits, y lo convierte a u8.
-	 * */
-
-	int i;
-	u8 result=0;
-	for(i=0; i<8; i++)
-		result+=entrada[i]*BIN_exp[i];
-
-	return result;
-}
-
+//// E/S PCPS
 void import_words_in(u8 octeto_in[], u32 words_in[])
 {
 	/*
@@ -396,11 +408,11 @@ void import_words_in(u8 octeto_in[], u32 words_in[])
 	}
 }
 
-
 void export_octeto_out(u32 words_out[], u8 octeto_out[])
 {
 	/*
 	 * Esta funcion toma BUFFER_OUT_WIDTH bits repartidos en WORDS_OUT_WIDTH numeros de tipo
+
 	 * u32, cada uno de los cuales almacena DATA_WIDTH bits, y lo convierte a OCTETO_OUT_WIDTH bytes.
 	 * */
 
@@ -443,96 +455,77 @@ void export_octeto_out(u32 words_out[], u8 octeto_out[])
 	}
 }
 
-
-void scan_handshake()
+//// Auxiliares
+void u8_to_bin(u8 entrada, char salida[8])
 {
-	u32 ctrl_out;
+	/*
+	 * Esta funcion convierte un numero u8 (de 0 a 255) a formato binario, y guarda el
+	 * resultado en un string 'salida' en formato 'little endian' (salida[0] es el bit menos significativo).
+	 * */
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan);
-	while(1)
-	{
-		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1); //xil_printf("%d\n", ctrl_out);
-		if(ctrl_out==cmd_scan)
-			break;
-	}
-}
-
-void scan_sync_handshake()
-{
-	u32 ctrl_out;
-
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan_sync);
-	while(1)
-	{
-		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_scan_sync)
-			break;
-	}
-}
-
-void idle_handshake()
-{
-	u32 ctrl_out;
-
-	 XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_idle);
-	 while(1)
-	 {
-		 ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		 if(ctrl_out==cmd_idle_sync)
-			 break;
-	 }
-}
-
-void print_handshake()
-{
-	u32 ctrl_out;
-
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print);
-	while(1)
-	{
-		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_print)
-			break;
-	}
-}
-
-void print_sync_handshake()
-{
-	u32 ctrl_out;
-
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print_sync);
-	while(1)
-	{
-		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_print_sync)
-			break;
-	}
-}
-
-
-void scan_cycle(u32 words_in[])
-{
 	int i;
-	for(i=0; i<WORDS_IN_WIDTH; i++)
+	for(i=0; i<8; i++)
 	{
-		scan_handshake();
-		XGpio_DiscreteWrite(&gpio_data, 2, words_in[i]);
-		scan_sync_handshake();
+		salida[i] = entrada%2;
+		entrada = entrada/2;
 	}
-	idle_handshake();
 }
 
-
-void print_cycle(u32 words_out[])
+void u32_to_bin(u32 entrada, char salida[], int size)
 {
-	int i;
+	/*
+	 * Esta funcion convierte un numero u32 a formato binario, y guarda el
+	 * resultado en un string 'salida' en formato 'little endian' (salida[0]
+	 * es el bit menos significativo), truncado a 'size' bits (de modo que
+	 * 'salida' debe ser un array de tamano 'size').
+	 * */
 
-	for(i=0; i<WORDS_OUT_WIDTH; i++)
+	int i;
+	for(i=0; i<size; i++)
 	{
-		print_handshake();
-		words_out[i] = XGpio_DiscreteRead(&gpio_data, 1);
-		print_sync_handshake();
+		salida[i] = entrada%2;
+		entrada = entrada/2;
 	}
-	idle_handshake();
+}
+
+u32 bin_to_u32(char* entrada, int size)
+{
+	/*
+	 * Esta funcion toma una palabra binaria de 'size' bits, y lo convierte a u32.
+	 * Obviamente size<=32.
+	 * */
+
+	int i;
+	u32 result, factor;
+	
+	factor=1;
+	result=0;
+	for(i=0; i<size; i++)
+	{
+		if(entrada[i])
+			result+=factor;
+		factor<<=1;
+	}
+	return result;
+}
+
+u8 bin_to_u8(char* entrada)
+{
+	/*
+	 * Esta funcion toma una palabra binaria de 8 bits, y lo convierte a u8.
+	 * */
+
+	int i;
+	u8 result, factor;
+	
+	factor=1;
+	result=0;
+	for(i=0; i<8; i++)
+	{
+		if(entrada[i])
+			result+=factor;
+		factor<<=1;
+	}
+	return result;
 }
 

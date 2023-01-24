@@ -13,8 +13,10 @@ from fpga.interfazpcps import *
 out_name = "rawdata.mtz"
 osc = range(1)
 pdl = range(1)
+resol = 20
 sel_ro_width = 4
 sel_pdl_width = 0
+sel_resol_width = 5
 buffer_out_width = 32
 N_osciladores_por_instancia = 0
 N_repeticiones = 1
@@ -67,6 +69,9 @@ for i, opt in enumerate(sys.argv):
 			elif len(pdl) == 3:
 				pdl = range(pdl[0], pdl[1], pdl[2])
 				
+	if opt=="-resol":
+		resol=int(sys.argv[i+1])
+				
 	if opt == "-osc_por_instancia" or opt=="-opi":
 		N_osciladores_por_instancia = int(sys.argv[i+1])
 		
@@ -74,19 +79,19 @@ for i, opt in enumerate(sys.argv):
 		N_repeticiones = int(sys.argv[i+1])
 		
 	if opt=="-puerto":
-		puerto = '/dev/ttyS'+sys.argv[i+1]
+		puerto = '/dev/tty'+sys.argv[i+1]
 		
 	if opt=="-baudrate":
 		baudrate = int(sys.argv[i+1])
 		
 	if opt=="-v":
 		verbose = 1
-
+		
 
 if N_osciladores_por_instancia==0:
 	N_osciladores_por_instancia = len(osc)
 
-buffer_in_width = sel_ro_width+sel_pdl_width
+buffer_in_width = sel_ro_width+sel_pdl_width+sel_resol_width
 N_osciladores = len(osc)
 N_pdl = len(pdl)
 N_instancias = N_osciladores//N_osciladores_por_instancia
@@ -103,6 +108,8 @@ for i in osc:
 buffer_sel_pdl=[]
 for i in pdl:
 	buffer_sel_pdl.append(resizeArray(intToBitstr(i), sel_pdl_width))
+	
+buffer_sel_resol = resizeArray(intToBitstr(resol), sel_resol_width)
 
 contador=0
 N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
@@ -113,7 +120,7 @@ for i in range(N_instancias):
 	for j in range(N_repeticiones):
 		for k in range(N_pdl):
 			for l in range(N_osciladores_por_instancia):
-				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k]
+				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k] + buffer_sel_resol
 				
 				scan(fpga, buffer_in, buffer_in_width)
 				

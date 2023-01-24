@@ -3,12 +3,12 @@
 */
 
 module MEDIDOR_BIAS #(
-	parameter OUT_WIDTH=32,
-	parameter RESOL=1000 // ResoluciÃ³n de la medida. En el futuro podrÃ­a ser interesante hacer de este parÃ¡metro una variable de entrada.
+	parameter OUT_WIDTH=32
 ) (
 	input						clock,
 	input						enable,
 	input						muestra,
+	input[4:0]					resol,
 	output reg					lock=0,
 	output reg[OUT_WIDTH-1:0]	out
 );
@@ -22,7 +22,7 @@ module MEDIDOR_BIAS #(
 			lock <= 0;
 		end
 		else begin
-			if(contador<=RESOL) begin
+			if(contador<(32'd1<<resol)) begin
 				contador <= contador+1;
 				if(muestra)
 				    contador_b <= contador_b+1;
