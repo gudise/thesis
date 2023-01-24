@@ -79,7 +79,7 @@
 		todos los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6)
 		
 		
- -Ninv 3
+ -ninv 3
 		
 		
  -posmap "1,1;10,10;2,1;10;y"
@@ -125,14 +125,6 @@
  -dw 32
  
 	data_width (tamano del bus gpio)
-
-		
- -biw <auto>
- 
-	buffer_in_width (bits significativos de la palabra de entrada data_in). Si esta opcion se omite
-	el script calcula automáticamente cuántos bits son necesarios para: (i) seleccionar el oscilador de la
-	matriz, (ii) seleccionar la configuración de cada inversor y (iii) seleccionar el tiempo de medida
-	(resolución).
 
 
  -bow 32

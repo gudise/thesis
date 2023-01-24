@@ -1,1 +1,0 @@
-- Extender los últimos cambios a los proyectos 'romatrix.sh' y 'garomatrix.sh'.

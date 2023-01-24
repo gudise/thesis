@@ -81,7 +81,7 @@
 		todos los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6)
 		
 		
- -Ninv 3
+ -ninv 3
 		
 		
  -posmap "1,1;10,10;2,1;10;y"
@@ -123,29 +123,10 @@
 	rectángulo de restricción, indicados con el formato: X0,Y0 X1,Y1. El diseñador es responsable de que la fpga
 	utilizada disponga de recursos suficientes en el bloque descrito. Esta opción debe darse entre comillas.
 
-		
- -resolucion 1000000
- 
- 
- -fs 4
- 
-	Factor de división para el divisor de reloj. La frecuencia de muestreo real se calcula como:
-	
-		frec = 100 MHz/(2*(frecsample+1))
-		
-	De modo que la frecuencia de muestreo por defecto es 10 MHz.
-
 
  -dw 32
  
 	data_width (tamano del bus gpio)
-
-		
- -biw <auto>
- 
-	buffer_in_width (bits significativos de la palabra de entrada data_in). Si esta opcion se omite
-	el script calcula automáticamente cuántos bits son necesarios para: (i) seleccionar el oscilador de la
-	matriz, (ii) seleccionar la configuración de cada inversor y (iii) seleccionar el polinomio de Galois.
 
 
  -bow 32
