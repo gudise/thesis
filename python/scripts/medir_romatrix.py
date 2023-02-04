@@ -10,19 +10,21 @@ from fpga import pinta_progreso
 from fpga.interfazpcps import *
 
 
-out_name = "rawdata.mtz"
-osc = range(1)
-pdl = range(1)
-resol = 20
-sel_ro_width = 4
-sel_pdl_width = 0
-sel_resol_width = 5
-buffer_out_width = 32
-N_osciladores_por_instancia = 0
-N_repeticiones = 1
-puerto = '/dev/ttyS1'
-baudrate = 9600
-verbose = 0
+out_name			= "rawdata.mtz"
+out_fmt				= False
+osc_list			= range(1)
+pdl_list			= range(1)
+resol_list			= range(16,17,1)
+autoconfig			= True
+sel_ro_width		= 4
+sel_pdl_width		= 0
+sel_resol_width		= 5
+buffer_out_width	= 32
+N_rep				= 1
+f_ref				= False
+puerto				= '/dev/ttyS1'
+baudrate			= 9600
+
 for i, opt in enumerate(sys.argv):
 	if opt == "-help":
 		with open(f"{os.environ['REPO_fpga']}/python/scripts/help/medir_romatrix.help", "r") as f:
@@ -32,51 +34,74 @@ for i, opt in enumerate(sys.argv):
 	if opt == "-out":
 		out_name = sys.argv[i+1]
 		
-	if opt == "-trama_selector" or opt == "-ts":
-		sel_ro_width = int(sys.argv[i+1])
-		sel_pdl_width = int(sys.argv[i+2])
+	if opt == "-fmt":
+		out_fmt = sys.argv[i+1]
 		
-	if opt == "-buffer_out_width" or opt=="-bow":
-		buffer_out_width = int(sys.argv[i+1])
-
+	if opt == "-config":
+		autoconfig = False
+		for j in range(i+1, len(sys.argv), 1):
+			if sys.argv[j][0] == '-':
+				break
+			else:
+				if sys.argv[j]=='sel_ro_width' or sys.argv[j]=='sow':
+					sel_ro_width = int(sys.argv[j+1])
+					
+				if sys.argv[j]=='sel_pdl_width' or sys.argv[j]=='spw':
+					sel_pdl_width = int(sys.argv[j+1])
+					
+				if sys.argv[j]=='sel_resol_width' or sys.argv[j]=='srw':
+					sel_resol_width = int(sys.argv[j+1])
+					
+				if sys.argv[j]=='buffer_out_width' or sys.argv[j]=='bow':
+					buffer_out_width = int(sys.argv[j+1])
+					
 	if opt == "-osc_range" or opt == "-or":
-		osc=[]
+		osc_list=[]
 		for j in range(i+1, len(sys.argv), 1):
 			if sys.argv[j][0] == '-':
 				break
 			else:
-				osc.append(int(sys.argv[j]))
-		if len(osc)>0 and len(osc)<4:
-			if len(osc) == 1:
-				osc = range(osc[0])
-			elif len(osc) == 2:
-				osc = range(osc[0], osc[1], 1)
-			elif len(osc) == 3:
-				osc = range(osc[0], osc[1], osc[2])
-
+				osc_list.append(int(sys.argv[j]))
+		if len(osc_list)>0 and len(osc_list)<4:
+			if len(osc_list) == 1:
+				osc_list = range(osc_list[0])
+			elif len(osc_list) == 2:
+				osc_list = range(osc_list[0], osc_list[1], 1)
+			elif len(osc_list) == 3:
+				osc_list = range(osc_list[0], osc_list[1], osc_list[2])
+				
 	if opt == "-pdl_range" or opt == "-pr":
-		pdl=[]
+		pdl_list=[]
 		for j in range(i+1, len(sys.argv), 1):
 			if sys.argv[j][0] == '-':
 				break
 			else:
-				pdl.append(int(sys.argv[j]))
-		if len(pdl)>0 and len(pdl)<4:
-			if len(pdl) == 1:
-				pdl = range(pdl[0])
-			elif len(pdl) == 2:
-				pdl = range(pdl[0], pdl[1], 1)
-			elif len(pdl) == 3:
-				pdl = range(pdl[0], pdl[1], pdl[2])
+				pdl_list.append(int(sys.argv[j]))
+		if len(pdl_list)>0 and len(pdl_list)<4:
+			if len(pdl_list) == 1:
+				pdl_list = range(pdl_list[0])
+			elif len(pdl_list) == 2:
+				pdl_list = range(pdl_list[0], pdl_list[1], 1)
+			elif len(pdl_list) == 3:
+				pdl_list = range(pdl_list[0], pdl_list[1], pdl_list[2])
 				
-	if opt=="-resol":
-		resol=int(sys.argv[i+1])
+	if opt == "-resol_range" or opt == "-rr":
+		resol_list=[]
+		for j in range(i+1, len(sys.argv), 1):
+			if sys.argv[j][0] == '-':
+				break
+			else:
+				resol_list.append(int(sys.argv[j]))
+		if len(resol_list)>0 and len(resol_list)<4:
+			if len(resol_list) == 1:
+				resol_list = range(resol_list[0])
+			elif len(resol_list) == 2:
+				resol_list = range(resol_list[0], resol_list[1], 1)
+			elif len(resol_list) == 3:
+				resol_list = range(resol_list[0], resol_list[1], resol_list[2])
 				
-	if opt == "-osc_por_instancia" or opt=="-opi":
-		N_osciladores_por_instancia = int(sys.argv[i+1])
-		
 	if opt=="-nrep":
-		N_repeticiones = int(sys.argv[i+1])
+		N_rep = int(sys.argv[i+1])
 		
 	if opt=="-puerto":
 		puerto = '/dev/tty'+sys.argv[i+1]
@@ -84,63 +109,84 @@ for i, opt in enumerate(sys.argv):
 	if opt=="-baudrate":
 		baudrate = int(sys.argv[i+1])
 		
-	if opt=="-v":
-		verbose = 1
+	if opt=="-fref":
+		f_ref = float(sys.argv[i+1])
 		
-
-if N_osciladores_por_instancia==0:
-	N_osciladores_por_instancia = len(osc)
-
+		
+if autoconfig:
+	with open("medir_romatrix.config", "r") as f:
+		texto = f.read().split('\n')
+		for linea in texto:
+			if linea.split('=')[0].replace(' ','') == 'sel_ro_width':
+				sel_ro_width = int(linea.split('=')[1])
+				
+			if linea.split('=')[0].replace(' ','') == 'sel_pdl_width':
+				sel_pdl_width = int(linea.split('=')[1])
+				
+			if linea.split('=')[0].replace(' ','') == 'sel_resol_width':
+				sel_resol_width = int(linea.split('=')[1])
+				
+			if linea.split('=')[0].replace(' ','') == 'buffer_out_width':
+				buffer_out_width = int(linea.split('=')[1])
+		
 buffer_in_width = sel_ro_width+sel_pdl_width+sel_resol_width
-N_osciladores = len(osc)
-N_pdl = len(pdl)
-N_instancias = N_osciladores//N_osciladores_por_instancia
 
-print(f"\n N_instancias = {N_instancias}\n N_repeticiones = {N_repeticiones}\n N_pdl = {N_pdl}\n N_osciladores = {N_osciladores}\n")
+N_osc = len(osc_list) # Número de osciladores
+N_pdl = len(pdl_list) # Número de pdl_list
+N_resol = len(resol_list) # Número de medidas a repetir con distinta resolución
 
+print(f"""
+ Midiendo:
+	Número de osciladores	= {N_osc}
+	Número de repeticiones	= {N_rep}
+	Número de pdl_list		= {N_pdl}
+	Número de medidas a distinta resolución = {N_resol}
+	
+""")
+
+buffer_sel_ro=[]
+for i in osc_list:
+	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
+	
+buffer_sel_pdl=[]
+for i in pdl_list:
+	buffer_sel_pdl.append(resizeArray(intToBitstr(i), sel_pdl_width))
+	
+buffer_sel_resol=[]
+for i in resol_list:
+	buffer_sel_resol.append(resizeArray(intToBitstr(i), sel_resol_width))
+	
 fpga = serial.Serial(port=puerto, baudrate=baudrate, bytesize=8)
 time.sleep(.1)
 
-buffer_sel_ro=[]
-for i in osc:
-	buffer_sel_ro.append(resizeArray(intToBitstr(i), sel_ro_width))
-
-buffer_sel_pdl=[]
-for i in pdl:
-	buffer_sel_pdl.append(resizeArray(intToBitstr(i), sel_pdl_width))
-	
-buffer_sel_resol = resizeArray(intToBitstr(resol), sel_resol_width)
-
 contador=0
-N_total = N_osciladores_por_instancia*N_instancias*N_repeticiones*N_pdl
-if not verbose:
-	pinta_progreso(0, N_total, barra=40)
-medidas=[]
-for i in range(N_instancias):
-	for j in range(N_repeticiones):
-		for k in range(N_pdl):
-			for l in range(N_osciladores_por_instancia):
-				buffer_in = buffer_sel_ro[i*N_osciladores_por_instancia+l] + buffer_sel_pdl[k] + buffer_sel_resol
-				
-				scan(fpga, buffer_in, buffer_in_width)
-				
-				medidas.append(bitstrToInt(calc(fpga, buffer_out_width)))
-				
-				if verbose:
-					print(f" {contador*N_osciladores_por_instancia+l+1}/{N_total}:\tosc {i*N_osciladores_por_instancia+l}, rep {j}, pdl {k} ->\t{buffer_sel_pdl[k]}")
-			
-			contador+=N_osciladores_por_instancia
-			
-			if not verbose:
-				pinta_progreso(contador, N_total, barra=40)
+N_total = N_osc*N_rep*N_pdl*N_resol
+pinta_progreso(0, N_total, barra=40)
 
-if not verbose:
-	pinta_progreso(N_total, N_total, barra=40)
-	
+medidas=[]
+for rep in range(N_rep):
+	for resol in range(N_resol):
+		for pdl in range(N_pdl):
+			for osc in range(N_osc):
+				buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_resol[resol]
+				scan(fpga, buffer_in, buffer_in_width)
+				medida = bitstrToInt(calc(fpga, buffer_out_width))
+				if f_ref:
+					medida*=f_ref/2**resol_list[resol]
+				medidas.append(medida)
+				
+			contador+=N_osc
+			
+			pinta_progreso(contador, N_total, barra=40)
+			
+pinta_progreso(N_total, N_total, barra=40)
+
 fpga.close()
 
-medidas = np.reshape(medidas, (N_instancias*N_repeticiones*N_pdl,N_osciladores_por_instancia))
+medidas = np.reshape(medidas, (N_rep,N_resol,N_pdl,N_osc))
 
-np.savetxt(out_name, medidas, header=f"#[N_filas] {N_instancias*N_repeticiones*N_pdl}\n#[N_columnas] {N_osciladores_por_instancia}\n#[matriz]\n", footer="#[fin]", comments="")
+if not out_fmt:
+	out_fmt = '%.18e'
+np.savetxt(out_name, np.transpose(np.reshape(medidas, (N_rep, N_resol*N_pdl*N_osc))), fmt=out_fmt, header=f"#[N_filas] {N_resol*N_pdl*N_osc}\n#[N_columnas] {N_rep}\n\n#[matriz]", footer="#[fin]", comments="")
 
 print("\n")

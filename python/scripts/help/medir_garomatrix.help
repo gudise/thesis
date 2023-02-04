@@ -20,23 +20,12 @@
  -out "rawdata.mtz"
  
 	Nombre del fichero de salida.
+	
+	
+ -fmt
  
  
- -trama_selector(ts) 4 0 3 
- 
-	Esta opción permite configurar la palabra binaria que se envía a la FPGA para solicitar una medida. Esta 
-	palabra consta de dos partes: la primera contiene el número del oscilador que solicitamos, la segunda 
-	el número de la PDL que solicitamos y la tercera el polinomio de Galois a ejecutar:
-	{sel_ro_width} {sel_pdl_width} {sel_polinomio_width}
-
-	Notar que esta opción no es discrecional: tiene que coincidir con el tamaño de la trama (buffer_in_width)
-	utilizado en el diseño de 'romatrix'.
-
-
- -buffer_out_width(bow) 32
- 
-	Esta opción controla el tamaño de las palabras binarias que salen de la FPGA (FPGA->PC). Debe coincidir
-	con el tamaño determinado durante el diseño del hardware.
+ -config
  
 
  -osc_range(or) [0] 1 [1]
@@ -51,12 +40,15 @@
 	Esta opción controla qué pdl medir. Funciona como la función 'range' de python: el primer número 
 	es la pdl inicial, el segundo la pdl final (no incluida), y el tercero el salto entre
 	pdl.
+	
+	
+ -resol_range(rr)
  
-
- -osc_por_instancia(opi) {N_osciladores}
  
-	Número de osciladores por instancia (en caso de que una sola matriz se utilice para emular varias
-	instancias.
+ -poly_range(lr)
+ 
+ 
+ -fdiv_range(fr)
  
 
  -nrep 1

@@ -3,7 +3,7 @@
 import os
 import sys
 from subprocess import run # esta función permite llamar a sub-rutinas de shell (e.g. programas en C), y pasar/recibir datos.
-from fpga.romatrix import *
+from fpga.oscmatrix import *
 
 argv = sys.argv
 argc = len(argv)
@@ -124,7 +124,7 @@ else:
 	elif tipo_lut == "lut6":
 		N_bits_pdl = 3*N_inv
 		
-N_bits_poly = N_inv
+N_bits_poly = N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
 		
 buffer_in_width = N_bits_osc+N_bits_pdl+N_bits_poly+5+5
 
@@ -153,22 +153,22 @@ biw_aligned_dw = ""
 biw_misaligned_dw = ""
 
 if data_width >= buffer_in_width:
-	dw_ge_biw='`define dw_ge_biw'
+	dw_ge_biw='`define DW_GE_BIW'
 elif buffer_in_width%data_width == 0:
-	biw_aligned_dw='`define biw_aligned_dw'
+	biw_aligned_dw='`define BIW_ALIGNED_DW'
 else:
-	biw_misaligned_dw='`define biw_misaligned_dw'
+	biw_misaligned_dw='`define BIW_MISALIGNED_DW'
 
 dw_ge_bow = ""
 bow_aligned_dw = ""
 bow_misaligned_dw = ""
 
 if data_width >= buffer_out_width:
-	dw_ge_bow='`define dw_ge_bow'
+	dw_ge_bow='`define DW_GE_BOW'
 elif buffer_out_width%data_width == 0:
-	bow_aligned_dw='`define bow_aligned_dw'
+	bow_aligned_dw='`define BOW_ALIGNED_DW'
 else:
-	bow_misaligned_dw='`define bow_misaligned_dw'
+	bow_misaligned_dw='`define BOW_MISALIGNED_DW'
 	
 	
 ## proj_dir (directorio actual)
@@ -489,9 +489,9 @@ module TOP (
 	end
 
 	INTERFAZ_PSPL #(
-		.data_width({data_width}),
-		.buffer_in_width({buffer_in_width}),
-		.buffer_out_width({buffer_out_width})
+		.DATA_WIDTH({data_width}),
+		.BUFFER_IN_WIDTH({buffer_in_width}),
+		.BUFFER_OUT_WIDTH({buffer_out_width})
 	) interfaz_pspl (
 		.clock(clock),
 		.ctrl_in(ctrl_in),
@@ -556,13 +556,24 @@ with open("./sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
 	elif board == "zybo" or board == "pynqz2":
 		f.write("#include \"xuartps.h\"\n\n")
 
-	f.write(f"""#define data_width			{data_width}
-#define buffer_in_width		{buffer_in_width}
-#define buffer_out_width	{buffer_out_width}
-#define octeto_in_width		{octeto_in_width}
-#define octeto_out_width	{octeto_out_width}
-#define words_in_width		{words_in_width}
-#define words_out_width		{words_out_width}
+	f.write(f"""#define DATA_WIDTH			{data_width}
+#define BUFFER_IN_WIDTH		{buffer_in_width}
+#define BUFFER_OUT_WIDTH	{buffer_out_width}
+#define OCTETO_IN_WIDTH		{octeto_in_width}
+#define OCTETO_OUT_WIDTH	{octeto_out_width}
+#define WORDS_IN_WIDTH		{words_in_width}
+#define WORDS_OUT_WIDTH		{words_out_width}
+""")
+
+
+## config file
+with open("medir_garomatrix.config","w") as f:
+	f.write(f""" sel_ro_width = {N_bits_osc}
+ sel_pdl_width = {N_bits_pdl}
+ sel_poly_width = {N_bits_poly}
+ sel_resol_width = {5}
+ sel_fdiv_width = {5}
+ buffer_out_width = {buffer_out_width}
 """)
 
 

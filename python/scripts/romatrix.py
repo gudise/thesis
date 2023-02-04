@@ -3,7 +3,7 @@
 import os
 import sys
 from subprocess import run # esta función permite llamar a sub-rutinas de shell (e.g. programas en C), y pasar/recibir datos.
-from fpga.romatrix import *
+from fpga.oscmatrix import *
 
 argv = sys.argv
 argc = len(argv)
@@ -16,18 +16,18 @@ fpga_part			= "xc7z020clg400-1"
 clk_name			= "/processing_system7_0/FCLK_CLK0 (100 MHz)"
 memory_part			= ""
 n_jobs				= 4
-qspi				= 0
-detail_routing		= 0
+qspi				= False
+detail_routing		= False
 tipo_lut			= "lut1"
 pinmap				= "no;"
-minsel				= 0
+minsel				= False
 N_inv				= 3
 posmap				= "1,1;10,10;2,1;10;y"
 pblock				= "no"
 data_width			= 32
 buffer_out_width	= 32
-wstyle				= 1
-debug				= 0
+wstyle				= True
+debug				= False
 
 for i, opt in enumerate(argv): # "i" es el indice que recorre la lista de opciones, "opt" es la opcion propiamente dicha
 	if opt == "-help":
@@ -69,10 +69,10 @@ for i, opt in enumerate(argv): # "i" es el indice que recorre la lista de opcion
 		n_jobs=int(argv[i+1])
 		
 	if opt == "-qspi":
-		qspi=1
+		qspi=True
 		
 	if opt == "-detailr":
-		detail_routing=1
+		detail_routing=True
 		
 	if opt == "-tipo":
 		tipo_lut=argv[i+1]
@@ -81,7 +81,7 @@ for i, opt in enumerate(argv): # "i" es el indice que recorre la lista de opcion
 		pinmap=argv[i+1]
 		
 	if opt == "-minsel":
-		minsel=1
+		minsel=True
 		
 	if opt == "-ninv":
 		N_inv=int(argv[i+1])
@@ -92,17 +92,17 @@ for i, opt in enumerate(argv): # "i" es el indice que recorre la lista de opcion
 	if opt == "-pblock":
 		pblock=argv[i+1]
 		
-	if opt == "-dw":
+	if opt == "-data_width" or opt == "-dw":
 		data_width=int(argv[i+1])
 		
-	if opt == "-bow":
+	if opt == "-buffer_out_width" or opt == "-bow":
 		buffer_out_width=int(argv[i+1])
 		
 	if opt == "-linux":
-		wstyle=0
+		wstyle=False
 		
 	if opt == "-debug":
-		debug=1
+		debug=True
 		
 		
 posmap = genOscLocations(posmap)
@@ -163,26 +163,26 @@ biw_aligned_dw = ""
 biw_misaligned_dw = ""
 
 if data_width >= buffer_in_width:
-	dw_ge_biw='`define dw_ge_biw'
+	dw_ge_biw='`define DW_GE_BIW'
 elif buffer_in_width%data_width == 0:
-	biw_aligned_dw='`define biw_aligned_dw'
+	biw_aligned_dw='`define BIW_ALIGNED_DW'
 else:
-	biw_misaligned_dw='`define biw_misaligned_dw'
+	biw_misaligned_dw='`define BIW_MISALIGNED_DW'
 
 dw_ge_bow = ""
 bow_aligned_dw = ""
 bow_misaligned_dw = ""
 
 if data_width >= buffer_out_width:
-	dw_ge_bow='`define dw_ge_bow'
+	dw_ge_bow='`define DW_GE_BOW'
 elif buffer_out_width%data_width == 0:
-	bow_aligned_dw='`define bow_aligned_dw'
+	bow_aligned_dw='`define BOW_ALIGNED_DW'
 else:
-	bow_misaligned_dw='`define bow_misaligned_dw'
+	bow_misaligned_dw='`define BOW_MISALIGNED_DW'
 	
 	
 ## proj_dir (directorio actual)
-if wstyle == 1:
+if wstyle:
 	proj_dir = run(["wslpath","-w",os.environ['PWD']], capture_output=True, text=True).stdout.replace("\\","/").replace("\n","")
 else:
 	proj_dir=os.environ['PWD']
@@ -191,25 +191,25 @@ else:
 ## block design
 run(["mkdir","./block_design"])
 if board == "cmoda7_15t":
-	if qspi == 1:
+	if qspi:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
 	else:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
 	
 elif board == "cmoda7_35t":
-	if qspi == 1:
+	if qspi:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
 	else:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
 	
 elif board == "zybo":
-	if qspi == 1:
+	if qspi:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl","./block_design/bd_design_1.tcl"])
 	else:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl","./block_design/bd_design_1.tcl"])
 	
 elif board == "pynqz2":
-	if qspi == 1:
+	if qspi:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl","./block_design/bd_design_1.tcl"])
 	else:
 		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl","./block_design/bd_design_1.tcl"])
@@ -303,7 +303,7 @@ launch_runs synth_1 -jobs {n_jobs}
 wait_on_run synth_1
 
 """)
-	if qspi == 1 and board == "cmoda7_15t":
+	if qspi and board == "cmoda7_15t":
 		f.write(f"""
 file mkdir {proj_dir}/{proj_name}/{proj_name}.srcs/constrs_1
 
@@ -337,7 +337,7 @@ save_constraints
 
 close_design
 """)
-	elif qspi == 1 and board == "cmoda7_35t":
+	elif qspi and board == "cmoda7_35t":
 		f.write(f"""
 file mkdir {proj_dir}/{proj_name}/{proj_name}.srcs/constrs_1
 
@@ -501,9 +501,9 @@ module TOP (
 	end
 
 	INTERFAZ_PSPL #(
-		.data_width({data_width}),
-		.buffer_in_width({buffer_in_width}),
-		.buffer_out_width({buffer_out_width})
+		.DATA_WIDTH({data_width}),
+		.BUFFER_IN_WIDTH({buffer_in_width}),
+		.BUFFER_OUT_WIDTH({buffer_out_width})
 	) interfaz_pspl (
 		.clock(clock),
 		.ctrl_in(ctrl_in),
@@ -560,13 +560,21 @@ with open("./sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
 	elif board == "zybo" or board == "pynqz2":
 		f.write("#include \"xuartps.h\"\n\n")
 
-	f.write(f"""#define data_width			{data_width}
-#define buffer_in_width		{buffer_in_width}
-#define buffer_out_width	{buffer_out_width}
-#define octeto_in_width		{octeto_in_width}
-#define octeto_out_width	{octeto_out_width}
-#define words_in_width		{words_in_width}
-#define words_out_width		{words_out_width}
+	f.write(f"""#define DATA_WIDTH			{data_width}
+#define BUFFER_IN_WIDTH		{buffer_in_width}
+#define BUFFER_OUT_WIDTH	{buffer_out_width}
+#define OCTETO_IN_WIDTH		{octeto_in_width}
+#define OCTETO_OUT_WIDTH	{octeto_out_width}
+#define WORDS_IN_WIDTH		{words_in_width}
+#define WORDS_OUT_WIDTH		{words_out_width}
+""")
+
+## config file
+with open("medir_romatrix.config","w") as f:
+	f.write(f""" sel_ro_width = {N_bits_osc}
+ sel_pdl_width = {N_bits_pdl}
+ sel_resol_width = {5}
+ buffer_out_width = {buffer_out_width}
 """)
 
 
@@ -591,5 +599,5 @@ print(f"""
  sdk source files: {proj_dir}/sdk_src/
  
 """)
-if qspi == 1:
+if qspi:
 	print(f"q-spi part: {memory_part}")

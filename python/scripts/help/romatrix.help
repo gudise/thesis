@@ -13,8 +13,8 @@
  Uso:
  ----
  
- romatrix.sh [-help] [-projname] [-board] [-njobs] [-qspi] [-detailr] [-tipo] [-pinmap] [-minsel] [-Ninv]
-	[-posmap] [-resolucion] [-dw] [-biw] [-bow] [-port] [-linux] 
+ romatrix.sh [-help] [-projname] [-board] [-njobs] [-qspi] [-detailr] [-tipo] [-pinmap] [-minsel] [-ninv]
+			 [-posmap] [-pblock] [-data_width] [-buffer_out_width] [-linux] [-debug] 
 			 
  Opciones:
  ---------
@@ -25,12 +25,18 @@
 		
 		
  -projname "project_romatrix"
+ 
+	Nombre del proyecto de Vivado.
 		
 		
  -board pynqz2 | zybo | cmoda7_15t | cmoda7_35t
+ 
+	Placa de desarrollo utilizada en el proyecyo.
 		
 		
  -njobs 4
+ 
+	Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
 		
 		
  -qspi
