@@ -8,9 +8,10 @@ import numpy as np
 import math
 from fpga import pinta_progreso
 from fpga.interfazpcps import *
+from mytensor import *
 
 
-out_name			= "rawdata.mtz"
+out_name			= "rawdata.tsr"
 out_fmt				= False
 osc_list			= range(1)
 pdl_list			= range(1)
@@ -22,6 +23,7 @@ sel_resol_width		= 5
 buffer_out_width	= 32
 N_rep				= 1
 f_ref				= False
+log					= False
 puerto				= '/dev/ttyS1'
 baudrate			= 9600
 
@@ -112,6 +114,9 @@ for i, opt in enumerate(sys.argv):
 	if opt=="-fref":
 		f_ref = float(sys.argv[i+1])
 		
+	if opt=="-log":
+		log = True
+		
 		
 if autoconfig:
 	with open("medir_romatrix.config", "r") as f:
@@ -135,14 +140,23 @@ N_osc = len(osc_list) # Número de osciladores
 N_pdl = len(pdl_list) # Número de pdl_list
 N_resol = len(resol_list) # Número de medidas a repetir con distinta resolución
 
-print(f"""
- Midiendo:
-	Número de osciladores	= {N_osc}
-	Número de repeticiones	= {N_rep}
-	Número de pdl_list		= {N_pdl}
-	Número de medidas a distinta resolución = {N_resol}
-	
+## Info log
+if log:
+	print(f"""
+ INFO LOG:
+	 
+ Número de osciladores	= {N_osc}
+ Número de repeticiones	= {N_rep}
+ Número de pdl_list	= {N_pdl}
+ Número de resol	= {N_resol}
 """)
+		
+	print("{osc:^8} {pdl:^8} {resol:^8} {fdiv:^8} {poly:^8}".format(osc='osc', pdl='pdl', resol='resol', fdiv='fdiv', poly='poly'))
+	for i_resol in range(N_resol):
+		for i_pdl in range(N_pdl):
+			for i_osc in range(N_osc):
+				print("{osc:^8} {pdl:^8} {resol:^8}".format(osc=osc_list[i_osc], pdl=pdl_list[i_pdl], resol=resol_list[i_resol]))
+	print()
 
 buffer_sel_ro=[]
 for i in osc_list:
@@ -183,10 +197,10 @@ pinta_progreso(N_total, N_total, barra=40)
 
 fpga.close()
 
-medidas = np.reshape(medidas, (N_rep,N_resol,N_pdl,N_osc))
+tensor_medidas = TENSOR(np.reshape(medidas, (N_rep,N_resol,N_pdl,N_osc)), metadatos=[['axis'], [['rep','resol','pdl','osc']]])
 
 if not out_fmt:
 	out_fmt = '%.18e'
-np.savetxt(out_name, np.transpose(np.reshape(medidas, (N_rep, N_resol*N_pdl*N_osc))), fmt=out_fmt, header=f"#[N_filas] {N_resol*N_pdl*N_osc}\n#[N_columnas] {N_rep}\n\n#[matriz]", footer="#[fin]", comments="")
+tensor_medidas.write(out_name, fmt=out_fmt)
 
 print("\n")

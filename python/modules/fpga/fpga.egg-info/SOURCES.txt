@@ -2,6 +2,7 @@ setup.py
 fpga/__init__.py
 fpga/interfazpcps.py
 fpga/oscmatrix.py
+fpga/simlut.py
 fpga.egg-info/PKG-INFO
 fpga.egg-info/SOURCES.txt
 fpga.egg-info/dependency_links.txt

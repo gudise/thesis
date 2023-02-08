@@ -89,7 +89,7 @@
 	Opción par aespecificar la matriz de osciladores. Puede constar de varios dominios independientes. El 
 	formato es el siguiente:
 		cada dominio se separa por un espacio, y tiene el siguiente formato:
-			"x0,y0;x1,y1;dx,dy;nosc;dir"
+			x0,y0;x1,y1;dx,dy;nosc;dir
 		donde:
 			x0 --> coordenada X del primer oscilador de la matriz.
 			y0 --> coordenada Y del primer oscilador de la matriz.

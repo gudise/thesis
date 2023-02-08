@@ -187,7 +187,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap[aux]}*) LUT1 #(2'b01) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n\n")
@@ -213,7 +216,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							if not minsel:
@@ -246,7 +252,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							if not minsel:
@@ -279,7 +288,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							if not minsel:
@@ -312,7 +324,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							if not minsel:
@@ -345,7 +360,10 @@ def genRomatrix(out_name="romatrix.v", N_inv=3, tipo="lut1", pinmap_opt="no;", m
 					ocupacion_celda=1
 					while True:
 						if ocupacion_celda==4:
-							celda[1]+=1
+							if celda[0]%2 == 0:
+								celda[0]+=1
+							else:
+								celda[1]+=1
 							ocupacion_celda=0
 						if aux == N_inv-1:
 							if not minsel:
@@ -460,7 +478,10 @@ def genGaromatrix(out_name="garomatrix.v", N_inv=3, tipo="lut3", pinmap_opt="no;
 				ocupacion_celda=1
 				while True:
 					if ocupacion_celda==4:
-						celda[1]+=1
+						if celda[0]%2 == 0:
+							celda[0]+=1
+						else:
+							celda[1]+=1
 						ocupacion_celda=0
 					if aux == N_inv:
 						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{N_inv-1}]));\n") # INV final
@@ -486,10 +507,13 @@ def genGaromatrix(out_name="garomatrix.v", N_inv=3, tipo="lut3", pinmap_opt="no;
 				ocupacion_celda=1
 				while True:
 					if ocupacion_celda==4:
-						celda[1]+=1
+						if celda[0]%2 == 0:
+							celda[0]+=1
+						else:
+							celda[1]+=1
 						ocupacion_celda=0
 					if aux == N_inv:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{N_inv-1}]));\n") # INV final
 						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 						
 						ocupacion_celda+=1
@@ -516,10 +540,13 @@ def genGaromatrix(out_name="garomatrix.v", N_inv=3, tipo="lut3", pinmap_opt="no;
 				ocupacion_celda=1
 				while True:
 					if ocupacion_celda==4:
-						celda[1]+=1
+						if celda[0]%2 == 0:
+							celda[0]+=1
+						else:
+							celda[1]+=1
 						ocupacion_celda=0
 					if aux == N_inv:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{N_inv-1}]));\n") # INV final
 						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 						
 						ocupacion_celda+=1
@@ -546,10 +573,13 @@ def genGaromatrix(out_name="garomatrix.v", N_inv=3, tipo="lut3", pinmap_opt="no;
 				ocupacion_celda=1
 				while True:
 					if ocupacion_celda==4:
-						celda[1]+=1
+						if celda[0]%2 == 0:
+							celda[0]+=1
+						else:
+							celda[1]+=1
 						ocupacion_celda=0
 					if aux == N_inv:
-						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n") # INV final
+						f.write(f"	(* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{N_inv-1}]));\n") # INV final
 						f.write(f"	(* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
 						
 						ocupacion_celda+=1

@@ -8,6 +8,7 @@ import numpy as np
 import math
 from fpga import pinta_progreso
 from fpga.interfazpcps import *
+from mytensor import *
 
 
 def printUnicodeExp(numero):
@@ -51,7 +52,7 @@ def polyNomenclature(entrada):
 	return result
 
 
-out_name 			= "rawdata.mtz"
+out_name 			= "rawdata.tsr"
 out_fmt				= False
 osc_list			= range(1)
 pdl_list			= range(1)
@@ -67,6 +68,7 @@ sel_fdiv_width		= 5
 buffer_out_width	= 32
 N_rep				= 1
 bias				= False
+log					= False
 puerto				= '/dev/ttyS1'
 baudrate			= 9600
 
@@ -193,6 +195,9 @@ for i, opt in enumerate(sys.argv):
 	if opt=="-bias":
 		bias = True
 		
+	if opt=="-log":
+		log = True
+		
 		
 if autoconfig:
 	with open("medir_garomatrix.config", "r") as f:
@@ -225,9 +230,10 @@ N_poly = len(poly_list)
 N_fdiv = len(fdiv_list)
 
 ## Info log
-print(f"""
+if log:
+	print(f"""
  INFO LOG:
- 
+	 
  Número de osciladores	= {N_osc}
  Número de repeticiones	= {N_rep}
  Número de pdl_list	= {N_pdl}
@@ -235,15 +241,15 @@ print(f"""
  Número de polinomios	= {N_poly}
  Nº frec. de muestreo	= {N_fdiv}
 """)
-	
-print("{osc:^8} {pdl:^8} {resol:^8} {fdiv:^8} {poly:^8}".format(osc='osc', pdl='pdl', resol='resol', fdiv='fdiv', poly='poly'))
-for i_resol in range(N_resol):
-	for i_fdiv in range(N_fdiv):
-		for i_poly in range(N_poly):
-			for i_pdl in range(N_pdl):
-				for i_osc in range(N_osc):
-					print("{osc:^8} {pdl:^8} {resol:^8} {fdiv:^8} {poly:^8}--> {poly_f}".format(osc=osc_list[i_osc], pdl=pdl_list[i_pdl], resol=resol_list[i_resol], fdiv=fdiv_list[i_fdiv], poly=poly_list[i_poly], poly_f=polyNomenclature(resizeArray(intToBitstr(poly_list[i_poly]), sel_poly_width))))
-print()
+		
+	print("{osc:^8} {pdl:^8} {resol:^8} {fdiv:^8} {poly:^8}".format(osc='osc', pdl='pdl', resol='resol', fdiv='fdiv', poly='poly'))
+	for i_resol in range(N_resol):
+		for i_fdiv in range(N_fdiv):
+			for i_poly in range(N_poly):
+				for i_pdl in range(N_pdl):
+					for i_osc in range(N_osc):
+						print("{osc:^8} {pdl:^8} {resol:^8} {fdiv:^8} {poly:^8}--> {poly_f}".format(osc=osc_list[i_osc], pdl=pdl_list[i_pdl], resol=resol_list[i_resol], fdiv=fdiv_list[i_fdiv], poly=poly_list[i_poly], poly_f=polyNomenclature(resizeArray(intToBitstr(poly_list[i_poly]), sel_poly_width))))
+	print()
 
 buffer_sel_ro=[]
 for i in osc_list:
@@ -293,13 +299,13 @@ pinta_progreso(N_total, N_total, barra=40)
 
 fpga.close()
 
-medidas = np.reshape(medidas, (N_rep,N_resol,N_fdiv,N_poly,N_pdl,N_osc))
+tensor_medidas = TENSOR(np.reshape(medidas, (N_rep,N_resol,N_fdiv,N_poly,N_pdl,N_osc)), metadatos=[['axis'], [['rep','resol','fdiv','poly','pdl','osc']]])
 
 if not out_fmt:
 	if bias:
 		out_fmt = '%.3f'
 	else:
 		out_fmt = '%.18e'
-np.savetxt(out_name, np.transpose(np.reshape(medidas, (N_rep, N_resol*N_fdiv*N_poly*N_pdl*N_osc))), fmt=out_fmt, header=f"#[N_filas] {N_resol*N_fdiv*N_poly*N_pdl*N_osc}\n#[N_columnas] {N_rep}\n\n#[matriz]", footer="#[fin]", comments="")
+tensor_medidas.write(out_name, fmt=out_fmt)
 
 print("\n")
