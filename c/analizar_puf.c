@@ -12,7 +12,7 @@
 
 
 
-int main(int N_opcion, char** opcion)
+int main(int argc, char** argv)
 {
 	long	mpfr_prec		=	53;
 	char	in_name[256]	=	{"rawdata.mtz"},
@@ -165,10 +165,10 @@ int main(int N_opcion, char** opcion)
 			xmax;
 	FILE *punte;
 	
-	for(int i=0; i<N_opcion; i++)
+	for(int i=0; i<argc; i++)
 	{
-		if( strcmp(opcion[i], "*")==0 )
-			sscanf(opcion[i+1], "%ld", &mpfr_prec);
+		if( strcmp(argv[i], "*")==0 )
+			sscanf(argv[i+1], "%ld", &mpfr_prec);
 	}
 	mpfra_set_default_prec(mpfr_prec);
 	mpfra_init_set_ui(caja, 0);
@@ -177,10 +177,10 @@ int main(int N_opcion, char** opcion)
 	mpfra_init_set_ui(xmax, 0);
 	
 	
-	// LEER OPCIONES
-	for(int i=0; i<N_opcion; i++)
+	// LEER argvES
+	for(int i=0; i<argc; i++)
 	{
-		if( strcmp(opcion[i], "-help")==0 )
+		if( strcmp(argv[i], "-help")==0 )
 		{
 			sprintf(helptxt, "%s/c/help/analizar_puf.help", getenv("REPO_puf"));
 			punte = fopen(helptxt, "r");
@@ -190,89 +190,89 @@ int main(int N_opcion, char** opcion)
 			exit(0);
 		}
 		
-		if( strcmp(opcion[i], "-in")==0 )
+		if( strcmp(argv[i], "-in")==0 )
 		{
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
 				else
 				{
-					if( strcmp(opcion[j], "raw")==0 || strcmp(opcion[j], "r")==0)
+					if( strcmp(argv[j], "raw")==0 || strcmp(argv[j], "r")==0)
 					{
 						input = 'r';
 						sprintf(in_name, "rawdata.mtz");
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-')
-								sscanf(opcion[j+1], "%s", in_name);
+							if(argv[j+1][0] != '-')
+								sscanf(argv[j+1], "%s", in_name);
 						}
 					}
-					else if( strcmp(opcion[j], "dist")==0 || strcmp(opcion[j], "d")==0)
+					else if( strcmp(argv[j], "dist")==0 || strcmp(argv[j], "d")==0)
 					{
 						input = 'd';
 						sprintf(in_name, "dist.mtz");
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-')
-								sscanf(opcion[j+1], "%s", in_name);
+							if(argv[j+1][0] != '-')
+								sscanf(argv[j+1], "%s", in_name);
 						}
 					}
-					else if( strcmp(opcion[j], "pufexp")==0 || strcmp(opcion[j], "x")==0)
+					else if( strcmp(argv[j], "pufexp")==0 || strcmp(argv[j], "x")==0)
 					{
 						input = 'x';
 						sprintf(in_name, "pufexp.pex");
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-')
-								sscanf(opcion[j+1], "%s", in_name);
+							if(argv[j+1][0] != '-')
+								sscanf(argv[j+1], "%s", in_name);
 						}
 					}
 				}
 			}
 		}
 		
-		if( strcmp(opcion[i], "-out")==0 )
+		if( strcmp(argv[i], "-out")==0 )
 		{
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
 				else
 				{
-					if( strcmp(opcion[j], "raw")==0 || strcmp(opcion[j], "r")==0)
+					if( strcmp(argv[j], "raw")==0 || strcmp(argv[j], "r")==0)
 					{
 						output_r = 1;
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h"))
-								sscanf(opcion[j+1], "%s", out_r_name);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "raw r dist d pufexp x map m hist h"))
+								sscanf(argv[j+1], "%s", out_r_name);
 						}
 					}
-					if( strcmp(opcion[j], "dist")==0 || strcmp(opcion[j], "d")==0)
+					if( strcmp(argv[j], "dist")==0 || strcmp(argv[j], "d")==0)
 					{
 						output_d = 1;
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h"))
-								sscanf(opcion[j+1], "%s", out_d_name);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "raw r dist d pufexp x map m hist h"))
+								sscanf(argv[j+1], "%s", out_d_name);
 						}
 					}
-					if( strcmp(opcion[j], "pufexp")==0 || strcmp(opcion[j], "x")==0)
+					if( strcmp(argv[j], "pufexp")==0 || strcmp(argv[j], "x")==0)
 					{
 						output_x = 1;
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h resize truncate promedio zeropad "))
-								sscanf(opcion[j+1], "%s", out_x_name);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "raw r dist d pufexp x map m hist h resize truncate promedio zeropad "))
+								sscanf(argv[j+1], "%s", out_x_name);
 						}
-						for(int k=j+1; k<N_opcion; k++)
+						for(int k=j+1; k<argc; k++)
 						{
-							if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "raw r dist d pufexp x map m hist h "))
+							if(argv[k][0]=='-' || wordIsInSet(argv[k], "raw r dist d pufexp x map m hist h "))
 								break;
 							else
 							{
-								if( strcmp(opcion[k], "resize")==0 )
+								if( strcmp(argv[k], "resize")==0 )
 								{
 									for(int l=0; l<4; l++)
 									{
@@ -282,9 +282,9 @@ int main(int N_opcion, char** opcion)
 											break;
 										}
 									}
-									sscanf(opcion[k+1], "%d,%d,%d,%d", &resize_retos, &resize_inst, &resize_rep, &resize_y);
+									sscanf(argv[k+1], "%d,%d,%d,%d", &resize_retos, &resize_inst, &resize_rep, &resize_y);
 								}
-								if( strcmp(opcion[k], "truncate")==0 )
+								if( strcmp(argv[k], "truncate")==0 )
 								{
 									for(int l=0; l<4; l++)
 									{
@@ -294,9 +294,9 @@ int main(int N_opcion, char** opcion)
 											break;
 										}
 									}
-									sscanf(opcion[k+1], "%d", &trunc);
+									sscanf(argv[k+1], "%d", &trunc);
 								}
-								if( strcmp(opcion[k], "promedio")==0 )
+								if( strcmp(argv[k], "promedio")==0 )
 								{
 									for(int l=0; l<4; l++)
 									{
@@ -307,7 +307,7 @@ int main(int N_opcion, char** opcion)
 										}
 									}
 								}
-								if( strcmp(opcion[k], "zeropad")==0 )
+								if( strcmp(argv[k], "zeropad")==0 )
 								{
 									for(int l=0; l<4; l++)
 									{
@@ -317,59 +317,59 @@ int main(int N_opcion, char** opcion)
 											break;
 										}
 									}
-									sscanf(opcion[k+1], "%d", &zeroes_padded);
+									sscanf(argv[k+1], "%d", &zeroes_padded);
 								}
 							}
 						}
 					}
-					if( strcmp(opcion[j], "map")==0 || strcmp(opcion[j], "m")==0)
+					if( strcmp(argv[j], "map")==0 || strcmp(argv[j], "m")==0)
 					{
 						output_m = 1;
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h"))
-								sscanf(opcion[j+1], "%s", out_m_name);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "raw r dist d pufexp x map m hist h"))
+								sscanf(argv[j+1], "%s", out_m_name);
 						}
 					}
-					if( strcmp(opcion[j], "hist")==0 || strcmp(opcion[j], "h")==0)
+					if( strcmp(argv[j], "hist")==0 || strcmp(argv[j], "h")==0)
 					{
 						output_h = 1;
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "raw r dist d pufexp x map m hist h caja xmin xmax resolucion type norm"))
-								sscanf(opcion[j+1], "%s", out_h_name);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "raw r dist d pufexp x map m hist h caja xmin xmax resolucion type norm"))
+								sscanf(argv[j+1], "%s", out_h_name);
 						}
-						for(int k=j+1; k<N_opcion; k++)
+						for(int k=j+1; k<argc; k++)
 						{
-							if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "raw r dist d pufexp x map m hist h"))
+							if(argv[k][0]=='-' || wordIsInSet(argv[k], "raw r dist d pufexp x map m hist h"))
 								break;
 							else
 							{
-								if(strcmp(opcion[k], "caja")==0)
+								if(strcmp(argv[k], "caja")==0)
 								{
-									if(strcmp(opcion[k+1], "f")==0)
-										mpfra_set_str(fcaja, opcion[k+2], 10);
+									if(strcmp(argv[k+1], "f")==0)
+										mpfra_set_str(fcaja, argv[k+2], 10);
 									else
-										mpfra_set_str(caja, opcion[k+1], 10);
+										mpfra_set_str(caja, argv[k+1], 10);
 								}
 								
-								if(strcmp(opcion[k], "xmin")==0)
-									mpfra_set_str(xmin, opcion[k+1], 10);
+								if(strcmp(argv[k], "xmin")==0)
+									mpfra_set_str(xmin, argv[k+1], 10);
 								
-								if(strcmp(opcion[k], "xmax")==0)
-									mpfra_set_str(xmax, opcion[k+1], 10);
+								if(strcmp(argv[k], "xmax")==0)
+									mpfra_set_str(xmax, argv[k+1], 10);
 								
-								if(strcmp(opcion[k], "resolucion")==0)
-									sscanf(opcion[k+1], "%d", &hist_resolucion);
+								if(strcmp(argv[k], "resolucion")==0)
+									sscanf(argv[k+1], "%d", &hist_resolucion);
 								
-								if(strcmp(opcion[k], "sspace")==0)
+								if(strcmp(argv[k], "sspace")==0)
 									hist_type=1;
 								
-								if(strcmp(opcion[k], "norm")==0)
+								if(strcmp(argv[k], "norm")==0)
 								{
-									if(k+1 < N_opcion)
+									if(k+1 < argc)
 									{
-										if(strcmp(opcion[k+1], "alt")==0)
+										if(strcmp(argv[k+1], "alt")==0)
 											hist_norm=1;
 									}
 								}
@@ -380,28 +380,28 @@ int main(int N_opcion, char** opcion)
 			}
 		}
 		
-		if( strcmp(opcion[i], "-geom")==0 )
+		if( strcmp(argv[i], "-geom")==0 )
 		{
-			if(i+1 < N_opcion)
+			if(i+1 < argc)
 			{
-				if(opcion[i+1][0] != '-')
+				if(argv[i+1][0] != '-')
 				{
-					for(int j=i+1; j<N_opcion; j++)
+					for(int j=i+1; j<argc; j++)
 					{
-						if( strcmp(opcion[j], "nx")==0)
+						if( strcmp(argv[j], "nx")==0)
 						{
-							if(j+1<N_opcion)
+							if(j+1<argc)
 							{
-								if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "nx ny"))
-									sscanf(opcion[j+1], "%d", &Nx);
+								if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "nx ny"))
+									sscanf(argv[j+1], "%d", &Nx);
 							}
 						}
-						if( strcmp(opcion[j], "ny")==0)
+						if( strcmp(argv[j], "ny")==0)
 						{
-							if(j+1<N_opcion)
+							if(j+1<argc)
 							{
-								if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "nx ny"))
-									sscanf(opcion[j+1], "%d", &Ny);
+								if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "nx ny"))
+									sscanf(argv[j+1], "%d", &Ny);
 							}
 						}
 					}
@@ -409,180 +409,180 @@ int main(int N_opcion, char** opcion)
 			}
 		}
 		
-		if( strcmp(opcion[i], "-sim")==0 )
+		if( strcmp(argv[i], "-sim")==0 )
 		{
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
 				else
 				{
-					if( strcmp(opcion[j], "frec")==0)
+					if( strcmp(argv[j], "frec")==0)
 					{
-						if(j+1 < N_opcion)
+						if(j+1 < argc)
 						{
-							if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "frec desv fcorr ftemp"))
-								sscanf(opcion[j+1], "%lf", &frec_esperada);
+							if(argv[j+1][0]!='-' && !wordIsInSet(argv[j+1], "frec desv fcorr ftemp"))
+								sscanf(argv[j+1], "%lf", &frec_esperada);
 						}
 					}
 					
-					if( strcmp(opcion[j], "desv")==0)
+					if( strcmp(argv[j], "desv")==0)
 					{
-						if(j+1 < N_opcion)
+						if(j+1 < argc)
 						{
-							if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "frec desv fcorr ftemp"))
-								sscanf(opcion[j+1], "%lf", &desv_frec_esperada);
+							if(argv[j+1][0]!='-' && !wordIsInSet(argv[j+1], "frec desv fcorr ftemp"))
+								sscanf(argv[j+1], "%lf", &desv_frec_esperada);
 						}
 					}
 					
-					if( strcmp(opcion[j], "fcorr")==0)
+					if( strcmp(argv[j], "fcorr")==0)
 					{
 						fcorr=1;
-						for(int k=j+1; k<N_opcion; k++)
+						for(int k=j+1; k<argc; k++)
 						{
-							if(opcion[k][0] == '-' || wordIsInSet(opcion[k], "frec desv fcorr ftemp"))
+							if(argv[k][0] == '-' || wordIsInSet(argv[k], "frec desv fcorr ftemp"))
 								break;
 							else
 							{
-								if( strcmp(opcion[k], "lineal_x")==0)
+								if( strcmp(argv[k], "lineal_x")==0)
 								{
 									fcorr=1;
-									if(k+1<N_opcion)
+									if(k+1<argc)
 									{
-										if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "frec desv fcorr ftemp"))
-											sscanf(opcion[k+1], "%lf", &factorx);
+										if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "frec desv fcorr ftemp"))
+											sscanf(argv[k+1], "%lf", &factorx);
 									}
 									break;
 								}
-								else if( strcmp(opcion[k], "lineal_xy")==0)
+								else if( strcmp(argv[k], "lineal_xy")==0)
 								{
 									fcorr=2;
-									if(k+1<N_opcion)
+									if(k+1<argc)
 									{
-										if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "frec desv fcorr ftemp"))
-											sscanf(opcion[k+1], "%lf", &factorx);
+										if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "frec desv fcorr ftemp"))
+											sscanf(argv[k+1], "%lf", &factorx);
 									}
-									if(k+2<N_opcion)
+									if(k+2<argc)
 									{
-										if(opcion[k+2][0]!='-' && !wordIsInSet(opcion[k+2], "frec desv fcorr ftemp"))
-											sscanf(opcion[k+2], "%lf", &factory);
+										if(argv[k+2][0]!='-' && !wordIsInSet(argv[k+2], "frec desv fcorr ftemp"))
+											sscanf(argv[k+2], "%lf", &factory);
 									}
 									break;
 								}
-								else if( strcmp(opcion[k], "producto_xy")==0)
+								else if( strcmp(argv[k], "producto_xy")==0)
 								{
 									fcorr=3;
-									if(k+1<N_opcion)
+									if(k+1<argc)
 									{
-										if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "frec desv fcorr ftemp"))
-											sscanf(opcion[k+1], "%lf", &factorx);
+										if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "frec desv fcorr ftemp"))
+											sscanf(argv[k+1], "%lf", &factorx);
 									}
 									break;
 								}
 							}
 						}
 					}
-					if( strcmp(opcion[j], "ftemp")==0)
+					if( strcmp(argv[j], "ftemp")==0)
 					{
-						if(j+1<N_opcion)
+						if(j+1<argc)
 						{
-							if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "frec desv fcorr ftemp"))
-								sscanf(opcion[j+1], "%lf", &ftemp);
+							if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "frec desv fcorr ftemp"))
+								sscanf(argv[j+1], "%lf", &ftemp);
 						}
 					}
 				}
 			}
 		}
 		
-		if( strcmp(opcion[i], "-nretos")==0 )
-			sscanf(opcion[i+1], "%d", &N_retos);
+		if( strcmp(argv[i], "-nretos")==0 )
+			sscanf(argv[i+1], "%d", &N_retos);
 		
-		if( strcmp(opcion[i], "-ninst")==0 )
-			sscanf(opcion[i+1], "%d", &N_inst);
+		if( strcmp(argv[i], "-ninst")==0 )
+			sscanf(argv[i+1], "%d", &N_inst);
 		
-		if( strcmp(opcion[i], "-nrep")==0 )
+		if( strcmp(argv[i], "-nrep")==0 )
 		{
-			sscanf(opcion[i+1], "%d", &N_rep);
-			if(i+2<N_opcion)
+			sscanf(argv[i+1], "%d", &N_rep);
+			if(i+2<argc)
 			{
-				if(strcmp(opcion[i+2], "promedio")==0)
+				if(strcmp(argv[i+2], "promedio")==0)
 					promediar_rep=1;
 			}
 		}
 		
-		if( strcmp(opcion[i], "-npdl")==0 )
-			sscanf(opcion[i+1], "%d", &N_pdl);
+		if( strcmp(argv[i], "-npdl")==0 )
+			sscanf(argv[i+1], "%d", &N_pdl);
 		
-		if( strcmp(opcion[i], "-nprec")==0 )
-			sscanf(opcion[i+1], "%d", &N_prec);
+		if( strcmp(argv[i], "-nprec")==0 )
+			sscanf(argv[i+1], "%d", &N_prec);
 		
-		if(strcmp(opcion[i], "-puf")==0)
+		if(strcmp(argv[i], "-puf")==0)
 		{
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
-				else if(strcmp(opcion[j], "ringoscillator")==0 || strcmp(opcion[j], "ro")==0)
+				else if(strcmp(argv[j], "ringoscillator")==0 || strcmp(argv[j], "ro")==0)
 				{
 					puftype=0;
-					for(int k=j+1; k<N_opcion; k++)
+					for(int k=j+1; k<argc; k++)
 					{
-						if(opcion[k][0]=='-')
+						if(argv[k][0]=='-')
 							break;
-						else if(strcmp(opcion[k], "n-1")==0)
+						else if(strcmp(argv[k], "n-1")==0)
 						{
 							topol=N_1;
 						}
-						else if(strcmp(opcion[k], "1_out_of_2")==0 || strcmp(opcion[k], "1o2")==0)
+						else if(strcmp(argv[k], "1_out_of_2")==0 || strcmp(argv[k], "1o2")==0)
 						{
 							topol=one_out_of_2;
 						}
-						else if(strcmp(opcion[k], "all_pairs")==0 || strcmp(opcion[k], "ap")==0)
+						else if(strcmp(argv[k], "all_pairs")==0 || strcmp(argv[k], "ap")==0)
 						{
 							topol=All_pairs;
 						}
-						else if(strcmp(opcion[k], "k_modular")==0 || strcmp(opcion[k], "km")==0)
+						else if(strcmp(argv[k], "k_modular")==0 || strcmp(argv[k], "km")==0)
 						{
 							topol=k_modular;
-							for(int l=k+1; l<N_opcion; l++)
+							for(int l=k+1; l<argc; l++)
 							{
-								if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
+								if(argv[l][0]=='-' || wordIsInSet(argv[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
 									break;
 								else
 								{
-									sscanf(opcion[l], "%d", &k_mod);
+									sscanf(argv[l], "%d", &k_mod);
 									break;
 								}
 							}
 						}
-						else if(strcmp(opcion[k], "compare_to_one")==0 || strcmp(opcion[k], "c1")==0)
+						else if(strcmp(argv[k], "compare_to_one")==0 || strcmp(argv[k], "c1")==0)
 						{
 							topol=compare_to_1;
 						}
-						else if(strcmp(opcion[k], "file")==0)
+						else if(strcmp(argv[k], "file")==0)
 						{
 							topol=file_externo;
-							for(int l=k+1; l<N_opcion; l++)
+							for(int l=k+1; l<argc; l++)
 							{
-								if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
+								if(argv[l][0]=='-' || wordIsInSet(argv[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
 									break;
 								else
 								{
-									sscanf(opcion[l], "%s", topolfile);
+									sscanf(argv[l], "%s", topolfile);
 									break;
 								}
 							}
 						}
-						else if(strcmp(opcion[k], "random_pairs")==0 || strcmp(opcion[k], "rp")==0)
+						else if(strcmp(argv[k], "random_pairs")==0 || strcmp(argv[k], "rp")==0)
 						{
 							topol=random_pairs;
-							for(int l=k+1; l<N_opcion; l++)
+							for(int l=k+1; l<argc; l++)
 							{
-								if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
+								if(argv[l][0]=='-' || wordIsInSet(argv[l], "ringoscillator ro n-1 1_out_of_2 1o2 all_pairs ap k_modular km compare_to_one c1 file random_pairs rp arbiter arb"))
 									break;
 								else
 								{
-									sscanf(opcion[l], "%d", &N_bits);
+									sscanf(argv[l], "%d", &N_bits);
 									break;
 								}
 							}
@@ -591,216 +591,216 @@ int main(int N_opcion, char** opcion)
 							break;
 					}
 				}
-				else if(strcmp(opcion[j], "arbiter")==0 || strcmp(opcion[j], "arb")==0)
+				else if(strcmp(argv[j], "arbiter")==0 || strcmp(argv[j], "arb")==0)
 					puftype=1;
 				else
 					break;
 			}
 		}
 		
-		if( strcmp(opcion[i], "-pufanalisis")==0 || strcmp(opcion[i], "-pa")==0 )
+		if( strcmp(argv[i], "-pufanalisis")==0 || strcmp(argv[i], "-pa")==0 )
 		{
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
 				
-				if( strcmp(opcion[j], "intradist")==0 )
+				if( strcmp(argv[j], "intradist")==0 )
 				{
 					intrad=1;
-					for(int k=j+1; k<N_opcion; k++)
+					for(int k=j+1; k<argc; k++)
 					{
-						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
+						if(argv[k][0]=='-' || wordIsInSet(argv[k], "intradist interdist far frr eer roc analisis_v av"))
 							break;
 						else
 						{
-							if( strcmp(opcion[k], "hist")==0 || strcmp(opcion[k], "h")==0 )
+							if( strcmp(argv[k], "hist")==0 || strcmp(argv[k], "h")==0 )
 							{
 								intrad_h=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
-									sscanf(opcion[k+1], "%s", intrad_hist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
+									sscanf(argv[k+1], "%s", intrad_hist_name);
 								}
-								for(int l=k+1; l<N_opcion; l++)
+								for(int l=k+1; l<argc; l++)
 								{
-									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+									if(argv[l][0]=='-' || wordIsInSet(argv[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										break;
 									else
 									{
-										if( strcmp(opcion[l], "caja")==0 )
-											sscanf(opcion[l+1], "%lf", &caja_intrad);
+										if( strcmp(argv[l], "caja")==0 )
+											sscanf(argv[l+1], "%lf", &caja_intrad);
 								
-										if( strcmp(opcion[l], "xmin")==0 )
-											sscanf(opcion[l+1], "%lf", &xmin_intrad);
+										if( strcmp(argv[l], "xmin")==0 )
+											sscanf(argv[l+1], "%lf", &xmin_intrad);
 								
-										if( strcmp(opcion[l], "xmax")==0 )
-											sscanf(opcion[l+1], "%lf", &xmax_intrad);
+										if( strcmp(argv[l], "xmax")==0 )
+											sscanf(argv[l+1], "%lf", &xmax_intrad);
 									}
 								}
 							}
-							if( strcmp(opcion[k], "dist")==0 || strcmp(opcion[k], "d")==0 )
+							if( strcmp(argv[k], "dist")==0 || strcmp(argv[k], "d")==0 )
 							{
 								intrad_d=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", intrad_dist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", intrad_dist_name);
 								}
 							}
-							if( strcmp(opcion[k], "ajuste")==0 || strcmp(opcion[k], "a")==0 )
+							if( strcmp(argv[k], "ajuste")==0 || strcmp(argv[k], "a")==0 )
 							{
 								intrad_a=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", intrad_ajuste_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", intrad_ajuste_name);
 								}
 							}
 						}
 					}
 				}
-				if( strcmp(opcion[j], "interdist")==0 )
+				if( strcmp(argv[j], "interdist")==0 )
 				{
 					interd=1;
-					for(int k=j+1; k<N_opcion; k++)
+					for(int k=j+1; k<argc; k++)
 					{
-						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
+						if(argv[k][0]=='-' || wordIsInSet(argv[k], "intradist interdist far frr eer roc analisis_v av"))
 							break;
 						else
 						{
-							if( strcmp(opcion[k], "hist")==0 || strcmp(opcion[k], "h")==0 )
+							if( strcmp(argv[k], "hist")==0 || strcmp(argv[k], "h")==0 )
 							{
 								interd_h=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
-									sscanf(opcion[k+1], "%s", interd_hist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
+									sscanf(argv[k+1], "%s", interd_hist_name);
 								}
-								for(int l=k+1; l<N_opcion; l++)
+								for(int l=k+1; l<argc; l++)
 								{
-									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+									if(argv[l][0]=='-' || wordIsInSet(argv[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										break;
 									else
 									{
-										if( strcmp(opcion[l], "caja")==0 )
-											sscanf(opcion[l+1], "%lf", &caja_interd);
+										if( strcmp(argv[l], "caja")==0 )
+											sscanf(argv[l+1], "%lf", &caja_interd);
 								
-										if( strcmp(opcion[l], "xmin")==0 )
-											sscanf(opcion[l+1], "%lf", &xmin_interd);
+										if( strcmp(argv[l], "xmin")==0 )
+											sscanf(argv[l+1], "%lf", &xmin_interd);
 								
-										if( strcmp(opcion[l], "xmax")==0 )
-											sscanf(opcion[l+1], "%lf", &xmax_interd);
+										if( strcmp(argv[l], "xmax")==0 )
+											sscanf(argv[l+1], "%lf", &xmax_interd);
 									}
 								}
 							}
-							if( strcmp(opcion[k], "dist")==0 || strcmp(opcion[k], "d")==0 )
+							if( strcmp(argv[k], "dist")==0 || strcmp(argv[k], "d")==0 )
 							{
 								interd_d=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", interd_dist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", interd_dist_name);
 								}
 							}
-							if( strcmp(opcion[k], "ajuste")==0 || strcmp(opcion[k], "a")==0 )
+							if( strcmp(argv[k], "ajuste")==0 || strcmp(argv[k], "a")==0 )
 							{
 								interd_a=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", interd_ajuste_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", interd_ajuste_name);
 								}
 							}
 						}
 					}
 				}
-				if( strcmp(opcion[j], "far")==0 )
+				if( strcmp(argv[j], "far")==0 )
 				{
 					far=1;
-					if(j+1<N_opcion)
+					if(j+1<argc)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-							sscanf(opcion[j+1], "%s", far_name);
+						if(argv[j+1][0]!='-' && !wordIsInSet(argv[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+							sscanf(argv[j+1], "%s", far_name);
 					}
 				}
-				if( strcmp(opcion[j], "frr")==0 )
+				if( strcmp(argv[j], "frr")==0 )
 				{
 					frr=1;
-					if(j+1<N_opcion)
+					if(j+1<argc)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-							sscanf(opcion[j+1], "%s", frr_name);
+						if(argv[j+1][0]!='-' && !wordIsInSet(argv[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+							sscanf(argv[j+1], "%s", frr_name);
 					}
 				}
-				if( strcmp(opcion[j], "eer")==0 )
+				if( strcmp(argv[j], "eer")==0 )
 					eer=1;
 				
-				if( strcmp(opcion[j], "roc")==0 )
+				if( strcmp(argv[j], "roc")==0 )
 				{
 					roc=1;
-					if(j+1<N_opcion)
+					if(j+1<argc)
 					{
-						if(opcion[j+1][0]!='-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-							sscanf(opcion[j+1], "%s", roc_name);
+						if(argv[j+1][0]!='-' && !wordIsInSet(argv[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+							sscanf(argv[j+1], "%s", roc_name);
 					}
 				}
 				
-				if( strcmp(opcion[j], "analisis_v")==0 || strcmp(opcion[j], "av")==0)
+				if( strcmp(argv[j], "analisis_v")==0 || strcmp(argv[j], "av")==0)
 				{
 					analisisv=1;
-					if(j+1<N_opcion)
+					if(j+1<argc)
 					{
-						if(opcion[j+1][0] != '-' && !wordIsInSet(opcion[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-							sscanf(opcion[j+1], "%s", goldenkey_name);
+						if(argv[j+1][0] != '-' && !wordIsInSet(argv[j+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+							sscanf(argv[j+1], "%s", goldenkey_name);
 					}
-					for(int k=j+1; k<N_opcion; k++)
+					for(int k=j+1; k<argc; k++)
 					{
-						if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "intradist interdist far frr eer roc analisis_v av"))
+						if(argv[k][0]=='-' || wordIsInSet(argv[k], "intradist interdist far frr eer roc analisis_v av"))
 							break;
 						else
 						{
-							if( strcmp(opcion[k], "hist")==0 || strcmp(opcion[k], "h")==0 )
+							if( strcmp(argv[k], "hist")==0 || strcmp(argv[k], "h")==0 )
 							{
 								analisisv_h=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
-									sscanf(opcion[k+1], "%s", analisisv_hist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a caja xmin xmax"))
+									sscanf(argv[k+1], "%s", analisisv_hist_name);
 								}
-								for(int l=k+1; l<N_opcion; l++)
+								for(int l=k+1; l<argc; l++)
 								{
-									if(opcion[l][0]=='-' || wordIsInSet(opcion[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+									if(argv[l][0]=='-' || wordIsInSet(argv[l], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
 										break;
 									else
 									{
-										if( strcmp(opcion[l], "caja")==0 )
-											sscanf(opcion[l+1], "%lf", &caja_analisisv);
+										if( strcmp(argv[l], "caja")==0 )
+											sscanf(argv[l+1], "%lf", &caja_analisisv);
 								
-										if( strcmp(opcion[l], "xmin")==0 )
-											sscanf(opcion[l+1], "%lf", &xmin_analisisv);
+										if( strcmp(argv[l], "xmin")==0 )
+											sscanf(argv[l+1], "%lf", &xmin_analisisv);
 								
-										if( strcmp(opcion[l], "xmax")==0 )
-											sscanf(opcion[l+1], "%lf", &xmax_analisisv);
+										if( strcmp(argv[l], "xmax")==0 )
+											sscanf(argv[l+1], "%lf", &xmax_analisisv);
 									}
 								}
 							}
-							if( strcmp(opcion[k], "dist")==0 || strcmp(opcion[k], "d")==0 )
+							if( strcmp(argv[k], "dist")==0 || strcmp(argv[k], "d")==0 )
 							{
 								analisisv_d=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", analisisv_dist_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", analisisv_dist_name);
 								}
 							}
-							if( strcmp(opcion[k], "ajuste")==0 || strcmp(opcion[k], "a")==0 )
+							if( strcmp(argv[k], "ajuste")==0 || strcmp(argv[k], "a")==0 )
 							{
 								analisisv_a=1;
-								if(k+1<N_opcion)
+								if(k+1<argc)
 								{
-									if(opcion[k+1][0]!='-' && !wordIsInSet(opcion[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
-										sscanf(opcion[k+1], "%s", analisisv_ajuste_name);
+									if(argv[k+1][0]!='-' && !wordIsInSet(argv[k+1], "intradist interdist far frr eer roc analisis_v av hist h dist d ajuste a"))
+										sscanf(argv[k+1], "%s", analisisv_ajuste_name);
 								}
 							}
 						}
@@ -809,67 +809,67 @@ int main(int N_opcion, char** opcion)
 			}
 		}
 		
-		if( strcmp(opcion[i], "-adversario")==0 || strcmp(opcion[i], "-adv")==0 )
+		if( strcmp(argv[i], "-adversario")==0 || strcmp(argv[i], "-adv")==0 )
 		{
 			adversario=1;
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0] == '-')
+				if(argv[j][0] == '-')
 					break;
 				else
 				{
-					if( strcmp(opcion[j], "ignorant")==0 || strcmp(opcion[j], "i")==0 )
+					if( strcmp(argv[j], "ignorant")==0 || strcmp(argv[j], "i")==0 )
 						adversario=1;
-					else if( strcmp(opcion[j], "global_bias")==0 || strcmp(opcion[j], "gb")==0 )
+					else if( strcmp(argv[j], "global_bias")==0 || strcmp(argv[j], "gb")==0 )
 					{
 						adversario=2;
-						for(int k=j+1; k<N_opcion; k++)
+						for(int k=j+1; k<argc; k++)
 						{
-							if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "ntrials umbral_id"))
+							if(argv[k][0]=='-' || wordIsInSet(argv[k], "ntrials umbral_id"))
 								break;
 							else
 							{
-								sscanf(opcion[j+1], "%d", &bias_orden);
+								sscanf(argv[j+1], "%d", &bias_orden);
 								break;
 							}
 						}
 					}
-					else if( strcmp(opcion[j], "local_bias")==0 || strcmp(opcion[j], "lb")==0 )
+					else if( strcmp(argv[j], "local_bias")==0 || strcmp(argv[j], "lb")==0 )
 					{
 						adversario=3;
-						for(int k=j+1; k<N_opcion; k++)
+						for(int k=j+1; k<argc; k++)
 						{
-							if(opcion[k][0]=='-' || wordIsInSet(opcion[k], "ntrials umbral_id"))
+							if(argv[k][0]=='-' || wordIsInSet(argv[k], "ntrials umbral_id"))
 								break;
 							else
 							{
-								sscanf(opcion[j+1], "%d", &bias_orden);
+								sscanf(argv[j+1], "%d", &bias_orden);
 								break;
 							}
 						}
 					}
-					else if( strcmp(opcion[j], "machine_learning")==0 || strcmp(opcion[j], "ml")==0 )
+					else if( strcmp(argv[j], "machine_learning")==0 || strcmp(argv[j], "ml")==0 )
 						adversario=4;
 					
-					if(strcmp(opcion[j], "ntrials")==0)
-						sscanf(opcion[j+1], "%d", &ntrials);
+					if(strcmp(argv[j], "ntrials")==0)
+						sscanf(argv[j+1], "%d", &ntrials);
 					
-					if(strcmp(opcion[j], "umbral_id")==0)
-						sscanf(opcion[j+1], "%f", &umbral_id);
+					if(strcmp(argv[j], "umbral_id")==0)
+						sscanf(argv[j+1], "%f", &umbral_id);
 				}
 			}
 		}
 		
-		if( strcmp(opcion[i], "-entropia")==0 )
+		if( strcmp(argv[i], "-entropia")==0 )
 		{
 			entrop = 1;
-			for(int j=i+1; j<N_opcion; j++)
+			for(int j=i+1; j<argc; j++)
 			{
-				if(opcion[j][0]!='-')
+				if(argv[j][0]!='-')
 				{
-					if( strcmp(opcion[j], "pb")==0)
+					if( strcmp(argv[j], "pb")==0)
 						entrop=2;
-					else if(strcmp(opcion[j], "pn")==0)
+					else if(strcmp(argv[j], "pn")==0)
 						entrop=3;
 					else
 						entrop = 1;
@@ -877,13 +877,13 @@ int main(int N_opcion, char** opcion)
 			}
 		}
 			
-		if( strcmp(opcion[i], "-minentropia")==0 )
+		if( strcmp(argv[i], "-minentropia")==0 )
 			minentrop=1;
 
-		if(strcmp(opcion[i], "-nv")==0)
+		if(strcmp(argv[i], "-nv")==0)
 			verbose = 0;
 			
-		if( strcmp(opcion[i], "gsort") ==0)
+		if( strcmp(argv[i], "gsort") ==0)
 			gsort=1;
 	}
 	
