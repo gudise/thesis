@@ -1,8 +1,26 @@
 from numpy.random import randint as np_randint, permutation as np_permutation
-from numpy import pi as np_pi, cos as np_cos, sin as np_sin
-from matplotlib.pyplot import plot as plt_plot, tick_params as plt_tick_params, gca as plt_gca, axis as plt_axis, show as plt_show, savefig as plt_savefig
+from numpy import pi as np_pi, cos as np_cos, sin as np_sin, histogram as np_histogram, mean as np_mean
+from scipy.stats import binom as sp_binom
+from matplotlib.pyplot import plot as plt_plot, bar as plt_bar, tick_params as plt_tick_params, gca as plt_gca, axis as plt_axis, show as plt_show, savefig as plt_savefig
 from mytensor import *
 
+
+
+def hamming(array1, array2, porciento=False):
+    """
+    Esta función calcula la distancia de Hamming de dos arrays de símbolos
+    """
+    if len(array1) != len(array2):
+        print("ERROR en 'hamming': arrays de distinto tamaño")
+        return -1
+    result=0
+    for i in range(len(array1)):
+        if array1[i] != array2[i]:
+            result+=1
+    if porciento:
+        return result/len(array1)*100
+    else:
+        return result
 
 class PUFTOPOL:
     """
@@ -67,6 +85,93 @@ class PUFEXP:
     representación de cada reto (en principio arbitraria, en la práctica será una lista de parejas de las celdas
     empleadas para obtener cada bit).
     """
-    def __init__(self):
+    def __init__(self, topol, instancias, retos=[]):
         """
         """
+        self.topol = topol
+        if type(instancias)==type([]):
+            self.instancias = instancias # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
+        else:
+            self.instancias=[instancias]
+            
+        self.N_inst = len(self.instancias)
+        self.N_pdl = self.instancias[0].shape[self.instancias[0].axis.index('pdl')]
+        self.N_rep = self.instancias[0].shape[self.instancias[0].axis.index('rep')]
+        self.N_osc = topol.N_osc
+        self.N_bits_partial = len(topol.grafo) # Número de bits sin tener en cuenta el "boost" PDL.
+        self.N_bits = self.N_bits_partial*self.N_pdl # Número de bits real de cada respuesta.
+        
+        if len(retos)>0:
+            self.retos = retos
+            self.N_retos = len(self.retos)
+        self.data=[[[] for j in self.instancias] for i in self.retos]
+        for i_reto,reto in enumerate(self.retos):
+            for i_inst,inst in enumerate(self.instancias):
+                for i_rep in range(self.N_rep):
+                    aux=[]
+                    for i_pdl in range(self.N_pdl):
+                        for bit in range(self.N_bits_partial):
+                            if inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) > inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl):
+                                aux.append(0)
+                            else:
+                                aux.append(1)
+                    self.data[i_reto][i_inst].append(aux)
+        self.intradist_set=[]
+        self.interdist_set=[]
+        
+    def addreto(self, reto):
+        self.N_retos+=1
+        self.retos.append(reto)
+        self.data.append([[] for j in self.instancias])
+        for i_inst,inst in enumerate(self.instancias):
+            for i_rep in range(self.N_rep):
+                aux=[]
+                for i_pdl in range(self.N_pdl):
+                    for bit in range(self.N_bits_partial):
+                        if inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) > inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl):
+                            aux.append(0)
+                        else:
+                            aux.append(1)
+                self.data[-1][i_inst].append(aux)
+                
+    def print(self, print_retos=True):
+        if print_retos:
+            print("# reto,inst,rep = reto = respuesta\n")
+        else:
+            print("# reto,inst,rep = respuesta\n")
+        for i_reto,reto in enumerate(self.retos):
+            for i_inst,inst in enumerate(self.instancias):
+                for i_rep in range(self.N_rep):
+                    if print_retos:
+                        print(f" {i_reto},{i_inst},{i_rep} = {reto} = {' '.join(str(bit) for bit in self.data[i_reto][i_inst][i_rep])}")
+                    else:
+                        print(f" {i_reto},{i_inst},{i_rep} = {' '.join(str(bit) for bit in self.data[i_reto][i_inst][i_rep])}")
+            
+    def intradist(self):
+        for i_reto in range(self.N_retos):
+            for i_inst in range(self.N_inst):
+                for i_rep in range(self.N_rep):
+                    for j_rep in range(i_rep+1,self.N_rep,1):
+                        self.intradist_set.append(hamming(self.data[i_reto][i_inst][i_rep],self.data[i_reto][i_inst][j_rep]))
+        self.intradist_hist = np_histogram(self.intradist_set, bins=self.N_bits, range=(0,self.N_bits), density=True)[0]
+        self.intradist_media = np_mean(self.intradist_set)
+                        
+    def interdist(self):
+        for i_reto in range(self.N_retos):
+            for i_inst in range(self.N_inst):
+                for j_inst in range(i_inst+1,self.N_inst,1):            
+                    for i_rep in range(self.N_rep):
+                        self.interdist_set.append(hamming(self.data[i_reto][i_inst][i_rep],self.data[i_reto][j_inst][i_rep]))
+        self.interdist_hist = np_histogram(self.interdist_set, bins=self.N_bits, range=(0,self.N_bits), density=True)[0]
+        self.interdist_media = np_mean(self.interdist_set)
+        
+    def dibujar_hist(self, ajuste=True):
+        if len(self.intradist_set)>0:
+            plt_bar([i for i in range(self.N_bits)], self.intradist_hist)
+            if ajuste:
+                plt_plot([i for i in range(self.N_bits)], [sp_binom.pmf(i, self.N_bits, self.intradist_media/self.N_bits) for i in range(self.N_bits)], 'b')
+        if len(self.interdist_set)>0:
+            plt_bar([i for i in range(self.N_bits)], self.interdist_hist)
+            if ajuste:
+                plt_plot([i for i in range(self.N_bits)], [sp_binom.pmf(i, self.N_bits, self.interdist_media/self.N_bits) for i in range(self.N_bits)], 'b')
+        plt_show()
