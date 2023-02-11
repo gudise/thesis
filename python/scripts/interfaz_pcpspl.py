@@ -1,3 +1,7 @@
+"""
+Este script de python está obsoleto y pendiente de migración a un módulo del paquete "fpga".
+"""
+
 #!/usr/bin/python3.8
 
 import os
@@ -30,137 +34,148 @@ BIW_MISALIGNED_DW=""
 BOW_MISALIGNED_DW=""
 
 for i, opt in enumerate(argv): # "i" es el indice que recorre la lista de opciones, "opt" es la opcion propiamente dicha
-	if opt == "-help":
-		with open(f"{os.environ['REPO_fpga']}/python/scripts/help/interfaz_pcpspl.help", "r") as f:
-			print(f.read())
-		exit()
-			
-	if opt == "-projname":
-		PROJNAME=argv[i+1]
-		
-	if opt == "-board":
-		if argv[i+1]=="cmoda7_15t":
-			BRD="cmoda7_15t"
-			PARTNUMBER="xc7a15tcpg236-1"
-			BOARDPART="digilentinc.com:cmod_a7-15t:part0:1.1"
-			MEMPART="mx25l3233"
-			CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
-		
-		elif argv[i+1]=="cmoda7_35t":
-			BRD="cmoda7_35t"
-			PARTNUMBER="xc7a35tcpg236-1"
-			BOARDPART="digilentinc.com:cmod_a7-35t:part0:1.1"
-			MEMPART="mx25l3233"
-			CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
-		
-		elif argv[i+1]=="zybo":
-			BRD="zybo"
-			PARTNUMBER="xc7z010clg400-1"
-			BOARDPART="digilentinc.com:zybo:part0:1.0"
-			MEMPART="?"
-		
-		elif argv[i+1]=="pynqz2":
-			BRD="pynqz2"
-			PARTNUMBER="xc7z020clg400-1"
-			BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
-			MEMPART="?"
-		
-	if opt == "-njobs":
-		NJOBS=int(argv[i+1])
-		
-	if opt == "-qspi":
-		QSPI=1
-		
-	if opt == "-dw":
-		DATA_WIDTH=int(argv[i+1])
-		
-	if opt == "-biw":
-		BUFFER_IN_WIDTH=int(argv[i+1])
-		
-	if opt == "-bow":
-		BUFFER_OUT_WIDTH=int(argv[i+1])
-		
-	if opt == "-interactivo":
-		PY_INTERACTIVO=1
-		
-	if opt == "-linux":
-		WINDOWS_STYLE=0
-		
-		
+    if opt == "-help":
+        print("""
+ -help
+ -projname [\"project_template_interfaz\"]
+ -board [pynqz2 | zybo | cmoda7_15t | cmoda7_35t]
+ -njobs [4]
+ -qspi
+ -dw [32], data_width (tamano del bus gpio)
+ -biw [32], buffer_in_width (bits significativos de la palabra de entrada data_in)
+ -bow [32], buffer_out_width (bits significativos de la palabra de salida data_out)
+ -interactivo, esta opción permite cambiar el programa python de muestra (por defecto 'testbench').
+ -linux, utilizar esta opcion si Vivado esta instalado en un SO linux. De otro modo el formato de los PATH sera el de Windows y los script tcl fallaran
+        
+        """)
+        exit()
+            
+    if opt == "-projname":
+        PROJNAME=argv[i+1]
+        
+    if opt == "-board":
+        if argv[i+1]=="cmoda7_15t":
+            BRD="cmoda7_15t"
+            PARTNUMBER="xc7a15tcpg236-1"
+            BOARDPART="digilentinc.com:cmod_a7-15t:part0:1.1"
+            MEMPART="mx25l3233"
+            CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
+        
+        elif argv[i+1]=="cmoda7_35t":
+            BRD="cmoda7_35t"
+            PARTNUMBER="xc7a35tcpg236-1"
+            BOARDPART="digilentinc.com:cmod_a7-35t:part0:1.1"
+            MEMPART="mx25l3233"
+            CLK_NAME="/clk_wiz_1/clk_out1 (100 MHz)"
+        
+        elif argv[i+1]=="zybo":
+            BRD="zybo"
+            PARTNUMBER="xc7z010clg400-1"
+            BOARDPART="digilentinc.com:zybo:part0:1.0"
+            MEMPART="?"
+        
+        elif argv[i+1]=="pynqz2":
+            BRD="pynqz2"
+            PARTNUMBER="xc7z020clg400-1"
+            BOARDPART="tul.com.tw:pynq-z2:part0:1.0"
+            MEMPART="?"
+        
+    if opt == "-njobs":
+        NJOBS=int(argv[i+1])
+        
+    if opt == "-qspi":
+        QSPI=1
+        
+    if opt == "-dw":
+        DATA_WIDTH=int(argv[i+1])
+        
+    if opt == "-biw":
+        BUFFER_IN_WIDTH=int(argv[i+1])
+        
+    if opt == "-bow":
+        BUFFER_OUT_WIDTH=int(argv[i+1])
+        
+    if opt == "-interactivo":
+        PY_INTERACTIVO=1
+        
+    if opt == "-linux":
+        WINDOWS_STYLE=0
+        
+        
 if BUFFER_IN_WIDTH%8 == 0:
-	OCTETO_IN_WIDTH=BUFFER_IN_WIDTH//8
+    OCTETO_IN_WIDTH=BUFFER_IN_WIDTH//8
 else:
-	OCTETO_IN_WIDTH=BUFFER_IN_WIDTH//8+1
+    OCTETO_IN_WIDTH=BUFFER_IN_WIDTH//8+1
 
 if BUFFER_OUT_WIDTH%8 == 0:
-	OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH//8
+    OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH//8
 else:
-	OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH//8+1
+    OCTETO_OUT_WIDTH=BUFFER_OUT_WIDTH//8+1
 
 if BUFFER_IN_WIDTH%DATA_WIDTH == 0:
-	WORDS_IN_WIDTH=BUFFER_IN_WIDTH//DATA_WIDTH
+    WORDS_IN_WIDTH=BUFFER_IN_WIDTH//DATA_WIDTH
 else:
-	WORDS_IN_WIDTH=BUFFER_IN_WIDTH//DATA_WIDTH+1
+    WORDS_IN_WIDTH=BUFFER_IN_WIDTH//DATA_WIDTH+1
 
 if BUFFER_OUT_WIDTH%DATA_WIDTH == 0:
-	WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH//DATA_WIDTH
+    WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH//DATA_WIDTH
 else:
-	WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH//DATA_WIDTH+1
+    WORDS_OUT_WIDTH=BUFFER_OUT_WIDTH//DATA_WIDTH+1
 
 if DATA_WIDTH >= BUFFER_IN_WIDTH:
-	DW_GE_BIW='`define DW_GE_BIW'
+    DW_GE_BIW='`define DW_GE_BIW'
 elif BUFFER_IN_WIDTH%DATA_WIDTH == 0:
-	BIW_ALIGNED_DW='`define BIW_ALIGNED_DW'
+    BIW_ALIGNED_DW='`define BIW_ALIGNED_DW'
 else:
-	BIW_MISALIGNED_DW='`define BIW_MISALIGNED_DW'
+    BIW_MISALIGNED_DW='`define BIW_MISALIGNED_DW'
 
 if DATA_WIDTH >= BUFFER_OUT_WIDTH:
-	DW_GE_BOW='`define DW_GE_BOW'
+    DW_GE_BOW='`define DW_GE_BOW'
 elif BUFFER_OUT_WIDTH%DATA_WIDTH == 0:
-	BOW_ALIGNED_DW='`define BOW_ALIGNED_DW'
+    BOW_ALIGNED_DW='`define BOW_ALIGNED_DW'
 else:
-	BOW_MISALIGNED_DW='`define BOW_MISALIGNED_DW'
-	
-	
+    BOW_MISALIGNED_DW='`define BOW_MISALIGNED_DW'
+    
+    
 ## projdir (directorio actual)
 if WINDOWS_STYLE == 1:
-	PROJDIR = run(["wslpath","-w",os.environ['PWD']], capture_output=True, text=True).stdout.replace("\\","/").replace("\n","")
+    PROJDIR = run(["wslpath","-w",os.environ['PWD']], capture_output=True, text=True).stdout.replace("\\","/").replace("\n","")
 else:
-	PROJDIR=os.environ['PWD']
-	
-	
+    PROJDIR=os.environ['PWD']
+    
+    
 ## block design
 run(["mkdir","./block_design"])
 if BRD == "cmoda7_15t":
-	if QSPI == 1:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
-	else:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
-	
+    if QSPI == 1:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
+    else:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl","./block_design/bd_design_1.tcl"])
+    
 elif BRD == "cmoda7_35t":
-	if QSPI == 1:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
-	else:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
-	
+    if QSPI == 1:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
+    else:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl","./block_design/bd_design_1.tcl"])
+    
 elif BRD == "zybo":
-	if QSPI == 1:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl","./block_design/bd_design_1.tcl"])
-	else:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl","./block_design/bd_design_1.tcl"])
-	
+    if QSPI == 1:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl","./block_design/bd_design_1.tcl"])
+    else:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl","./block_design/bd_design_1.tcl"])
+    
 elif BRD == "pynqz2":
-	if QSPI == 1:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl","./block_design/bd_design_1.tcl"])
-	else:
-		run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl","./block_design/bd_design_1.tcl"])
-		
-		
+    if QSPI == 1:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl","./block_design/bd_design_1.tcl"])
+    else:
+        run(["cp",f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl","./block_design/bd_design_1.tcl"])
+        
+        
 ## partial flows (tcl)
 run(["mkdir","./partial_flows"])
 
 with open("./partial_flows/setupdesign.tcl", "w") as f:
-	f.write(f"""
+    f.write(f"""
 create_project {PROJNAME} {PROJDIR}/{PROJNAME} -part {PARTNUMBER}
 
 set_property board_part {BOARDPART} [current_project]
@@ -214,7 +229,7 @@ set_property STEPS.SYNTH_DESIGN.ARGS.RESOURCE_SHARING off [get_runs synth_1]
 """)
 
 with open("./partial_flows/genbitstream.tcl", "w") as f:
-	f.write(f"""
+    f.write(f"""
 if {{[file exists {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new/detail_routing.xdc]==1}} {{
     export_ip_user_files -of_objects  [get_files {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new/detail_routing.xdc] -no_script -reset -force -quiet
     remove_files  -fileset constrs_1 {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new/detail_routing.xdc
@@ -226,7 +241,7 @@ if {{[file exists {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new/bitstreamco
 }}
 
 if {{[file exists {PROJDIR}/{PROJNAME}/{PROJNAME}.runs/synth_1]==1}} {{
-	reset_run synth_1
+    reset_run synth_1
 }}
 
 update_compile_order -fileset sources_1
@@ -238,8 +253,8 @@ launch_runs synth_1 -jobs {NJOBS}
 wait_on_run synth_1
 
 """)
-	if QSPI == 1 and BRD == "cmoda7_15t":
-		f.write(f"""
+    if QSPI == 1 and BRD == "cmoda7_15t":
+        f.write(f"""
 file mkdir {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1
 
 file mkdir {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new
@@ -272,8 +287,8 @@ save_constraints
 
 close_design
 """)
-	elif QSPI == 1 and BRD == "cmoda7_35t":
-		f.write(f"""
+    elif QSPI == 1 and BRD == "cmoda7_35t":
+        f.write(f"""
 file mkdir {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1
 
 file mkdir {PROJDIR}/{PROJNAME}/{PROJNAME}.srcs/constrs_1/new
@@ -306,18 +321,18 @@ save_constraints
 
 close_design
 """)
-	f.write(f"""
+    f.write(f"""
 if {{[file exists {PROJDIR}/{PROJNAME}/{PROJNAME}.runs/synth_1/__synthesis_is_complete__]==1}} {{
-	reset_run synth_1
+    reset_run synth_1
 }}
-	
+    
 launch_runs impl_1 -to_step write_bitstream -jobs {NJOBS}
 
 wait_on_run impl_1
 """)
 
 with open("./partial_flows/launchsdk.tcl", "w") as f:
-	f.write(f"""
+    f.write(f"""
 file mkdir {PROJDIR}/{PROJNAME}/{PROJNAME}.sdk
 
 file copy -force {PROJDIR}/{PROJNAME}/{PROJNAME}.runs/impl_1/design_1_wrapper.sysdef {PROJDIR}/{PROJNAME}/{PROJNAME}.sdk/design_1_wrapper.hdf
@@ -328,7 +343,7 @@ launch_sdk -workspace {PROJDIR}/{PROJNAME}/{PROJNAME}.sdk -hwspec {PROJDIR}/{PRO
 """)
 
 with open("mkhwdplatform.tcl", "w") as f:
-	f.write(f"""
+    f.write(f"""
 source {PROJDIR}/partial_flows/setupdesign.tcl
 
 source {PROJDIR}/partial_flows/genbitstream.tcl
@@ -340,8 +355,8 @@ source {PROJDIR}/partial_flows/launchsdk.tcl
 
 ## python script
 with open("editame_interfaz.py", "w") as f:
-	if PY_INTERACTIVO == 1:
-		f.write(f"""import serial
+    if PY_INTERACTIVO == 1:
+        f.write(f"""import serial
 import time
 from fpga.interfazpcps import *
 
@@ -365,8 +380,8 @@ print(f\"valor devuelto:\\\t\\\t{resultado}\\\n\")
 
 fpga.close()
 """)
-	else:
-		f.write(f"""import serial
+    else:
+        f.write(f"""import serial
 import time
 import random
 from tqdm import tqdm
@@ -387,16 +402,16 @@ success = 0
 fail = 0
 for i in tqdm(range(1000)):
 
-	## enviamos el valor a la FPGA (convertido en un 'bit string')
-	scan(fpga, intToBitstr(valores_test[i]), buffer_in_width)
+    ## enviamos el valor a la FPGA (convertido en un 'bit string')
+    scan(fpga, intToBitstr(valores_test[i]), buffer_in_width)
 
-	## leemos el valor devuelto (convertido en un 'int')
-	resultado = bitstrToInt(calc(fpga, buffer_out_width))
-	
-	if resultado == valores_check[i]:
-		success+=1
-	else:
-		fail+=1
+    ## leemos el valor devuelto (convertido en un 'int')
+    resultado = bitstrToInt(calc(fpga, buffer_out_width))
+    
+    if resultado == valores_check[i]:
+        success+=1
+    else:
+        fail+=1
 
 fpga.close()
 
@@ -410,7 +425,7 @@ run(["cp",f"{os.environ['REPO_fpga']}/verilog/interfaz_pspl.v","./vivado_src/int
 run(["cp",f"{os.environ['REPO_fpga']}/verilog/contador.v","./vivado_src/contador.cp.v"])
 
 with open("vivado_src/interfaz_pspl_config.vh", "w") as f:
-	f.write(f"""{DW_GE_BIW}
+    f.write(f"""{DW_GE_BIW}
 {BIW_ALIGNED_DW}
 {BIW_MISALIGNED_DW}
 {DW_GE_BOW}
@@ -419,48 +434,48 @@ with open("vivado_src/interfaz_pspl_config.vh", "w") as f:
 """)
 
 with open("vivado_src/top.v", "w") as f:
-	f.write(f"""`timescale 1ns / 1ps
+    f.write(f"""`timescale 1ns / 1ps
 
 
 module TOP (
-	input			clock,
-	input[7:0]		ctrl_in,
-	output[7:0]		ctrl_out,
-	input[{DATA_WIDTH-1}:0]	data_in,
-	output[{DATA_WIDTH-1}:0]	data_out
+    input           clock,
+    input[7:0]      ctrl_in,
+    output[7:0]     ctrl_out,
+    input[{DATA_WIDTH-1}:0] data_in,
+    output[{DATA_WIDTH-1}:0]    data_out
 );
-	wire sync;
-	wire ack;
-	wire[{BUFFER_IN_WIDTH-1}:0] buffer_in;
-	wire[{BUFFER_OUT_WIDTH-1}:0] buffer_out;
-	
-	INTERFAZ_PSPL #(
-		.DATA_WIDTH({DATA_WIDTH}),
-		.BUFFER_IN_WIDTH({BUFFER_IN_WIDTH}),
-		.BUFFER_OUT_WIDTH({BUFFER_OUT_WIDTH})
-	) interfaz_pspl (
-		.clock(clock),
-		.ctrl_in(ctrl_in),
-		.ctrl_out(ctrl_out),
-		.data_in(data_in),
-		.data_out(data_out),
-		.sync(sync),
-		.ack(ack),
-		.buffer_in(buffer_in),
-		.buffer_out(buffer_out)
-	);
+    wire sync;
+    wire ack;
+    wire[{BUFFER_IN_WIDTH-1}:0] buffer_in;
+    wire[{BUFFER_OUT_WIDTH-1}:0] buffer_out;
+    
+    INTERFAZ_PSPL #(
+        .DATA_WIDTH({DATA_WIDTH}),
+        .BUFFER_IN_WIDTH({BUFFER_IN_WIDTH}),
+        .BUFFER_OUT_WIDTH({BUFFER_OUT_WIDTH})
+    ) interfaz_pspl (
+        .clock(clock),
+        .ctrl_in(ctrl_in),
+        .ctrl_out(ctrl_out),
+        .data_in(data_in),
+        .data_out(data_out),
+        .sync(sync),
+        .ack(ack),
+        .buffer_in(buffer_in),
+        .buffer_out(buffer_out)
+    );
 
-	CONTADOR #(
-		.IN_WIDTH({BUFFER_IN_WIDTH}),
-		.OUT_WIDTH({BUFFER_OUT_WIDTH})
-	) contador (
-		.clock(clock),
-		.sync(sync),
-		.ack(ack),
-		.data_in(buffer_in),
-		.data_out(buffer_out)
-	);
-	
+    CONTADOR #(
+        .IN_WIDTH({BUFFER_IN_WIDTH}),
+        .OUT_WIDTH({BUFFER_OUT_WIDTH})
+    ) contador (
+        .clock(clock),
+        .sync(sync),
+        .ack(ack),
+        .data_in(buffer_in),
+        .data_out(buffer_out)
+    );
+    
 endmodule
 """)
 
@@ -470,30 +485,30 @@ run(["mkdir","./sdk_src"])
 run(["cp",f"{os.environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c","./sdk_src/interfaz_pcps-pspl.cp.c"])
 
 with open("./sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
-	if BRD == "cmoda7_15t" or BRD == "cmoda7_35t":
-		f.write("#include \"xuartlite.h\"\n\n")
-	elif BRD == "zybo" or BRD == "pynqz2":
-		f.write("#include \"xuartps.h\"\n\n")
+    if BRD == "cmoda7_15t" or BRD == "cmoda7_35t":
+        f.write("#include \"xuartlite.h\"\n\n")
+    elif BRD == "zybo" or BRD == "pynqz2":
+        f.write("#include \"xuartps.h\"\n\n")
 
-	f.write(f"""#define DATA_WIDTH			{DATA_WIDTH}
-#define BUFFER_IN_WIDTH		{BUFFER_IN_WIDTH}
-#define BUFFER_OUT_WIDTH	{BUFFER_OUT_WIDTH}
-#define OCTETO_IN_WIDTH		{OCTETO_IN_WIDTH}
-#define OCTETO_OUT_WIDTH	{OCTETO_OUT_WIDTH}
-#define WORDS_IN_WIDTH		{WORDS_IN_WIDTH}
-#define WORDS_OUT_WIDTH		{WORDS_OUT_WIDTH}
+    f.write(f"""#define DATA_WIDTH          {DATA_WIDTH}
+#define BUFFER_IN_WIDTH     {BUFFER_IN_WIDTH}
+#define BUFFER_OUT_WIDTH    {BUFFER_OUT_WIDTH}
+#define OCTETO_IN_WIDTH     {OCTETO_IN_WIDTH}
+#define OCTETO_OUT_WIDTH    {OCTETO_OUT_WIDTH}
+#define WORDS_IN_WIDTH      {WORDS_IN_WIDTH}
+#define WORDS_OUT_WIDTH     {WORDS_OUT_WIDTH}
 """)
 
 
 ## log info
 print(f"""
- dw	=	{DATA_WIDTH}
- biw	=	{BUFFER_IN_WIDTH}
- bow	=	{BUFFER_OUT_WIDTH}
- oiw	=	{OCTETO_IN_WIDTH}
- oow	=	{OCTETO_OUT_WIDTH}
- wiw	=	{WORDS_IN_WIDTH}
- wow	=	{WORDS_OUT_WIDTH}
+ dw =   {DATA_WIDTH}
+ biw    =   {BUFFER_IN_WIDTH}
+ bow    =   {BUFFER_OUT_WIDTH}
+ oiw    =   {OCTETO_IN_WIDTH}
+ oow    =   {OCTETO_OUT_WIDTH}
+ wiw    =   {WORDS_IN_WIDTH}
+ wow    =   {WORDS_OUT_WIDTH}
  
  fpga part: {PARTNUMBER}
  
@@ -504,4 +519,4 @@ print(f"""
 
 """)
 if QSPI == 1:
-	print(f"q-spi part: {MEMPART}")
+    print(f"q-spi part: {MEMPART}")

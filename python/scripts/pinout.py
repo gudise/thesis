@@ -1,14 +1,21 @@
-if test "$1" = "-help"
-then
-printf " pinout zybo | pynqz2 | cmoda7
-	
- Este programa escribe el fichero de pines maestro de la placa correspondiente.\n\n"
-	exit
-fi
+#!/usr/bin/python3.8
 
-if test "$1" = "zybo"
-then
-printf "## This file is a general .xdc for the ZYBO Rev B board
+import sys
+
+argv = sys.argv
+argc = len(argv)
+
+if argv[1] == '-help':
+    print("""
+pinout zybo | pynqz2 | cmoda7
+
+Este programa escribe el fichero de pines maestro de la placa correspondiente.
+    """)
+    exit()
+    
+elif argv[1] == 'zybo':
+    print("""
+## This file is a general .xdc for the ZYBO Rev B board
 ## To use it in a project:
 ## - uncomment the lines corresponding to used pins
 ## - rename the used signals according to the project
@@ -154,14 +161,11 @@ printf "## This file is a general .xdc for the ZYBO Rev B board
 #set_property -dict { PACKAGE_PIN G19   IOSTANDARD LVCMOS33 } [get_ports {  } ]; #IO_L18P_T2_AD13P_35 Sch=VGA_B5
 #set_property -dict { PACKAGE_PIN P19   IOSTANDARD LVCMOS33 } [get_ports {  } ]; #IO_L13N_T2_MRCC_34 Sch=VGA_HS
 #set_property -dict { PACKAGE_PIN R19   IOSTANDARD LVCMOS33 } [get_ports {  } ]; #IO_0_34 Sch=VGA_VS
+    """)
 
-"
-    exit
-fi
-
-if test "$1" = "pynqz2"
-then
-printf "## This file is a general .xdc for the PYNQ-Z2 board 
+elif argv[1] == 'pynqz2':
+    print("""
+## This file is a general .xdc for the PYNQ-Z2 board 
 ## To use it in a project:
 ## - uncomment the lines corresponding to used pins
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
@@ -354,14 +358,11 @@ printf "## This file is a general .xdc for the PYNQ-Z2 board
 ##Crypto SDA 
 
 #set_property -dict { PACKAGE_PIN J15   IOSTANDARD LVCMOS33 } [get_ports { crypto_sda }]; #IO_25_35 Sch=crypto_sda
+    """)
 
-"
-    exit
-fi
-
-if test "$1" = "cmoda7"
-then
-printf "## This file is a general .xdc for the CmodA7 rev. B
+elif argv[1] == 'cmoda7':
+    print("""
+## This file is a general .xdc for the CmodA7 rev. B
 ## To use it in a project:
 ## - uncomment the lines corresponding to used pins
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
@@ -492,7 +493,5 @@ printf "## This file is a general .xdc for the CmodA7 rev. B
 #set_property -dict { PACKAGE_PIN P19   IOSTANDARD LVCMOS33 } [get_ports { RamOEn     }]; #IO_L10P_T1_D14_14 Sch=sram-oe
 #set_property -dict { PACKAGE_PIN R19   IOSTANDARD LVCMOS33 } [get_ports { RamWEn     }]; #IO_L10N_T1_D15_14 Sch=sram-we
 #set_property -dict { PACKAGE_PIN N19   IOSTANDARD LVCMOS33 } [get_ports { RamCEn     }]; #IO_L9N_T1_DQS_D13_14 Sch=sram-ce
-
-"
-    exit
-fi
+    """)
+    
