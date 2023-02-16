@@ -1,9 +1,9 @@
 from numpy.random import randint as np_randint, permutation as np_permutation
-from numpy import pi as np_pi, cos as np_cos, sin as np_sin, histogram as np_histogram, mean as np_mean
-from scipy.stats import binom as sp_binom
-from matplotlib.pyplot import plot as plt_plot, bar as plt_bar, tick_params as plt_tick_params, gca as plt_gca, axis as plt_axis, show as plt_show, savefig as plt_savefig
+from numpy import pi as np_pi, cos as np_cos, sin as np_sin, histogram as np_histogram, mean as np_mean, std as np_std
+from scipy.stats import binom as sp_binomial, norm as sp_normal, fit as sp_fit
+from scipy.interpolate import interp1d as sp_interp1d
+from matplotlib.pyplot import plot as plt_plot, bar as plt_bar, tick_params as plt_tick_params, gca as plt_gca, axis as plt_axis, show as plt_show, savefig as plt_savefig, yscale as plt_yscale
 from mytensor import *
-
 
 
 def hamming(array1, array2, porciento=False):
@@ -21,6 +21,7 @@ def hamming(array1, array2, porciento=False):
         return result/len(array1)*100
     else:
         return result
+
 
 class PUFTOPOL:
     """
@@ -85,7 +86,7 @@ class PUFEXP:
     representación de cada reto (en principio arbitraria, en la práctica será una lista de parejas de las celdas
     empleadas para obtener cada bit).
     """
-    def __init__(self, topol, instancias, retos=[]):
+    def __init__(self, topol, instancias, retos=[], d_pdl=False):
         """
         """
         self.topol = topol
@@ -111,13 +112,23 @@ class PUFEXP:
                     aux=[]
                     for i_pdl in range(self.N_pdl):
                         for bit in range(self.N_bits_partial):
-                            if inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) > inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl):
-                                aux.append(0)
+                            if d_pdl: # Usamos la primera erivada de la línea PDL para extraer la respuesta. 
+                                if inst.item(osc=reto[bit][0], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) > inst.item(osc=reto[bit][1], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl):
+                                    aux.append(0)
+                                else:
+                                    aux.append(1)
                             else:
-                                aux.append(1)
+                                if inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) > inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl):
+                                    aux.append(0)
+                                else:
+                                    aux.append(1)
                     self.data[i_reto][i_inst].append(aux)
         self.intradist_set=[]
+        self.intradist_ajuste = False
         self.interdist_set=[]
+        self.interdist_ajuste = False
+        self.far_curve = False
+        self.frr_curve = False
         
     def addreto(self, reto):
         self.N_retos+=1
@@ -147,31 +158,72 @@ class PUFEXP:
                     else:
                         print(f" {i_reto},{i_inst},{i_rep} = {' '.join(str(bit) for bit in self.data[i_reto][i_inst][i_rep])}")
             
-    def intradist(self):
+    def intradist(self, ajuste=False):
+        self.intradist_set=[]
         for i_reto in range(self.N_retos):
             for i_inst in range(self.N_inst):
                 for i_rep in range(self.N_rep):
                     for j_rep in range(i_rep+1,self.N_rep,1):
                         self.intradist_set.append(hamming(self.data[i_reto][i_inst][i_rep],self.data[i_reto][i_inst][j_rep]))
-        self.intradist_hist = np_histogram(self.intradist_set, bins=self.N_bits, range=(0,self.N_bits), density=True)[0]
         self.intradist_media = np_mean(self.intradist_set)
+        self.intradist_std = np_std(self.intradist_set)
+        self.intradist_p = self.intradist_media/self.N_bits
+        self.intradist_hist = [[i for i in range(self.N_bits+1)], np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits+1), density=True)[0]]
+        if ajuste == 'normal':
+            def wrapper_normal(x):
+                return sp_normal.pdf(x, self.intradist_media, self.intradist_std)
+            def frr(x):
+                return 1-sp_normal.cdf(x,self.intradist_media, self.intradist_std)
+            self.intradist_ajuste = wrapper_normal
+            self.frr_curve = frr
+        else:
+            def frr(x):
+                return 1-sp_binomial.cdf(x, n=self.N_bits+1, p=self.intradist_p)
+            self.intradist_ajuste = sp_interp1d([i for i in range(self.N_bits+1)] ,[sp_binomial.pmf(i, n=self.N_bits+1, p=self.intradist_p) for i in range(self.N_bits+1)])
+            self.frr_curve = sp_interp1d([i for i in range(self.N_bits+1)] ,[frr(i) for i in range(self.N_bits+1)])
                         
-    def interdist(self):
+    def interdist(self, ajuste=False):
+        self.interdist_set=[]
         for i_reto in range(self.N_retos):
             for i_inst in range(self.N_inst):
                 for j_inst in range(i_inst+1,self.N_inst,1):            
                     for i_rep in range(self.N_rep):
                         self.interdist_set.append(hamming(self.data[i_reto][i_inst][i_rep],self.data[i_reto][j_inst][i_rep]))
-        self.interdist_hist = np_histogram(self.interdist_set, bins=self.N_bits, range=(0,self.N_bits), density=True)[0]
         self.interdist_media = np_mean(self.interdist_set)
-        
-    def dibujar_hist(self, ajuste=True):
+        self.interdist_std = np_std(self.interdist_set)
+        self.interdist_p = self.interdist_media/self.N_bits
+        self.interdist_hist = [[i for i in range(self.N_bits+1)], np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits+1), density=True)[0]]
+        if ajuste == 'normal':
+            def wrapper_normal(x):
+                return sp_normal.pdf(x, self.interdist_media, self.interdist_std)
+            def far(x):
+                return sp_normal.cdf(x, self.interdist_media, self.interdist_std)
+            self.interdist_ajuste = wrapper_normal
+            self.far_curve = far
+        else:
+            self.interdist_ajuste = sp_interp1d([i for i in range(self.N_bits+1)] ,[sp_binomial.pmf(i, n=self.N_bits+1, p=self.interdist_p) for i in range(self.N_bits+1)])
+            self.far_curve = sp_interp1d([i for i in range(self.N_bits+1)] ,[sp_binomial.cdf(i, n=self.N_bits+1, p=self.interdist_p) for i in range(self.N_bits+1)])
+                        
+    def plot_hist(self):
         if len(self.intradist_set)>0:
-            plt_bar([i for i in range(self.N_bits)], self.intradist_hist)
-            if ajuste:
-                plt_plot([i for i in range(self.N_bits)], [sp_binom.pmf(i, self.N_bits, self.intradist_media/self.N_bits) for i in range(self.N_bits)], 'b')
+            plt_bar(*self.intradist_hist)
         if len(self.interdist_set)>0:
-            plt_bar([i for i in range(self.N_bits)], self.interdist_hist)
-            if ajuste:
-                plt_plot([i for i in range(self.N_bits)], [sp_binom.pmf(i, self.N_bits, self.interdist_media/self.N_bits) for i in range(self.N_bits)], 'b')
+            plt_bar(*self.interdist_hist)
+        if self.intradist_ajuste:
+            plt_plot(self.intradist_hist[0], [self.intradist_ajuste(x) for x in self.intradist_hist[0]], 'b')
+        if self.interdist_ajuste:
+            plt_plot(self.interdist_hist[0], [self.interdist_ajuste(x) for x in self.interdist_hist[0]], 'r')
+        plt_show()
+        
+    def plot_curves(self, x0=False, x1=False, dx=1):
+        if not x0:
+            x0 = 0
+        if not x1:
+            x1 = self.N_bits
+        ax = [x0+i*dx for i in range(int((x1-x0)/dx)+1)]
+        if self.frr_curve:
+            plt_plot(ax, [self.frr_curve(x) for x in ax])
+        if self.far_curve:
+            plt_plot(ax, [self.far_curve(x) for x in ax])
+        plt_yscale('log')
         plt_show()
