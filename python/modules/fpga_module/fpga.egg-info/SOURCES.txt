@@ -1,8 +1,8 @@
 setup.py
 fpga/__init__.py
-fpga/interfazpcps.py
-fpga/oscmatrix.py
-fpga/simlut.py
+fpga/interfaz_pcps.py
+fpga/ring_osc.py
+fpga/sim_lut.py
 fpga.egg-info/PKG-INFO
 fpga.egg-info/SOURCES.txt
 fpga.egg-info/dependency_links.txt

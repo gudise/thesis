@@ -3,26 +3,30 @@ Este módulo contiene una serie de clases y funciones para implementar en FPGA y
 anillo, tanto estándar como de Galois.
 """
 
-from os import environ as os_environ
-from subprocess import run as subprocess_run
-from pickle import dump as pickle_dump, load as pickle_load
-from serial import Serial as serial_Serial
-from time import sleep as time_sleep
-from numpy import reshape as np_reshape, log2 as np_log2
-from matplotlib.pyplot import plot as plt_plot, show as plt_show, imshow as plt_imshow
-from fpga import pinta_progreso
-from fpga.interfazpcps import *
-from mytensor import *
+from os                 import  environ as os_environ
+from subprocess         import  run     as subprocess_run
+from pickle             import  dump    as pickle_dump,\
+                                load    as pickle_load
+from serial             import  Serial  as serial_Serial
+from time               import  sleep   as time_sleep
+from numpy              import  reshape as np_reshape,\
+                                log2    as np_log2
+from matplotlib.pyplot  import  plot    as plt_plot,\
+                                show    as plt_show,\
+                                imshow  as plt_imshow
+from tqdm               import  tqdm
+from fpga.interfaz_pcps import  *
+from mytensor           import  *
         
         
-def genOscCoord(lista_submatrices):
+def gen_osc_coord(dominios):
     """
     Esta función toma una lista de objetos 'OSC_SUBMATRIX' y genera una lista 'osc_coord' de dimensiones
     shape=(2, N_osc), tal que 'osc_coord[0][i]' contiene la coordenada X del i-ésimo oscilador, y 'osc_coord[1][i]'
     la coordenada Y del i-ésimo oscilador.
     """
     lista_osciladores = ""
-    for dominio in lista_submatrices:
+    for dominio in dominios:
         x = dominio.x0
         y = dominio.y0
         for i in range(dominio.N_osc):
@@ -65,7 +69,7 @@ def clog2(N):
             return int(np_log2(N))
             
             
-def loadOscmatrix(file_name):
+def load_oscmatrix(file_name):
     """
     Esta función es un 'wrapper' para la función 'load' del módulo
     'pickle', que permite cargar un objeto guardado serializado (de
@@ -77,94 +81,91 @@ def loadOscmatrix(file_name):
     return result       
             
             
-class OSC_SUBMATRIX:
+class Dominio:
     """
-    Este objeto contiene las variables necesarias para que la función 'genOscCoord' produzca una lista de
+    Este objeto contiene las variables necesarias para que la función 'gen_osc_coord' produzca una lista de
     localizaciones de osciladores para ser implementados en FPGA.
     """
-    def __init__(self, x0=2, y0=1, x1=10, y1=10, dx=2, dy=1, N_osc=10, directriz='y'):
+    def __init__(self, N_osc=10, directriz='y', **kwargs):
         """
-        Esta función se llama automáticamente al crear un objeto de esta clase. Los parámetros de la función son:
+        Esta función se llama automáticamente al crear un objeto de esta clase
         
-        PARÁMETROS:
-        
-            x0 = 2
+        Opciones:
+        ---------
+            N_osc = 10
+                Número de osciladores del dominio.
             
+            directriz =  'y' | 'x'
+                Dirección de crecimiento de la matriz (hasta llegar a la coordenada máxima).
+        kwargs:
+        -------
+            x0 = 2
                 Coordenada X del primer oscilador de la matriz.
                 
-                
             y0 = 1
-            
                 Coordenada Y del primer oscilador de la matriz.
-                
              
-            x1 = 10
-
+            x1 = 99
                 Coordenada X máxima de la matriz (no se sobrepasará).
                 
-                
-            y1 = 10
-            
+            y1 = 99
                 Coordenada Y máxima de la matriz (no se sobrepasará).
                 
-                
-            dx = 2
-            
-                Incremento de la coordenada X.
-                
+            dx = 1
+                Incremento de la coordenada X. Notar que habitualmente en las FPGA de Xilinx se reservan las
+                coordenadas X par/impar para distintos tipos de celda ('0' y '1').
                 
             dy = 1
-            
                 Incremento de la coordenada Y.
                 
-                
-            nosc = 10
-            
-                Número de osciladores del dominio.
-             
-             
-            dir = 'y' | 'x'
-             
-                Dirección de crecimiento de la matriz (hasta llegar a la coordenada máxima).
         """
-        self.x0 = x0
-        self.y0 = y0
-        self.x1 = x1
-        self.y1 = y1
-        self.dx = dx
-        self.dy = dy
         self.N_osc = N_osc
         self.directriz = directriz
+        self.x0 = 0
+        self.y0 = 0
+        self.x1 = 99
+        self.y1 = 99
+        self.dx = 1
+        self.dy = 1
+        for kw in kwargs:
+            if kw=='x0':
+                self.x0 = kwargs[kw]
+            if kw=='x1':
+                self.x1 = kwargs[kw]
+            if kw=='y0':
+                self.y0 = kwargs[kw]
+            if kw=='y1':
+                self.y1 = kwargs[kw]
+            if kw=='dx':
+                self.dx = kwargs[kw]
+            if kw=='dy':
+                self.dy = kwargs[kw]
         
         
-class ROMATRIX:
+class StdMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo estándar.
     """
-    def __init__(self, N_inv=3, submatrices=OSC_SUBMATRIX()):
+    def __init__(self, N_inv=3, dominios=Dominio()):
         """
-        Esta función inicializa un objeto 'ROMATRIX'; se llama automáticamente al crear un nuevo objeto de esta clase.
+        Esta función inicializa un objeto 'StdMatrix'; se llama automáticamente al crear un nuevo objeto de esta clase.
         
-        PARÁMETROS:
-        -----------
-        
-            N_inv 3
-            
+        Opciones:
+        ---------
+            N_inv = 3
                 Número de inversores de cada oscilador.
             
-            
-            submatrices OSC_SUBMATRIX(x0=2, y0=1, x1=10, y1=10, dx=2, dy=1, N_osc=10, directriz='y')
-            
-                Osciladores que forman la matriz. Se construye como una lista de objetos OSC_SUBMATRIX.
-                Si solo pasamos un dominio de osciladores podemos pasar un objeto OSC_SUBMATRIX, en lugar
+            dominios =  Dominio()
+                Osciladores que forman la matriz. Se construye como una lista de objetos 'Dominio'.
+                Si solo pasamos un dominio de osciladores podemos pasar un objeto 'Dominio', en lugar
                 de una lista.
         """
-        self.submatrices=[]
-        if type(submatrices) == type([]) or type(submatrices) == type(()):
-            self.submatrices[:]=submatrices[:]
+        self.dominios=[]
+        if type(dominios) == type([]) or type(dominios) == type(()):
+            self.dominios[:]=dominios[:]
         else:
-            self.submatrices.append(submatrices)
-        self.osc_coord = genOscCoord(self.submatrices)
+            self.dominios.append(dominios)
+        self.osc_coord = gen_osc_coord(self.dominios)
         self.N_inv = N_inv
         self.N_osc = len(self.osc_coord[0])
         
@@ -172,7 +173,7 @@ class ROMATRIX:
         """
         Esta función es un atajo para "help('fpga.oscmatrix.ROMATRIX')"
         """
-        help('fpga.oscmatrix.ROMATRIX')
+        help('fpga.ring_osc.StdMatrix')
         
     def save(self, file_name):
         """
@@ -181,9 +182,9 @@ class ROMATRIX:
         with open(file_name, "wb") as f:
             pickle_dump(self, f)
         
-    def plotSubmatrices(self):
+    def plot_dominios(self):
         """
-        Esta función pinta una representación esquemática de las submatrices introducidas durante la creación de un
+        Esta función pinta una representación esquemática de los dominios introducidas durante la creación de un
         objeto. Se trata de una herramienta de depuración, y la disposicón geométrica que muestra no tiene por qué 
         corresponderse con la que tendrán las matrices de osciladores dispuestas sobre la FPGA.
         """
@@ -199,7 +200,7 @@ class ROMATRIX:
         plt_imshow(mapa, interpolation='none', origin='lower')
         plt_show()
 
-    def genRomatrix(self, out_name="romatrix.v", debug=False):
+    def gen_romatrix(self, out_name="romatrix.v", debug=False):
         """
         Esta función genera un diseño 'out_name' en formato Verilog con la implementación de las submatrices de 
         osciladores introducidas durante la creación del objeto. El principal uso de esta función es dentro de la
@@ -502,173 +503,131 @@ class ROMATRIX:
                     f.write("\n")
                 f.write("endmodule\n")
         
-    def implement(self, projname="project_romatrix", projdir="./", njobs=4, linux=False, debug=False, print_files=True, **kwargs):
+    def implement(self, projname='project_romatrix', projdir='./', njobs=4, linux=False, debug=False, files=True, **kwargs):
         """
-        Esta función copia/crea en el directorio 'projdir' todos los archivos necesarios para implementar una matriz
-        de osciladores de anillo con medición de la frecuencia y comunicación:
-
-        pc (.py) <-> microprocesador (.c) <-> FSM en FPGA (.v),
-
-        PARÁMETROS:
-        -----------
-            
-        projname = 'project_romatrix'
-
-            Nombre del proyecto de Vivado.
-
-        projdir = './'
-
-            Directorio donde se creará el proyecto de Vivado y las fuentes.
-            
-            
-        board = 'pynqz2' | 'zybo' | 'cmoda7_15t' | 'cmoda7_35t'
-
-            Placa de desarrollo utilizada en el proyecyo.
-            
-            
-        njobs = 4
-
-            Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
-            
-            
-        qspi = False
-
-            Si esta opción se introduce con valor True, el flujo de diseño incluirá el guardado del bitstream en la memoria
-            flash de la placa para que se auto-programe al encenderse.
-            
-            
-        detailr = False
-
-            Si esta opción se introduce con valor True el flujo .tcl incluirá el cableado de los inversores después de la
-            síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
-            comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
-            
-            
-        tipo_lut = 'lut1' | 'lut2' | 'lut3' | 'lut4' | 'lut5' | 'lut6'
+        Esta función copia/crea en el directorio 'projdir' todos los archivos
+        necesarios para implementar una matriz de osciladores de anillo con 
+        medición de la frecuencia y comunicación pc (.py) <-> microprocesador (.c) <-> FSM en FPGA (.v)
         
-            Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
+        Opciones:
+        ---------
+            projname = 'project_romatrix'
+                Nombre del proyecto de Vivado.
             
+            projdir = './'
+                Directorio donde se creará el proyecto de Vivado y las fuentes.
             
-        pinmap = 'no;'
+            njobs = 4
+                Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
 
-            Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
-            entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
-            asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
-            inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
-            Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
-            sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
-            utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
-            propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
-            (ver opción "tipo_lut"). Algunos ejemplos son:
+            linux = False
+                Marcar esta opción como True si la versión de Vivado que se va a utilizar está instalado en una máquina
+                linux (de forma que los PATH se gestionen correctamente).
 
+            debug = False
+                Si esta opción está presente, se implementará una matriz de divisores de reloj de frecuencia conocida, lo
+                que permite depurar el diseño al conocer qué resultados deben salir.
+            
+            files = True
+                Pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar
+                cuando queremos configurar un objeto tipo 'Romatrix' pero no vamos a implementarla físicamente
+                (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).
+
+        kwargs:
+        -------
+            board = 'pynqz2' | 'zybo' | 'cmoda7_15t' | 'cmoda7_35t'
+                Placa de desarrollo utilizada en el proyecyo.
+                
+            qspi = False
+                Si esta opción se introduce con valor True, el flujo de diseño incluirá el guardado del bitstream en la memoria
+                flash de la placa para que se auto-programe al encenderse.
+                
+            detailr = False
+                Si esta opción se introduce con valor True el flujo .tcl incluirá el cableado de los inversores después de la
+                síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
+                comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
+                
+            tipo_lut = 'lut1' | 'lut2' | 'lut3' | 'lut4' | 'lut5' | 'lut6'
+                Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
+                
             pinmap = 'no;'
-                Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+                Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
+                entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
+                asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
+                inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
+                Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
+                sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
+                utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
+                propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
+                (ver opción "tipo_lut"). Algunos ejemplos son:
+
+                pinmap = 'no;'
+                    Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+                    
+                pinmap = 'I0:A5;I0:A6;I0:A4'
+                    Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
+                    al ruteado más compacto en una fpga Zynq7000.
                 
-            pinmap = 'I0:A5;I0:A6;I0:A4'
-                Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
-                al ruteado más compacto en una fpga Zynq7000.
-            
-            pinmap = 'I0:A5;no;I0:A4'
-                Parecido al anterior, pero ahora no fijamos el segundo inversor.
-            
-            pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
-                Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
-                selección de PDL (en una lut tipo LUT6).
-            
-            
-        minsel = False
-
-            Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
-            los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
-
-
-        pblock =  False
-
-            Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
-            elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
-            acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
-            rectángulo de restricción, separados por un espacio:
-
-                'X0,Y0 X1,Y1'
+                pinmap = 'I0:A5;no;I0:A4'
+                    Parecido al anterior, pero ahora no fijamos el segundo inversor.
                 
-            El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
-            Esta opción debe darse entre comillas.
+                pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
+                    Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
+                    selección de PDL (en una lut tipo LUT6).
+                
+            minsel = False
+                Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
+                los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
 
+            pblock =  False
+                Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
+                elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
+                acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
+                rectángulo de restricción, separados por un espacio:
 
-        data_width | dw = 32
-        
-            Esta opción especifica la anchura del canal de datos PS<-->PL.
+                    'X0,Y0 X1,Y1'
+                    
+                El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
+                Esta opción debe darse entre comillas.
+
+            data_width | dw = 32
             
+                Esta opción especifica la anchura del canal de datos PS<-->PL.
 
-        buffer_out_width | bow = 32
-        
-            Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
-            
-            
-        linux = False
-        
-            Marcar esta opción como True si la versión de Vivado que se va a utilizar está instalado en una máquina
-            linux (de forma que los PATH se gestionen correctamente).
-
-
-        debug = False
-
-            Si esta opción está presente, se implementará una matriz de divisores de reloj de frecuencia conocida, lo
-            que permite depurar el diseño al conocer qué resultados deben salir.
+            buffer_out_width | bow = 32
+                Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
+                
         """
-        if 'board' in kwargs:
-            self.board = kwargs['board']
-        else:
-            self.board = 'pynqz2'
-        
-        if 'qspi' in kwargs:
-            self.qspi = kwargs['qspi']
-        else:
-            self.qspi = False
-        
-        if 'detail_routing' in kwargs:
-            self.detail_routing = kwargs['detail_routing']
-        elif 'detailr' in kwargs:
-            self.detail_routing = kwargs['detailr']         
-        else:
-            self.detail_routing = False
-        
-        if 'tipo_lut' in kwargs:
-            self.tipo_lut = kwargs['tipo_lut']
-        else:
-            self.tipo_lut = 'lut1'
-        
-        if 'pinmap' in kwargs:
-            self.pinmap = kwargs['pinmap']
-        else:
-            self.pinmap = 'no;'
-        
-        if 'minsel' in kwargs:
-            self.minsel = kwargs['minsel']
-        else:
-            self.minsel = False
-        
-        if 'pblock' in kwargs:
-            self.pblock = kwargs['pblock']
-        else:
-            self.pblock = False
-        
-        if 'data_width' in kwargs:
-            self.data_width = kwargs['data_width']
-        elif 'dw' in kwargs:
-            self.data_width = kwargs['dw']            
-        else:
-            self.data_width = 32
-        
-        if 'buffer_out_width' in kwargs:
-            self.buffer_out_width = kwargs['buffer_out_width']
-        elif 'bow' in kwargs:
-            self.buffer_out_width = kwargs['bow']            
-        else:
-            self.buffer_out_width = 32
+        self.board = 'pynqz2'
+        self.qspi = False
+        self.detail_routing = False
+        self.tipo_lut = 'lut1'
+        self.pinmap = 'no;'
+        self.minsel = False
+        self.pblock = False
+        self.data_width = 32
+        self.buffer_out_width = 32
+        for kw in kwargs:
+            if kw=='board':
+                self.board = kwargs[kw]
+            if kw=='qspi':
+                self.qspi = kwargs[kw]
+            if kw=='detail_routing' or kw=='dr':
+                self.detail_routing = kwargs[kw]
+            if kw=='tipo_lut' or kw=='tl':
+                self.tipo_lut = kwargs[kw]
+            if kw=='pinmap':
+                self.pinmap = kwargs[kw]
+            if kw=='minsel':
+                self.minsel = kwargs[kw]
+            if kw=='pblock':
+                self.pblock = kwargs[kw]
+            if kw=='data_width' or kw=='dw':
+                self.data_width = kwargs[kw]  
+            if kw=='buffer_out_width' or kw=='bow':
+                self.buffer_out_width = kwargs[kw]
             
         self.N_bits_osc = clog2(self.N_osc)
-        
         self.N_bits_resol = 5
 
         if self.board=='cmoda7_15t':
@@ -725,7 +684,7 @@ class ROMATRIX:
                 
         self.buffer_in_width = self.N_bits_osc+self.N_bits_pdl+self.N_bits_resol
         
-        if print_files:
+        if files:
             if self.buffer_in_width%8 == 0:
                 octeto_in_width=self.buffer_in_width//8
             else:
@@ -962,7 +921,7 @@ close_design
 
             startgroup
             """)
-                    for i in range(N_osc):
+                    for i in range(self.N_osc):
                         f.write(f"""
 route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0]
 set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0 }}]
@@ -1042,7 +1001,7 @@ source {projdir}/partial_flows/launchsdk.tcl
 {bow_misaligned_dw}
             """)
             
-            self.genRomatrix(out_name="vivado_src/romatrix.v", debug=debug)
+            self.gen_romatrix(out_name="vivado_src/romatrix.v", debug=debug)
 
             with open("vivado_src/top.v", "w") as f:
                 if self.N_osc==1:
@@ -1165,78 +1124,82 @@ sdk source files: {projdir}/sdk_src/
             if self.qspi:
                 print(f"q-spi part: {self.memory_part}")
 
-    def medir(self, resol=17, osc=range(1), pdl=range(1), N_rep=1, f_ref=False, log=False, verbose=True, puerto='S1', baudrate=9600):
+    def medir(self, puerto='S1', baudrate=9600, log=False, verbose=True, **kwargs):
         """
-         Esta función mide la frecuencia de una matriz de osciladores estándar 'ROMATRIX', una vez este ha sido implementado en FPGA.
-         El resultado se devuelve como un objeto TENSOR.
+        Esta función mide la frecuencia de una matriz de osciladores estándar 'ROMATRIX', una vez este ha sido implementado en FPGA.
+        El resultado se devuelve como un objeto 'Tensor'.
          
-         PARÁMETROS:
-         -----------
-         
-            resol = 17
-            
-                log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por
-                defecto 17, i.e., 2^17 = 131072 ciclos).
-            
-            
-            osc = range(1)
-            
-                Lista de osciladores a medir.
-                
-                
-            pdl = range(1)
-            
-                Lista de PDL a medir.
-                
-                
-            N_rep = 1
-            
-                Número d erepeticiones a medir.
-                
-                
-            f_ref = False
-            
-                Frecuencia del reloj de referencia. Si se proporciona este valor, el resultado obtenido se devuelve
-                en las mismas unidades en que se haya pasado este valor "f_ref".
-                
-                
-            log = False
-            
-                Si se pasa "True" se escriben algunos datos a modo de log.
-                
-                
-            verbose = True
-            
-                Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace
-                más cómodo utilizar esta función en un bucle.
-                
-                
+        Opciones:
+        ---------
             puerto = S1
-            
                 Esta opción especifica el puerto serie al que se conecta la FPGA. Actualmente está "hardcodeado" a 
                 formato linux (ya que incluso en Windows lo estoy midiendo con WSL).
                 
-                
             baudrate = 9600
-            
                 Tasa de transferencia del protocolo serie UART PC<-->PS. Debe concordar con el programa compilador en
                 PS.
-        """
+                
+            log = False
+                Si se pasa "True" se escriben algunos datos a modo de log.
+                
+            verbose = True
+                Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace
+                más cómodo utilizar esta función en un bucle.
         
-        osc_list=list(osc)
-        pdl_list=list(pdl)
+        kwargs:
+        -------
+            resol = 17
+                log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por
+                defecto 17, i.e., 2^17 = 131072 ciclos).
+                
+            osc = range(1)
+                Lista de osciladores a medir.
+                
+            pdl = range(1)
+                Lista de PDL a medir.
+                
+            N_rep = 1
+                Número d erepeticiones a medir.
+                
+            f_ref = False
+                Frecuencia del reloj de referencia. Si se proporciona este valor, el resultado obtenido se devuelve
+                en las mismas unidades en que se haya pasado este valor "f_ref".
+        """
+        osc_list = [0]
+        pdl_list = [0]
+        N_rep = 1
+        f_ref = False
+        resol = 17
+        for kw in kwargs:
+            if kw=='osc':
+                if type(kwargs[kw])==type([]):
+                    osc_list = kwargs[kw]
+                else:
+                    osc_list = [kwargs[kw]]
+            if kw=='pdl':
+                if type(kwargs[kw])==type([]):
+                    pdl_list = kwargs[kw]
+                else:
+                    pdl_list = [kwargs[kw]]
+            if kw=='N_rep' or kw=='Nrep' or kw=='n_rep' or kw=='nrep':
+                N_rep = kwargs[kw]
+            if kw=='f_ref' or kw=='fref':
+                f_ref = kwargs[kw]
+            if kw=='resol':
+                resol = kwargs[kw]
+                
         N_osc = len(osc_list) # Número de osciladores a medir
         N_pdl = len(pdl_list) # Número de pdl a medir
         
         buffer_sel_ro=[]
         for i in osc_list:
-            buffer_sel_ro.append(resizeArray(intToBitstr(i), self.N_bits_osc))
+            buffer_sel_ro.append(resize_array(int_to_bitstr(i), self.N_bits_osc))
             
         buffer_sel_pdl=[]
         for i in pdl_list:
-            buffer_sel_pdl.append(resizeArray(intToBitstr(i), self.N_bits_pdl))
+            buffer_sel_pdl.append(resize_array(int_to_bitstr(i), self.N_bits_pdl))
             
-        buffer_sel_resol=resizeArray(intToBitstr(resol), self.N_bits_resol)
+        buffer_sel_resol=resize_array(int_to_bitstr(resol), self.N_bits_resol)
 
         ## Info log
         if log:
@@ -1253,58 +1216,51 @@ sdk source files: {projdir}/sdk_src/
         time_sleep(.1)
         
         if verbose:
-            contador=0
-            N_total = N_osc*N_rep*N_pdl
-            pinta_progreso(0, N_total, barra=40)
+            pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
         medidas=[]
         for rep in range(N_rep):
             for pdl in range(N_pdl):
                 for osc in range(N_osc):
                     buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_resol
                     scan(fpga, buffer_in, self.buffer_in_width)
-                    medida = bitstrToInt(calc(fpga, self.buffer_out_width))
+                    medida = bitstr_to_int(calc(fpga, self.buffer_out_width))
                     if f_ref:
                         medida*=f_ref/2**resol
                     medidas.append(medida)
                 if verbose:
-                    contador+=N_osc
-                    pinta_progreso(contador, N_total, barra=40)
+                    pinta_progreso.update(N_osc)
         if verbose:
-            pinta_progreso(N_total, N_total, barra=40)
+            pinta_progreso.close()
         fpga.close()
-        tensor_medidas = TENSOR(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+        tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         
         return tensor_medidas
         
         
-class GAROMATRIX:
+class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, submatrices=OSC_SUBMATRIX()):
+    def __init__(self, N_inv=3, dominios=Dominio()):
         """
-        Esta función inicializa un objeto 'GAROMATRIX'; se llama automáticamente al crear un nuevo objeto de esta clase.
+        Esta función inicializa un objeto 'GaloisMatrix'; se llama automáticamente al crear un nuevo objeto de esta clase.
         
-        PARÁMETROS:
-        -----------
-        
-            N_inv 3
-            
+        Opciones:
+        ---------
+            N_inv = 3
                 Número de inversores de cada oscilador.
             
-            
-            submatrices OSC_SUBMATRIX(x0=2, y0=1, x1=10, y1=10, dx=2, dy=1, N_osc=10, directriz='y')
-            
-                Osciladores que forman la matriz. Se construye como una lista de objetos OSC_SUBMATRIX.
-                Si solo pasamos un dominio de osciladores podemos pasar un objeto OSC_SUBMATRIX, en lugar
+            dominios =  Dominio()
+                Osciladores que forman la matriz. Se construye como una lista de objetos 'Dominio'.
+                Si solo pasamos un dominio de osciladores podemos pasar un objeto 'Dominio', en lugar
                 de una lista.
         """
-        self.submatrices=[]
-        if type(submatrices) == type([]) or type(submatrices) == type(()):
-            self.submatrices[:]=submatrices[:]
+        self.dominios=[]
+        if type(dominios) == type([]) or type(dominios) == type(()):
+            self.dominios[:]=dominios[:]
         else:
-            self.submatrices.append(submatrices)
-        self.osc_coord = genOscCoord(self.submatrices)
+            self.dominios.append(dominios)
+        self.osc_coord = gen_osc_coord(self.dominios)
         self.N_inv = N_inv
         self.N_osc = len(self.osc_coord[0])
         
@@ -1312,7 +1268,7 @@ class GAROMATRIX:
         """
         Esta función es un atajo para "help('fpga.oscmatrix.GAROMATRIX')"
         """
-        help('fpga.oscmatrix.GAROMATRIX')
+        help('fpga.ring_osc.GaloisMatrix')
         
     def save(self, file_name):
         """
@@ -1321,9 +1277,9 @@ class GAROMATRIX:
         with open(file_name, "wb") as f:
             pickle_dump(self, f)
         
-    def plotSubmatrices(self):
+    def plot_dominios(self):
         """
-        Esta función pinta una representación esquemática de las submatrices introducidas durante la creación de un
+        Esta función pinta una representación esquemática de las dominios introducidas durante la creación de un
         objeto. Se trata de una herramienta de depuración, y la disposicón geométrica que muestra no tiene por qué 
         corresponderse con la que tendrán las matrices de osciladores dispuestas sobre la FPGA.
         """
@@ -1339,9 +1295,9 @@ class GAROMATRIX:
         plt_imshow(mapa, interpolation='none', origin='lower')
         plt_show()
 
-    def genGaromatrix(self, out_name="garomatrix.v"):
+    def gen_garomatrix(self, out_name="garomatrix.v"):
         """
-        Esta función genera un diseño "out_name" en formato Verilog con la implementación de las submatrices de 
+        Esta función genera un diseño "out_name" en formato Verilog con la implementación de las dominios de 
         osciladores introducidas durante la creación del objeto. El principal uso de esta función es dentro de la
         función "implement()".
         """
@@ -1535,172 +1491,128 @@ class GAROMATRIX:
                     
             f.write("endmodule\n")
         
-    def implement(self, projname="project_garomatrix", projdir="./", njobs=4, linux=False, print_files=True, **kwargs):
+    def implement(self, projname="project_garomatrix", projdir="./", njobs=4, linux=False, files=True, **kwargs):
         """
         Esta función copia/crea en el directorio 'projdir' todos los archivos necesarios para implementar una matriz
         de osciladores de anillo de Galois con medición del sesgo ("bias") y comunicación:
 
         pc (.py) <-> microprocesador (.c) <-> FSM en FPGA (.v),
 
-        PARÁMETROS:
-        -----------
+        Opciones:
+        ---------
+            projname = 'project_romatrix'
+                Nombre del proyecto de Vivado.
+                
+            projdir = './'
+                Directorio donde se creará el proyecto de Vivado y las fuentes.
+                
+            njobs = 4
+                Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
+                
+            linux = False
+                Marcar esta opción como True si la versión de Vivado que se va a utilizar está instalado en una máquina
+                linux (de forma que los PATH se gestionen correctamente).
+                
+            files = True
+                Pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar
+                cuando queremos configurar un objeto tipo 'Romatrix' pero no vamos a implementarla físicamente
+                (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).
             
-        projname = 'project_romatrix'
-
-            Nombre del proyecto de Vivado.
-
-        projdir = './'
-
-            Directorio donde se creará el proyecto de Vivado y las fuentes.
-            
-            
-        board = 'pynqz2' | 'zybo' | 'cmoda7_15t' | 'cmoda7_35t'
-
-            Placa de desarrollo utilizada en el proyecyo.
-            
-            
-        njobs = 4
-
-            Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
-            
-            
-        qspi = False
-
-            Si esta opción se introduce con valor True, el flujo de diseño incluirá el guardado del bitstream en la memoria
-            flash de la placa para que se auto-programe al encenderse.
-            
-            
-        detailr = False
-
-            Si esta opción se introduce con valor True el flujo .tcl incluirá el cableado de los inversores después de la
-            síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
-            comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
-            
-            
-        tipo_lut = 'lut3' | 'lut4' | 'lut5' | 'lut6'
-        
-            Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
-            
-            
-        pinmap = 'no;'
-
-            Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
-            entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
-            asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
-            inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
-            Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
-            sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
-            utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
-            propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
-            (ver opción "tipo_lut"). Algunos ejemplos son:
-
+        kwargs:
+        -------
+            board = 'pynqz2' | 'zybo' | 'cmoda7_15t' | 'cmoda7_35t'
+                Placa de desarrollo utilizada en el proyecyo.
+                
+            qspi = False
+                Si esta opción se introduce con valor True, el flujo de diseño incluirá el guardado del bitstream en la memoria
+                flash de la placa para que se auto-programe al encenderse.
+                
+            detailr = False
+                Si esta opción se introduce con valor True el flujo .tcl incluirá el cableado de los inversores después de la
+                síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
+                comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
+                
+            tipo_lut = 'lut3' | 'lut4' | 'lut5' | 'lut6'
+                Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
+                
             pinmap = 'no;'
-                Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+                Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
+                entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
+                asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
+                inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
+                Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
+                sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
+                utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
+                propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
+                (ver opción "tipo_lut"). Algunos ejemplos son:
+
+                pinmap = 'no;'
+                    Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
+                    
+                pinmap = 'I0:A5;I0:A6;I0:A4'
+                    Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
+                    al ruteado más compacto en una fpga Zynq7000.
                 
-            pinmap = 'I0:A5;I0:A6;I0:A4'
-                Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
-                al ruteado más compacto en una fpga Zynq7000.
-            
-            pinmap = 'I0:A5;no;I0:A4'
-                Parecido al anterior, pero ahora no fijamos el segundo inversor.
-            
-            pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
-                Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
-                selección de PDL (en una lut tipo LUT6).
-            
-            
-        minsel = False
-
-            Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
-            los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
-
-
-        pblock =  False
-
-            Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
-            elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
-            acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
-            rectángulo de restricción, separados por un espacio:
-
-                'X0,Y0 X1,Y1'
+                pinmap = 'I0:A5;no;I0:A4'
+                    Parecido al anterior, pero ahora no fijamos el segundo inversor.
                 
-            El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
-            Esta opción debe darse entre comillas.
+                pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
+                    Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
+                    selección de PDL (en una lut tipo LUT6).
+                
+            minsel = False
+                Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
+                los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
 
+            pblock =  False
+                Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
+                elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
+                acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
+                rectángulo de restricción, separados por un espacio:
 
-        data_width | dw = 32
-        
-            Esta opción especifica la anchura del canal de datos PS<-->PL.
-            
+                    'X0,Y0 X1,Y1'
+                    
+                El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
+                Esta opción debe darse entre comillas.
 
-        buffer_out_width | bow = 32
-        
-            Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
-            
-            
-        linux = False
-        
-            Marcar esta opción como True si la versión de Vivado que se va a utilizar está instalado en una máquina
-            linux (de forma que los PATH se gestionen correctamente).
+            data_width | dw = 32
+                Esta opción especifica la anchura del canal de datos PS<-->PL.
+                
+            buffer_out_width | bow = 32
+                Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
         """
-
-        if 'board' in kwargs:
-            self.board = kwargs['board']
-        else:
-            self.board = 'pynqz2'
-        
-        if 'qspi' in kwargs:
-            self.qspi = kwargs['qspi']
-        else:
-            self.qspi = False
-        
-        if 'detail_routing' in kwargs:
-            self.detail_routing = kwargs['detail_routing']
-        elif 'detailr' in kwargs:
-            self.detail_routing = kwargs['detailr']         
-        else:
-            self.detail_routing = False
-        
-        if 'tipo_lut' in kwargs:
-            self.tipo_lut = kwargs['tipo_lut']
-        else:
-            self.tipo_lut = 'lut3'
-        
-        if 'pinmap' in kwargs:
-            self.pinmap = kwargs['pinmap']
-        else:
-            self.pinmap = 'no;'
-        
-        if 'minsel' in kwargs:
-            self.minsel = kwargs['minsel']
-        else:
-            self.minsel = False
-        
-        if 'pblock' in kwargs:
-            self.pblock = kwargs['pblock']
-        else:
-            self.pblock = False
-        
-        if 'data_width' in kwargs:
-            self.data_width = kwargs['data_width']
-        elif 'dw' in kwargs:
-            self.data_width = kwargs['dw']            
-        else:
-            self.data_width = 32
-        
-        if 'buffer_out_width' in kwargs:
-            self.buffer_out_width = kwargs['buffer_out_width']
-        elif 'bow' in kwargs:
-            self.buffer_out_width = kwargs['bow']            
-        else:
-            self.buffer_out_width = 32
-            
+        self.board = 'pynqz2'
+        self.qspi = False
+        self.detail_routing = False
+        self.tipo_lut = 'lut3'
+        self.pinmap = 'no;'
+        self.minsel = False
+        self.pblock = False
+        self.data_width = 32
+        self.buffer_out_width = 32
+        for kw in kwargs:
+            if kw=='board':
+                self.board = kwargs[kw]
+            if kw=='qspi':
+                self.qspi = kwargs[kw]
+            if kw=='detail_routing' or kw=='dr':
+                self.detail_routing = kwargs[kw]
+            if kw=='tipo_lut' or kw=='tl':
+                self.tipo_lut = kwargs[kw]
+            if kw=='pinmap':
+                self.pinmap = kwargs[kw]
+            if kw=='minsel':
+                self.minsel = kwargs[kw]
+            if kw=='pblock':
+                self.pblock = kwargs[kw]
+            if kw=='data_width' or kw=='dw':
+                self.data_width = kwargs[kw]  
+            if kw=='buffer_out_width' or kw=='bow':
+                self.buffer_out_width = kwargs[kw]
+                
         self.N_bits_osc = clog2(self.N_osc)
-        
         self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
-        
         self.N_bits_resol = 5  
-
         self.N_bits_fdiv = 5
         
         if self.board=='cmoda7_15t':
@@ -1749,7 +1661,7 @@ class GAROMATRIX:
                 
         self.buffer_in_width = self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly+self.N_bits_resol+self.N_bits_fdiv
         
-        if print_files:
+        if files:
             if self.buffer_in_width%8 == 0:
                 octeto_in_width=self.buffer_in_width//8
             else:
@@ -2064,7 +1976,7 @@ source {projdir}/partial_flows/launchsdk.tcl
 {bow_misaligned_dw}
             """)
 
-            self.genGaromatrix(out_name="vivado_src/garomatrix.v")
+            self.gen_garomatrix(out_name="vivado_src/garomatrix.v")
 
             with open("vivado_src/top.v", "w") as f:
                 if self.N_osc==1:
@@ -2194,73 +2106,53 @@ sdk source files: {projdir}/sdk_src/
             if self.qspi == 1:
                 print(f"q-spi part: {self.memory_part}")
             
-    def medir(self, resol=17, poly=0, fdiv=3, osc=range(1), pdl=range(1), N_rep=1, bias=False, log=False, verbose=True, puerto='S1', baudrate=9600):
+    def medir(self, puerto='S1', baudrate=9600, bias=False, log=False, verbose=True, **kwargs):
         """
-         Esta función mide la frecuencia de una matriz de osciladores estándar 'ROMATRIX', una vez este ha sido implementado en FPGA.
-         El resultado se devuelve como un objeto TENSOR.
+        Esta función mide la frecuencia de una matriz de osciladores estándar 'ROMATRIX', una vez este ha sido implementado en FPGA.
+        El resultado se devuelve como un objeto 'Tensor'.
          
-         PARÁMETROS:
-         -----------
-         
-            resol = 17
-            
-                log_2 del número de ciclos de referencia a completar para dar por terminada la medida. (por
-                defecto 17, i.e., 2^17 = 131072 ciclos).
-                
-                
-            poly = 0
-            
-                Esta variable indica el índice del polinomio a medir.
-                
-                
-            fdiv = 3
-            
-                log_2 del factor de división para el reloj de muestreo.
-            
-            
-            osc = range(1)
-            
-                Lista de osciladores a medir.
-                
-                
-            pdl = range(1)
-            
-                Lista de PDL a medir.
-                
-                
-            N_rep = 1
-            
-                Número d erepeticiones a medir.
-                
-                
-            bias = False
-            
-                Si se pasa esta opción como "True" el resultado se dará en tanto por 1.
-                
-                
-            log = False
-            
-                Si se pasa "True" se escriben algunos datos a modo de log.
-                
-                
-            verbose = True
-            
-                Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace
-                más cómodo utilizar esta función en un bucle.
-                
-                
+        Opciones:
+        ---------
             puerto = S1
-            
                 Esta opción especifica el puerto serie al que se conecta la FPGA. Actualmente está "hardcodeado" a 
                 formato linux (ya que incluso en Windows lo estoy midiendo con WSL).
                 
-                
             baudrate = 9600
-            
                 Tasa de transferencia del protocolo serie UART PC<-->PS. Debe concordar con el programa compilador en
                 PS.
+                
+            bias = False
+                Si se pasa esta opción como "True" el resultado se dará en tanto por 1.
+                
+            log = False
+                Si se pasa "True" se escriben algunos datos a modo de log.
+                
+            verbose = True
+                Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace
+                más cómodo utilizar esta función en un bucle.
+        
+        kwargs:
+        -------
+            resol = 17
+                log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por
+                defecto 17, i.e., 2^17 = 131072 ciclos).
+                
+            poly = 0
+                Esta variable indica el índice del polinomio a medir.
+                
+            fdiv = 3
+                log_2 del factor de división para el reloj de muestreo.
+                
+            osc = range(1)
+                Lista de osciladores a medir.
+                
+            pdl = range(1)
+                Lista de PDL a medir.
+                
+            N_rep = 1
+                Número d erepeticiones a medir.
         """        
-        def printUnicodeExp(numero):
+        def print_unicode_exp(numero):
             """
             Esta función coge un número y lo escribe como un exponente
             utilizando caracteres UNICODE.
@@ -2277,7 +2169,7 @@ sdk source files: {projdir}/sdk_src/
                 result+=super_unicode[i]
             return result
 
-        def polyNomenclature(entrada):
+        def poly_nomenclature(entrada):
             """
             Esta función toma un array 'poly' tal y como se utilizando
             en este script para representar un polinomio de Galois, y 
@@ -2291,31 +2183,58 @@ sdk source files: {projdir}/sdk_src/
                     if i==1:
                         result+="+x"
                     else:
-                        result+=f"+x{printUnicodeExp(i)}"
+                        result+=f"+x{print_unicode_exp(i)}"
             if N==1:
                 result+="+x"
             else:
-                result+=f"+x{printUnicodeExp(N)}"
+                result+=f"+x{print_unicode_exp(N)}"
             return result
 
-        osc_list=list(osc)
-        pdl_list=list(pdl)
+        osc_list = [0]
+        pdl_list = [0]
+        N_rep = 1
+        f_ref = False
+        resol = 17
+        poly = 0
+        fdiv = 3
+        for kw in kwargs:
+            if kw=='osc':
+                if type(kwargs[kw])==type([]):
+                    osc_list = kwargs[kw]
+                else:
+                    osc_list = [kwargs[kw]]
+            if kw=='pdl':
+                if type(kwargs[kw])==type([]):
+                    pdl_list = kwargs[kw]
+                else:
+                    pdl_list = [kwargs[kw]]
+            if kw=='N_rep' or kw=='Nrep' or kw=='n_rep' or kw=='nrep':
+                N_rep = kwargs[kw]
+            if kw=='f_ref' or kw=='fref':
+                f_ref = kwargs[kw]
+            if kw=='resol':
+                resol = kwargs[kw]
+            if kw=='poly':
+                poly = kwargs[kw]
+            if kw=='fdiv':
+                fdiv = kwargs[kw]
+                
         N_osc = len(osc_list) # Número de osciladores
         N_pdl = len(pdl_list) # Número de pdl_list
-                      
+        
         buffer_sel_ro=[]
         for i in osc_list:
-            buffer_sel_ro.append(resizeArray(intToBitstr(i), self.N_bits_osc))
+            buffer_sel_ro.append(resize_array(int_to_bitstr(i), self.N_bits_osc))
             
         buffer_sel_pdl=[]
         for i in pdl_list:
-            buffer_sel_pdl.append(resizeArray(intToBitstr(i), self.N_bits_pdl))
+            buffer_sel_pdl.append(resize_array(int_to_bitstr(i), self.N_bits_pdl))
             
-        buffer_sel_resol=resizeArray(intToBitstr(resol), self.N_bits_resol)
+        buffer_sel_resol=resize_array(int_to_bitstr(resol), self.N_bits_resol)
         
-        buffer_sel_poly=resizeArray(intToBitstr(poly), self.N_bits_poly)
+        buffer_sel_poly=resize_array(int_to_bitstr(poly), self.N_bits_poly)
         
-        buffer_sel_fdiv=resizeArray(intToBitstr(fdiv), self.N_bits_fdiv)
+        buffer_sel_fdiv=resize_array(int_to_bitstr(fdiv), self.N_bits_fdiv)
 
         ## Info log
         if log:
@@ -2323,7 +2242,7 @@ sdk source files: {projdir}/sdk_src/
 INFO LOG:
 
 Resolución             = {resol}
-Polinomio              = {poly} --> {polyNomenclature(buffer_sel_poly)}
+Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}
 Factor divisor clk.    = {2**fdiv}
 Número de osciladores  = {N_osc}
 Número de repeticiones = {N_rep}
@@ -2334,24 +2253,21 @@ Número de pdl_list     = {N_pdl}
         time_sleep(.1)
         
         if verbose:
-            contador=0
-            N_total = N_osc*N_rep*N_pdl
-            pinta_progreso(0, N_total, barra=40)
+            pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
         medidas=[]
         for rep in range(N_rep):
             for pdl in range(N_pdl):
                 for osc in range(N_osc):
                     buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_poly+buffer_sel_resol+buffer_sel_fdiv
                     scan(fpga, buffer_in, self.buffer_in_width)
-                    medida = bitstrToInt(calc(fpga, self.buffer_out_width))
+                    medida = bitstr_to_int(calc(fpga, self.buffer_out_width))
                     if bias:
                         medida/=2**resol
                     medidas.append(medida)
                 if verbose:
-                    contador+=N_osc
-                    pinta_progreso(contador, N_total, barra=40)
+                    pinta_progreso.update(N_osc)
         if verbose:
-            pinta_progreso(N_total, N_total, barra=40)
+            pinta_progreso.close()
         fpga.close()
         tensor_medidas = TENSOR(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         

@@ -22,7 +22,7 @@ cmd_scan_sync =		7
 cmd_print_sync =	8
 
 
-def intToBytestr(entrada):
+def int_to_bytestr(entrada):
 	"""
 	Esta funcion convierte un numero 'entrada' en un bytestr
 	(i.e. en su representacion en base 256). Como siempre,
@@ -41,7 +41,7 @@ def intToBytestr(entrada):
 	return result
 	
 	
-def bytestrToInt(entrada):
+def bytestr_to_int(entrada):
 	"""
 	Convierte una lista de bytes en su
 	correspondiente numero decimal (entero)
@@ -53,7 +53,7 @@ def bytestrToInt(entrada):
 	return result
 	
 	
-def intToBitstr(entrada):
+def int_to_bitstr(entrada):
 	"""
 	Esta funcion convierte un numero 'entrada' en un bitstr
 	(i.e. en su representacion en base 2). Como siempre, el
@@ -72,7 +72,7 @@ def intToBitstr(entrada):
 	return result
 	
 	
-def bitstrToInt(entrada):
+def bitstr_to_int(entrada):
 	"""
 	Convierte una lista de bits en su
 	correspondiente numero decimal (entero)
@@ -84,7 +84,7 @@ def bitstrToInt(entrada):
 	return result
 		
 
-def receiveU8(serialport):
+def receive_u8(serialport):
 	"""
 	Esta funcion implementa un bucle para leer 1 byte del puerto serie
 	'serialport', y devuelve dicho byte en formato u8 (un numero entre 0 y 255).
@@ -103,7 +103,7 @@ def receiveU8(serialport):
 		return -1
 	
 	
-def receiveU32(serialport):
+def receive_u32(serialport):
 	"""
 	Esta funcion implementa un bucle para leer 4 bytes del puerto serie
 	'serialport', y los devuelve en formato u32 (entero). Si no habia
@@ -122,7 +122,7 @@ def receiveU32(serialport):
 		return -1
 	
 	
-def receiveBytestr(serialport, bytestr_size): #aqui hay algun tipo de error
+def receive_bytestr(serialport, bytestr_size): #aqui hay algun tipo de error
 	"""
 	Recibe 'bytestr_size' bytes a traves del puerto serie 'serialport'
 	"""
@@ -130,7 +130,7 @@ def receiveBytestr(serialport, bytestr_size): #aqui hay algun tipo de error
 	result=[]
 	for i in range(bytestr_size):
 		while 1:
-			aux = receiveU8(serialport)
+			aux = receive_u8(serialport)
 			if aux >= 0: #esto puede dar problemas
 				result.append(aux)
 				break
@@ -138,7 +138,7 @@ def receiveBytestr(serialport, bytestr_size): #aqui hay algun tipo de error
 	return result
 	
 	
-def sendU8(serialport, number):
+def send_u8(serialport, number):
 	"""
 	Esta funcion envia un numero en formato u8
 	a traves de 'serialport'. Si 'number' es
@@ -149,18 +149,18 @@ def sendU8(serialport, number):
 	return 0
 
 
-def sendBytestr(serialport, bytestr_out):
+def send_bytestr(serialport, bytestr_out):
 	"""
 	Envía 'bytestr_out' bytes a traves del puerto serie 'serialport'
 	"""	
 	
 	for i in bytestr_out:
-		sendU8(serialport, i)
+		send_u8(serialport, i)
 			
 	return 0
 
 
-def resizeArray(array_old, array_size):
+def resize_array(array_old, array_size):
 	"""
 	Esta funcion toma un array_old de tamano arbitrario y transfiere
 	los caracteres a un array de tamano nbits, empezando por el
@@ -182,7 +182,7 @@ def resizeArray(array_old, array_size):
 	return result
 
 
-def bitstrToBytestr(bitstr_in, bitstr_width):
+def bitstr_to_bytestr(bitstr_in, bitstr_width):
 	"""
 	Toma una lista de bits (bitstr_in) de tamaño 'bitstr_width'
 	y la convierte a una lista de bytes del tamaño mínimo
@@ -214,7 +214,7 @@ def bitstrToBytestr(bitstr_in, bitstr_width):
 	return result
 
 
-def bytestrToBitstr(bytestr, bitstr_width):
+def bytestr_to_bitstr(bytestr, bitstr_width):
 	"""
 	Toma una lista de bytes y los aloja en una lista de bits
 	de tamaño 'bitstr_width'. Si 'bitstr_width' es insuficiente,
@@ -263,7 +263,7 @@ def bytestrToBitstr(bytestr, bitstr_width):
 	return result
 
 
-def printBitstr(bitstr_in):
+def print_bitstr(bitstr_in):
 	"""
 	"""
 	
@@ -271,7 +271,7 @@ def printBitstr(bitstr_in):
 	print(bin_string, end='')
 	
 	
-def printBytestr(bytestr_in):
+def print_bytestr(bytestr_in):
 	"""
 	"""
 	aux=[i for i in reversed(bytestr_in)]
@@ -286,9 +286,9 @@ def calc(serialport, buffer_out_width):
 	y devuelve un bitstr de tamaño 'buffer_out_width'
 	"""
 	bytestr_size = buffer_out_width//8+(buffer_out_width%8>0)
-	sendU8(serialport, cmd_calc)
-	bytestr = receiveBytestr(serialport, bytestr_size)
-	return bytestrToBitstr(bytestr, buffer_out_width)
+	send_u8(serialport, cmd_calc)
+	bytestr = receive_bytestr(serialport, bytestr_size)
+	return bytestr_to_bitstr(bytestr, buffer_out_width)
 
 
 def scan(serialport, bitstr_in, buffer_in_width):
@@ -298,9 +298,9 @@ def scan(serialport, bitstr_in, buffer_in_width):
 	y sube un bitstr de tamaño 'buffer_in_width'
 	"""
 		
-	sendU8(serialport, cmd_scan)
-	sendBytestr(serialport, bitstrToBytestr(bitstr_in, buffer_in_width))
+	send_u8(serialport, cmd_scan)
+	send_bytestr(serialport, bitstr_to_bytestr(bitstr_in, buffer_in_width))
 
 
 def end(serialport):
-	sendU8(serialport, cmd_end)
+	send_u8(serialport, cmd_end)
