@@ -8,7 +8,7 @@ printf " fpga-package-upgrade.sh
 	exit
 fi
 
-cd $REPO_fpga/python/modules/fpga_module
+cd $REPO_fpga/python/modules/myfpga_module
 rm -r dist
 python3 setup.py sdist
 cd dist/

@@ -3,59 +3,23 @@ Este módulo contiene una serie de clases y funciones para implementar en FPGA y
 anillo, tanto estándar como de Galois.
 """
 
-from os                 import  environ as os_environ
-from subprocess         import  run     as subprocess_run
-from pickle             import  dump    as pickle_dump,\
-                                load    as pickle_load
-from serial             import  Serial  as serial_Serial
-from time               import  sleep   as time_sleep
-from numpy              import  reshape as np_reshape,\
-                                log2    as np_log2
-from matplotlib.pyplot  import  plot    as plt_plot,\
-                                show    as plt_show,\
-                                imshow  as plt_imshow
-from tqdm               import  tqdm
-from fpga.interfaz_pcps import  *
-from mytensor           import  *
+from os                     import  environ as os_environ
+from subprocess             import  run     as subprocess_run
+from pickle                 import  dump    as pickle_dump,\
+                                    load    as pickle_load
+from serial                 import  Serial  as serial_Serial
+from time                   import  sleep   as time_sleep
+from numpy                  import  reshape as np_reshape,\
+                                    log2    as np_log2
+from matplotlib.pyplot      import  plot    as plt_plot,\
+                                    show    as plt_show,\
+                                    imshow  as plt_imshow
+from tqdm                   import  tqdm
+from myfpga                 import  *
+from myfpga.interfaz_pcps   import  *
+from mytensor               import  *
         
         
-def gen_osc_coord(dominios):
-    """
-    Esta función toma una lista de objetos 'OSC_SUBMATRIX' y genera una lista 'osc_coord' de dimensiones
-    shape=(2, N_osc), tal que 'osc_coord[0][i]' contiene la coordenada X del i-ésimo oscilador, y 'osc_coord[1][i]'
-    la coordenada Y del i-ésimo oscilador.
-    """
-    lista_osciladores = ""
-    for dominio in dominios:
-        x = dominio.x0
-        y = dominio.y0
-        for i in range(dominio.N_osc):
-            if x > dominio.x1:
-                if y==dominio.y1 or y+dominio.dy > dominio.y1:
-                    break
-                else:
-                    x=dominio.x0
-                    y+=dominio.dy
-                    
-            if y > dominio.y1:
-                if x==dominio.x1 or x+dominio.dx > dominio.x1:
-                    break
-                else:
-                    x+=dominio.dx
-                    y=dominio.y0
-            lista_osciladores += f"{x},{y} "
-            if dominio.directriz == 'y':
-                y+=dominio.dy
-            else:
-                x+=dominio.dx
-    osc_coord = [[],[]]
-    for i in lista_osciladores.split():
-        osc_coord[0].append(int(i.split(',')[0]))
-        osc_coord[1].append(int(i.split(',')[1]))
-                
-    return osc_coord
-    
-    
 def clog2(N):
     """
     Función para calcular el numero de bits necesarios para especificar 'N' estados.
@@ -78,9 +42,278 @@ def load_oscmatrix(file_name):
     """
     with open(file_name, "rb") as f:
         result = pickle_load(f)
-    return result       
+    return result
+
+
+class StdRing():
+    """
+    """
+    def __init__(self, name, N_inv, loc, tipo_lut='LUT1', bel='', pin='', minsel=True):
+        """
+        Opciones:
+        ---------
+            name = '<>'
+                Nombre del anillo. En la práctica este precederá a los nombres de cada instancia
+                LUT que forma parte del anillo, e.g. si name='a', los nombres de todas las 
+                instancias LUT que forman parte del anillo serán:
+                    'a_AND' # AND inicial.
+                    'a_0'   # Primer inversor.
+                    'a_1'   # Segundor inversor.
+                      .
+                      .
+                      .
+                    'a_N-1' # "N-1"-ésimo inversor.
+                    
+            N_inv
+                Número de inversores que forman el anillo.
+                    
+            loc = '<X>,<Y>'
+                Posición de la celda que contiene a la primera LUT del anillo (AND inicial). Solo se
+                da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos
+                los 'bel' de una celda antes de pasar a la celda inmediatamente superior (de modo que,
+                dadas las coordenadas del primer elemento, las demás están predeterminadas). La "celda
+                inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
+                
+            bel = 'A | B | C | D' | ['<>']
+                Lista de restriciones BEL que indican qué LUT concreta es ocupada dentro de la celda por cada
+                elemento del anillo. Cada elemento de la lista se aplica en orden correlativo al elemento
+                del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor,
+                etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán
+                LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT
+                que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, 
+                y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el
+                usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí
+                en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta
+                opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción
+                'bel' de la clase 'Lut'.
+                    
+            pin = 'I<>:A<>, I<>:A<>, ...' | [<>]
+                Lista de mapeos de los pines lógicos ("I") a los pines físicos ("A") de cada elemento del anillo.
+                Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (el primer mapeos
+                se aplica al AND inicial, el segundo al primer inversor, etc). Pueden darse menos mapeos que
+                inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser
+                coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo
+                LUT2 (i.e., solo se pueden fijar los pines 'I0' y 'I1').
+                
+        """
+        self.name = name
+        self.N_inv = N_inv
+        self.loc = [loc]
+        x = int(self.loc[-1].replace(' ','').split(',')[0])
+        y = int(self.loc[-1].replace(' ','').split(',')[1])
+        for i in range(N_inv):
+            if (i+1)%4==0:  # N. luts por celda.
+                if x%2==0:
+                    x+=1
+                else:
+                    x = int(self.loc[-1].replace(' ','').split(',')[0])
+                    y+=1
+            self.loc.append(f"{x},{y}")
+            
+        self.bel = []
+        for i in range(N_inv+1):
+            self.bel.append('')
+        if type(bel) == type([]):
+            for i in range(len(bel)):
+                self.bel[i] = bel[i]
+        else:
+            self.bel[0] = bel
+        self.pin = []
+        for i in range(N_inv+1):
+            self.pin.append('')
+        if type(pin) == type([]):
+            for i in range(len(pin)):
+                self.pin[i] = pin[i]
+        else:
+            self.pin[0] = pin
+        
+        self.luts = [Lut(name+'_AND', 'LUT2', "4'b1000", self.loc[0], name+'_w0', [name+'_enable', name+'_out'], self.bel[0], self.pin[0])]
+        for i in range(N_inv):
+            if tipo_lut=='LUT1':
+                init = "2'b01"
+                w_in = [name+f"_w{i}"]
+            elif tipo_lut=='LUT2':
+                init = "4'h5"
+                if minsel:
+                    w_in = [name+f"_w{i}", name+f"_pdl{0}"]
+                else:
+                    w_in = [name+f"_w{i}", name+f"_pdl{i}"]
+            elif tipo_lut=='LUT3':
+                init = "8'h55"
+                if minsel:
+                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}"]
+                else:
+                    w_in = [name+f"_w{i}", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
+            elif tipo_lut=='LUT4':
+                init = "16'h5555"
+                if minsel:
+                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
+                else:
+                    w_in = [name+f"_w{i}", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
+            elif tipo_lut=='LUT5':
+                init = "32'h55555555"
+                if minsel:
+                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}", name+f"_pdl{3}"]
+                else:
+                    w_in = [name+f"_w{i}", name+f"_pdl{4*i}", name+f"_pdl{4*i+1}", name+f"_pdl{4*i+2}", name+f"_pdl{4*i+3}"]
+            elif tipo_lut=='LUT6':
+                init = "64'h5555555555555555"
+                if minsel:
+                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}", name+f"_pdl{3}", name+f"_pdl{4}"]
+                else:
+                    w_in = [name+f"_w{i}", name+f"_pdl{5*i}", name+f"_pdl{5*i+1}", name+f"_pdl{5*i+2}", name+f"_pdl{5*i+3}", name+f"_pdl{5*i+4}"]
+            if i==N_inv-1:
+                w_out = name+'_out'
+            else:
+                w_out = name+f"_w{i+1}"
+            self.luts.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
+            
+    def help(self):
+        """
+        Esta función es un atajo para "help('fpga.oscmatrix.GAROMATRIX')"
+        """
+        help('myfpga.ring_osc.StdRing')
             
             
+class GaloisRing():
+    """
+    """
+    def __init__(self, name, N_inv, loc, tipo_lut='LUT3', bel='', pin='', minsel=True):
+        """
+        Opciones:
+        ---------
+            name = '<>'
+                Nombre del anillo. En la práctica este precederá a los nombres de cada instancia
+                LUT que forma parte del anillo, e.g. si name='a', los nombres de todas las 
+                instancias LUT que forman parte del anillo serán:
+                    'a_AND' # AND inicial.
+                    'a_0'   # Primer inversor.
+                    'a_1'   # Segundor inversor.
+                      .
+                      .
+                      .
+                    'a_N-1' # "N-1"-ésimo inversor.
+                    
+            N_inv
+                Número de inversores que forman el anillo.
+                    
+            loc = '<X>,<Y>'
+                Posición de la celda que contiene a la primera LUT del anillo (AND inicial). Solo se
+                da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos
+                los 'bel' de una celda antes de pasar a la celda inmediatamente superior (de modo que,
+                dadas las coordenadas del primer elemento, las demás están predeterminadas). La "celda
+                inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
+                
+            bel = 'A | B | C | D' | ['<>']
+                Lista de restriciones BEL que indican qué LUT concreta es ocupada dentro de la celda por cada
+                elemento del anillo. Cada elemento de la lista se aplica en orden correlativo al elemento
+                del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor,
+                etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán
+                LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT
+                que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, 
+                y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el
+                usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí
+                en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta
+                opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción
+                'bel' de la clase 'Lut'.
+                    
+            pin = 'I<>:A<>, I<>:A<>, ...' | [<>]
+                Lista de mapeos de los pines lógicos ("I") a los pines físicos ("A") de cada elemento del anillo.
+                Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (el primer mapeos
+                se aplica al AND inicial, el segundo al primer inversor, etc). Pueden darse menos mapeos que
+                inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser
+                coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo
+                LUT2 (i.e., solo se pueden fijar los pines 'I0' y 'I1').
+                
+        """
+        self.name = name
+        self.N_inv = N_inv
+        self.loc = [loc]
+        x = int(self.loc[-1].replace(' ','').split(',')[0])
+        y = int(self.loc[-1].replace(' ','').split(',')[1])
+        for i in range(N_inv):
+            if (i+1)%4==0:  # N. luts por celda.
+                if x%2==0:
+                    x+=1
+                else:
+                    x = int(self.loc[-1].replace(' ','').split(',')[0])
+                    y+=1
+            self.loc.append(f"{x},{y}")
+            
+        self.bel = []
+        for i in range(N_inv+2):
+            self.bel.append('')
+        if type(bel) == type([]):
+            for i in range(len(bel)):
+                self.bel[i] = bel[i]
+        else:
+            self.bel[0] = bel
+        self.pin = []
+        for i in range(N_inv+1):
+            self.pin.append('')
+        if type(pin) == type([]):
+            for i in range(len(pin)):
+                self.pin[i] = pin[i]
+        else:
+            self.pin[0] = pin
+        
+        self.luts = []
+        for i in range(N_inv):
+            if tipo_lut=='LUT3':
+                init = "8'h95"
+                if i==0:
+                    w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0"]
+                else:
+                    w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}"]
+            elif tipo_lut=='LUT4':
+                init = "16'h9595"
+                if minsel:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{0}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}"]
+                else:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{i}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{i}"]
+            elif tipo_lut=='LUT5':
+                init = "32'h95959595"
+                if minsel:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{0}", name+f"_pdl{1}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}", name+f"_pdl{1}"]
+                else:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
+            elif tipo_lut=='LUT6':
+                init = "64'h9595959595959595"
+                if minsel:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
+                else:
+                    if i==0:
+                        w_in = [name+f"_w{N_inv-1}", "1'b0", "1'b0", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
+                    else:
+                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
+            w_out = name+f"_w{i}"
+            self.luts.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+            
+        self.luts.append(Lut(name+f"_invout", 'LUT1', "2'b01", self.loc[N_inv], name+"_out", w_out, self.bel[N_inv], self.pin[N_inv]))    
+        self.luts.append(FlipFlop(name+f"_ff{i}", self.loc[N_inv], name+f"_out_sampled", 'clock_s', name+"_out", self.bel[N_inv+1]))
+        
+    def help(self):
+        """
+        Esta función es un atajo para "help('fpga.oscmatrix.GAROMATRIX')"
+        """
+        help('myfpga.ring_osc.GaloisRing')
+        
+        
 class Dominio:
     """
     Este objeto contiene las variables necesarias para que la función 'gen_osc_coord' produzca una lista de
@@ -140,13 +373,42 @@ class Dominio:
                 self.dx = kwargs[kw]
             if kw=='dy':
                 self.dy = kwargs[kw]
+                
+        self.osc_coord = []
+        x = self.x0
+        y = self.y0
+        for i in range(self.N_osc):
+            if x > self.x1:
+                if y==self.y1 or y+self.dy > self.y1:
+                    break
+                else:
+                    x=self.x0
+                    y+=self.dy
+                    
+            if y > self.y1:
+                if x==self.x1 or x+self.dx > self.x1:
+                    break
+                else:
+                    x+=self.dx
+                    y=self.y0
+            self.osc_coord.append(f"{x},{y}")
+            if self.directriz == 'y':
+                y+=self.dy
+            else:
+                x+=self.dx
+                
+    def help(self):
+        """
+        Esta función es un atajo para "help('fpga.oscmatrix.GAROMATRIX')"
+        """
+        help('myfpga.ring_osc.Dominio')
         
         
 class StdMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo estándar.
     """
-    def __init__(self, N_inv=3, dominios=Dominio()):
+    def __init__(self, N_inv=3, dominios=Dominio(), **kwargs):
         """
         Esta función inicializa un objeto 'StdMatrix'; se llama automáticamente al crear un nuevo objeto de esta clase.
         
@@ -159,21 +421,114 @@ class StdMatrix:
                 Osciladores que forman la matriz. Se construye como una lista de objetos 'Dominio'.
                 Si solo pasamos un dominio de osciladores podemos pasar un objeto 'Dominio', en lugar
                 de una lista.
+                
+        kwargs:
+        -------
+            bel = 'A | B | C | D' | ['<>']
+                Lista de restriciones BEL que indican qué LUT concreta es ocupada dentro de la celda por cada
+                elemento del anillo. Cada elemento de la lista se aplica en orden correlativo al elemento
+                del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor,
+                etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán
+                LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT
+                que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, 
+                y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el
+                usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí
+                en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta
+                opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción
+                'bel' de la clase 'Lut'.
+                    
+            pin = 'I<>:A<>, I<>:A<>, ...' | [<>]
+                Lista de mapeos de los pines lógicos ("I") a los pines físicos ("A") de cada elemento del anillo.
+                Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (el primer mapeos
+                se aplica al AND inicial, el segundo al primer inversor, etc). Pueden darse menos mapeos que
+                inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser
+                coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo
+                LUT2 (i.e., solo se pueden fijar los pines 'I0' y 'I1').
+                
+            tipo_lut = 'LUT1'
+            
+            minsel = True
+        
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
             self.dominios[:]=dominios[:]
         else:
             self.dominios.append(dominios)
-        self.osc_coord = gen_osc_coord(self.dominios)
+            
         self.N_inv = N_inv
-        self.N_osc = len(self.osc_coord[0])
-        
+            
+        self.bel = []
+        for i in range(N_inv+1):
+            self.bel.append('')
+        self.pin = []
+        for i in range(N_inv+1):
+            self.pin.append('')
+        self.tipo_lut = 'LUT1'
+        self.minsel = True
+        for kw in kwargs:
+            if kw=='bel':
+                if type(kwargs[kw]) == type([]):
+                    for i in range(len(kwargs[kw])):
+                        self.bel[i] = kwargs[kw][i]
+                else:
+                    self.bel[0] = kwargs[kw]
+            if kw=='pin':
+                if type(kwargs[kw]) == type([]):
+                    for i in range(len(kwargs[kw])):
+                        self.pin[i] = kwargs[kw][i]
+                else:
+                    self.pin[0] = kwargs[kw]
+            if kw=='tipo_lut':
+                self.tipo_lut = kwargs[kw]
+            if kw=='minsel':
+                self.minsel = kwargs[kw]
+            
+        self.osc_list = []
+        self.N_osc=0
+        for dominio in self.dominios:
+            for osc_coord in dominio.osc_coord:
+                self.osc_list.append(StdRing(f"ring{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.N_osc+=1
+                
+        self.N_bits_osc = clog2(self.N_osc)
+        self.N_bits_resol = 5
+        if self.minsel:
+            if self.tipo_lut == "LUT1":
+                self.N_bits_pdl = 0
+            elif self.tipo_lut == "LUT2":
+                self.N_bits_pdl = 1
+            elif self.tipo_lut == "LUT3":
+                self.N_bits_pdl = 2
+            elif self.tipo_lut == "LUT4":
+                self.N_bits_pdl = 3
+            elif self.tipo_lut == "LUT5":
+                self.N_bits_pdl = 4
+            elif self.tipo_lut == "LUT6":
+                self.N_bits_pdl = 5
+            else:
+                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+        else:
+            if self.tipo_lut == "LUT1":
+                self.N_bits_pdl = 0
+            elif self.tipo_lut == "LUT2":
+                self.N_bits_pdl = self.N_inv
+            elif self.tipo_lut == "LUT3":
+                self.N_bits_pdl = 2*self.N_inv
+            elif self.tipo_lut == "LUT4":
+                self.N_bits_pdl = 3*self.N_inv
+            elif self.tipo_lut == "LUT5":
+                self.N_bits_pdl = 4*self.N_inv
+            elif self.tipo_lut == "LUT6":
+                self.N_bits_pdl = 5*self.N_inv
+            else:
+                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+                
     def help(self):
         """
         Esta función es un atajo para "help('fpga.oscmatrix.ROMATRIX')"
         """
-        help('fpga.ring_osc.StdMatrix')
+        help('myfpga.ring_osc.StdMatrix')
         
     def save(self, file_name):
         """
@@ -207,302 +562,101 @@ class StdMatrix:
         función 'implement()'.'
         """
         with open(out_name, "w") as f:
-            bel_ocupacion = ["BEL=\"A6LUT\"","BEL=\"B6LUT\"","BEL=\"C6LUT\"","BEL=\"D6LUT\""]
-            
-            pinmap_proc = []
-            intaux = 0
-            for i in range(len(self.pinmap)):
-                if self.pinmap[i]==';':
-                    saux = self.pinmap[intaux:i]
-                    intaux+=i+1
-                    if saux == "no":
-                        pinmap_proc.append(" ")
-                    else:
-                        pinmap_proc.append(f", LOCK_PINS=\"{saux}\" ")
-            for i in range(len(pinmap_proc),self.N_inv,1):
-                pinmap_proc.append(pinmap_proc[-1])
-                
             f.write(f"//N_osciladores: {self.N_osc}\n\n")
             
             f.write("module ROMATRIX (\n")
-            f.write("   input clock,\n")
-            f.write("   input enable,\n")
+            f.write("    input clock,\n")
+            f.write("    input enable,\n")
             
             if self.N_osc > 1:
-                f.write(f"  input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
+                f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
                 
-            if self.tipo_lut == "lut2":
+            if self.tipo_lut == "LUT2":
                 if self.minsel:
-                    f.write(f"  input[0:0] sel_pdl,\n")
+                    f.write(f"    input[0:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[{self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut3":
+                    f.write(f"    input[{self.N_inv-1}:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT3":
                 if self.minsel:
-                    f.write(f"  input[1:0] sel_pdl,\n")
+                    f.write(f"    input[1:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[{2*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut4":
+                    f.write(f"    input[{2*self.N_inv-1}:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT4":
                 if self.minsel:
-                    f.write(f"  input[2:0] sel_pdl,\n")
+                    f.write(f"    input[2:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[{3*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut5":
+                    f.write(f"    input[{3*self.N_inv-1}:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT5":
                 if self.minsel:
-                    f.write(f"  input[3:0] sel_pdl,\n")
+                    f.write(f"    input[3:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[{4*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut6":
+                    f.write(f"    input[{4*self.N_inv-1}:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT6":
                 if self.minsel:
-                    f.write(f"  input[4:0] sel_pdl,\n")
+                    f.write(f"    input[4:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[{5*self.N_inv-1}:0] sel_pdl,\n")
+                    f.write(f"    input[{5*self.N_inv-1}:0] sel_pdl,\n")
             
-            f.write("   output out\n")
-            f.write("   );\n\n")
-            f.write("   (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
-            f.write(f"  wire[{self.N_osc-1}:0] out_ro;\n")
-            f.write(f"  reg[{self.N_osc-1}:0] enable_ro;\n")
-            for i in range(self.N_osc):
-                f.write(f"  wire[{self.N_inv-1}:0] w_{i};\n")
-            f.write("\n")
-
-            if self.N_osc>1:
-                f.write("   assign out = enable? out_ro[sel_ro] : clock;\n")
-                f.write("\n")
-                f.write("   always @(*) begin\n")
-                f.write("       enable_ro = 0;\n")
-                f.write("       if(enable) enable_ro[sel_ro]=1;\n")
-                f.write("   end\n")
+            f.write("    output reg out\n")
+            f.write("    );\n\n")
+            
+            f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
+            f.write("    wire\n")
+            for i in range(self.N_osc-1):
+                f.write(f"    ring{i}_out,\n")
+            f.write(f"    ring{self.N_osc-1}_out;\n\n")
+            
+            f.write("    reg\n")
+            for i in range(self.N_osc-1):
+                f.write(f"    ring{i}_enable,\n")
+            f.write(f"    ring{self.N_osc-1}_enable;\n\n")
+            
+            f.write("    wire\n")
+            for i in range(self.N_osc-1):
+                f.write("    ")
+                for j in range(self.N_inv-1):
+                    f.write(f"ring{i}_w{j}, ")
+                f.write(f"ring{i}_w{self.N_inv-1},\n")
+            f.write("    ")
+            for j in range(self.N_inv-1):
+                f.write(f"ring{self.N_osc-1}_w{j}, ")
+            f.write(f"ring{self.N_osc-1}_w{self.N_inv-1};\n\n")
+            
+            if self.N_osc > 1:
+                f.write("    always @(*) begin\n")
+                f.write("        case(sel_ro)\n")
+                for i in range(self.N_osc):
+                    f.write(f"            {i}: begin\n")
+                    f.write(f"                out = ring{i}_out;\n")
+                    f.write(f"                if(enable) ring{i}_enable = 1;\n")
+                    f.write(f"                else ring{i}_enable = 0;\n")
+                    f.write(f"            end\n")
+                f.write("        endcase\n")
+                f.write("    end\n\n")
             else:
-                f.write("   assign out = enable? out_ro[0] : clock;\n")
-                f.write("\n")
-                f.write("   always @(*) begin\n")
-                f.write("       enable_ro = 0;\n")
-                f.write("       if(enable) enable_ro[0]=1;\n")
-                f.write("   end\n")
-            f.write("\n\n")
-            
+                f.write("    always @(*) begin\n")
+                f.write(f"        out = ring{0}_out;\n")
+                f.write(f"        if(enable) ring{0}_enable = 1;\n")
+                f.write(f"        else ring{0}_enable = 0;\n")
+                f.write("    end\n\n")
+
             if not debug:
-                if self.tipo_lut == "lut1":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT1 #(2'b01) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]));\n\n")
-                                
-                                ocupacion_celda+=1
-                                
-                                break
-                                
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT1 #(2'b01) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]));\n")
-                            
-                            ocupacion_celda+=1
-                            aux+=1
-                            
-                        f.write("\n")
-
-                elif self.tipo_lut == "lut2":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        contador=0
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                if not self.minsel:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT2 #(4'h5) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]));\n\n")
-                                else:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT2 #(4'h5) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]));\n\n")
-                                    
-                                ocupacion_celda+=1
-                                
-                                break
-                                    
-                            if not self.minsel:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT2 #(4'h5) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]));\n")
-                            else:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT2 #(4'h5) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]));\n")
-                                    
-                            contador+=1
-                            ocupacion_celda+=1
-                            aux+=1
-                                    
-                        f.write("\n")
-                        
-                elif self.tipo_lut == "lut3":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        contador=0
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                if not self.minsel:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT3 #(8'h55) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]));\n\n")
-                                else:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT3 #(8'h55) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]));\n\n")
-                                    
-                                ocupacion_celda+=1
-                                
-                                break
-                                    
-                            if not self.minsel:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT3 #(8'h55) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]));\n")
-                            else:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT3 #(8'h55) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]));\n")
-                                    
-                            contador+=2
-                            ocupacion_celda+=1
-                            aux+=1
-                                    
-                        f.write("\n")
-
-                elif self.tipo_lut == "lut4":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        contador=0
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                if not self.minsel:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h5555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}]));\n\n")
-                                else:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h5555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]));\n\n")
-                                    
-                                ocupacion_celda+=1
-                                
-                                break
-                                    
-                            if not self.minsel:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}]));\n")
-                            else:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h5555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]));\n")
-                                    
-                            contador+=3
-                            ocupacion_celda+=1
-                            aux+=1
-                                    
-                        f.write("\n")
-
-                elif self.tipo_lut == "lut5":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        contador=0
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                if not self.minsel:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h55555555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}]), .I4(sel_pdl[{contador+3}]));\n\n")
-                                else:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h55555555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]), .I4(sel_pdl[3]));\n\n")
-                                    
-                                ocupacion_celda+=1
-                                
-                                break
-                                    
-                            if not self.minsel:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h55555555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}, .I4(sel_pdl[{contador+3}])]));\n")
-                            else:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h55555555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]), .I4(sel_pdl[3]));\n")
-                                    
-                            contador+=4
-                            ocupacion_celda+=1
-                            aux+=1
-                                    
-                        f.write("\n")
-
-                elif self.tipo_lut == "lut6":
-                    for i in range(self.N_osc):
-                        celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                        f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\", LOCK_PINS=\"I1:A1\" *) LUT2 #(4'b1000) AND_{i}(.O(w_{i}[0]), .I0(enable_ro[{i}]), .I1(out_ro[{i}]));\n") # AND inicial
-                        
-                        contador=0
-                        aux=0
-                        ocupacion_celda=1
-                        while True:
-                            if ocupacion_celda==4:
-                                if celda[0]%2 == 0:
-                                    celda[0]+=1
-                                else:
-                                    celda[1]+=1
-                                ocupacion_celda=0
-                            if aux == self.N_inv-1:
-                                if not self.minsel:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h5555555555555555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}]), .I4(sel_pdl[{contador+3}]), .I5(sel_pdl[{contador+4}]));\n\n")
-                                else:
-                                    f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h5555555555555555) inv_{i}_{aux}(.O(out_ro[{i}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]), .I4(sel_pdl[3]), .I5(sel_pdl[4]));\n\n")
-                                    
-                                ocupacion_celda+=1
-                                
-                                break
-                                    
-                            if not self.minsel:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h5555555555555555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[{contador}]), .I2(sel_pdl[{contador+1}]), .I3(sel_pdl[{contador+2}], .I4(sel_pdl[{contador+3}]), .I5(sel_pdl[{contador+4}])));\n")
-                            else:
-                                f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h5555555555555555) inv_{i}_{aux}(.O(w_{i}[{aux+1}]), .I0(w_{i}[{aux}]), .I1(sel_pdl[0]), .I2(sel_pdl[1]), .I3(sel_pdl[2]), .I4(sel_pdl[3]), .I5(sel_pdl[4]));\n")
-                                    
-                            contador+=5
-                            ocupacion_celda+=1
-                            aux+=1
-                                    
-                        f.write("\n")
-
+                for osc in self.osc_list:
+                    for lut in osc.luts:
+                        f.write(f"    {lut.impl()}\n")
+                    f.write("\n")
                 f.write("endmodule\n")
             
             else:
                 for i in range(self.N_osc):
-                    f.write(f"  CLOCK_DIVIDER cd_{i} (\n")
-                    f.write("       .clock_in(clock),\n")
-                    f.write(f"      .fdiv({i}),\n")
-                    f.write(f"      .clock_out(out_ro[{i}])\n")
-                    f.write("   );\n")
+                    f.write(f"    CLOCK_DIVIDER cd_{i} (\n")
+                    f.write("        .clock_in(clock),\n")
+                    f.write(f"        .fdiv({i}),\n")
+                    f.write(f"        .clock_out(out_ro[{i}])\n")
+                    f.write("    );\n")
                     f.write("\n")
                 f.write("endmodule\n")
-        
+                
     def implement(self, projname='project_romatrix', projdir='./', njobs=4, linux=False, debug=False, files=True, **kwargs):
         """
         Esta función copia/crea en el directorio 'projdir' todos los archivos
@@ -542,43 +696,11 @@ class StdMatrix:
                 Si esta opción se introduce con valor True, el flujo de diseño incluirá el guardado del bitstream en la memoria
                 flash de la placa para que se auto-programe al encenderse.
                 
-            detailr = False
+            detail_routing(dr) = False
                 Si esta opción se introduce con valor True el flujo .tcl incluirá el cableado de los inversores después de la
                 síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
                 comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
                 
-            tipo_lut = 'lut1' | 'lut2' | 'lut3' | 'lut4' | 'lut5' | 'lut6'
-                Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
-                
-            pinmap = 'no;'
-                Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
-                entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
-                asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
-                inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
-                Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
-                sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
-                utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
-                propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
-                (ver opción "tipo_lut"). Algunos ejemplos son:
-
-                pinmap = 'no;'
-                    Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
-                    
-                pinmap = 'I0:A5;I0:A6;I0:A4'
-                    Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
-                    al ruteado más compacto en una fpga Zynq7000.
-                
-                pinmap = 'I0:A5;no;I0:A4'
-                    Parecido al anterior, pero ahora no fijamos el segundo inversor.
-                
-                pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
-                    Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
-                    selección de PDL (en una lut tipo LUT6).
-                
-            minsel = False
-                Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
-                los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
-
             pblock =  False
                 Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
                 elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
@@ -590,20 +712,17 @@ class StdMatrix:
                 El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
                 Esta opción debe darse entre comillas.
 
-            data_width | dw = 32
+            data_width(dw) = 32
             
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
 
-            buffer_out_width | bow = 32
+            buffer_out_width(bow) = 32
                 Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
                 
         """
         self.board = 'pynqz2'
         self.qspi = False
         self.detail_routing = False
-        self.tipo_lut = 'lut1'
-        self.pinmap = 'no;'
-        self.minsel = False
         self.pblock = False
         self.data_width = 32
         self.buffer_out_width = 32
@@ -614,12 +733,6 @@ class StdMatrix:
                 self.qspi = kwargs[kw]
             if kw=='detail_routing' or kw=='dr':
                 self.detail_routing = kwargs[kw]
-            if kw=='tipo_lut' or kw=='tl':
-                self.tipo_lut = kwargs[kw]
-            if kw=='pinmap':
-                self.pinmap = kwargs[kw]
-            if kw=='minsel':
-                self.minsel = kwargs[kw]
             if kw=='pblock':
                 self.pblock = kwargs[kw]
             if kw=='data_width' or kw=='dw':
@@ -627,9 +740,6 @@ class StdMatrix:
             if kw=='buffer_out_width' or kw=='bow':
                 self.buffer_out_width = kwargs[kw]
             
-        self.N_bits_osc = clog2(self.N_osc)
-        self.N_bits_resol = 5
-
         if self.board=='cmoda7_15t':
             self.fpga_part="xc7a15tcpg236-1"
             self.board_part="digilentinc.com:cmod_a7-15t:part0:1.1"
@@ -651,37 +761,6 @@ class StdMatrix:
             self.memory_part="?"
             self.clk_name = "/processing_system7_0/FCLK_CLK0 (100 MHz)"
             
-        if self.minsel:
-            if self.tipo_lut == "lut1":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "lut2":
-                self.N_bits_pdl = 1
-            elif self.tipo_lut == "lut3":
-                self.N_bits_pdl = 2
-            elif self.tipo_lut == "lut4":
-                self.N_bits_pdl = 3
-            elif self.tipo_lut == "lut5":
-                self.N_bits_pdl = 4
-            elif self.tipo_lut == "lut6":
-                self.N_bits_pdl = 5
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
-        else:
-            if self.tipo_lut == "lut1":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "lut2":
-                self.N_bits_pdl = self.N_inv
-            elif self.tipo_lut == "lut3":
-                self.N_bits_pdl = 2*self.N_inv
-            elif self.tipo_lut == "lut4":
-                self.N_bits_pdl = 3*self.N_inv
-            elif self.tipo_lut == "lut5":
-                self.N_bits_pdl = 4*self.N_inv
-            elif self.tipo_lut == "lut6":
-                self.N_bits_pdl = 5*self.N_inv
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
-                
         self.buffer_in_width = self.N_bits_osc+self.N_bits_pdl+self.N_bits_resol
         
         if files:
@@ -917,23 +996,15 @@ close_design
 
                 if self.detail_routing:
                     f.write("""
-            open_run synth_1 -name synth_1
+open_run synth_1 -name synth_1
 
-            startgroup
-            """)
+startgroup
+""")
                     for i in range(self.N_osc):
-                        f.write(f"""
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0]
-set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0 }}]
-set_property is_bel_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_{i} }}]
-set_property is_loc_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_{i} }}]
-    """)
-                        for j in range(1,self.N_inv,1):
+                        for j in range(self.N_inv):
                             f.write(f"""
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_{j}]
-set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_{j} }}]
-set_property is_bel_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_{j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_${j-1} }}]
-set_property is_loc_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_{j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_${j-1} }}]
+route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix/ring{i}_w{j}]
+set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix/ring{i}_w{j} }}]
     """) 
                     f.write(f"""
 endgroup
@@ -1008,7 +1079,7 @@ source {projdir}/partial_flows/launchsdk.tcl
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if self.tipo_lut == "lut1":
+                if self.tipo_lut == 'LUT1':
                     aux1=""
                 else:
                     aux1=f".sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),"
@@ -1232,6 +1303,7 @@ sdk source files: {projdir}/sdk_src/
         if verbose:
             pinta_progreso.close()
         fpga.close()
+        
         tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         
         return tensor_medidas
@@ -1241,7 +1313,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio()):
+    def __init__(self, N_inv=3, dominios=Dominio(), **kwargs):
         """
         Esta función inicializa un objeto 'GaloisMatrix'; se llama automáticamente al crear un nuevo objeto de esta clase.
         
@@ -1254,21 +1326,108 @@ class GaloisMatrix:
                 Osciladores que forman la matriz. Se construye como una lista de objetos 'Dominio'.
                 Si solo pasamos un dominio de osciladores podemos pasar un objeto 'Dominio', en lugar
                 de una lista.
+                
+        kwargs:
+        -------
+            bel = 'A | B | C | D' | ['<>']
+                Lista de restriciones BEL que indican qué LUT concreta es ocupada dentro de la celda por cada
+                elemento del anillo. Cada elemento de la lista se aplica en orden correlativo al elemento
+                del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor,
+                etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán
+                LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT
+                que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, 
+                y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el
+                usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí
+                en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta
+                opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción
+                'bel' de la clase 'Lut'.
+                    
+            pin = 'I<>:A<>, I<>:A<>, ...' | [<>]
+                Lista de mapeos de los pines lógicos ("I") a los pines físicos ("A") de cada elemento del anillo.
+                Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (el primer mapeos
+                se aplica al AND inicial, el segundo al primer inversor, etc). Pueden darse menos mapeos que
+                inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser
+                coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo
+                LUT2 (i.e., solo se pueden fijar los pines 'I0' y 'I1').
+                
+            tipo_lut = 'LUT3'
+            
+            minsel = True
+        
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
             self.dominios[:]=dominios[:]
         else:
             self.dominios.append(dominios)
-        self.osc_coord = gen_osc_coord(self.dominios)
+            
         self.N_inv = N_inv
-        self.N_osc = len(self.osc_coord[0])
+            
+        self.bel = []
+        for i in range(N_inv+2):
+            self.bel.append('')
+        self.pin = []
+        for i in range(N_inv+1):
+            self.pin.append('')
+        self.tipo_lut = 'LUT3'
+        self.minsel = True
+        for kw in kwargs:
+            if kw=='bel':
+                if type(kwargs[kw]) == type([]):
+                    for i in range(len(kwargs[kw])):
+                        self.bel[i] = kwargs[kw][i]
+                else:
+                    self.bel[0] = kwargs[kw]
+            if kw=='pin':
+                if type(kwargs[kw]) == type([]):
+                    for i in range(len(kwargs[kw])):
+                        self.pin[i] = kwargs[kw][i]
+                else:
+                    self.pin[0] = kwargs[kw]
+            if kw=='tipo_lut':
+                self.tipo_lut = kwargs[kw]
+            if kw=='minsel':
+                self.minsel = kwargs[kw]
+            
+        self.osc_list = []
+        self.N_osc=0
+        for dominio in self.dominios:
+            for osc_coord in dominio.osc_coord:
+                self.osc_list.append(GaloisRing(f"ring{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.N_osc+=1
+                
+        self.N_bits_osc = clog2(self.N_osc)
+        self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
+        self.N_bits_resol = 5  
+        self.N_bits_fdiv = 5
+        if self.minsel:
+            if self.tipo_lut == "LUT3":
+                self.N_bits_pdl = 0
+            elif self.tipo_lut == "LUT4":
+                self.N_bits_pdl = 1
+            elif self.tipo_lut == "LUT5":
+                self.N_bits_pdl = 2
+            elif self.tipo_lut == "LUT6":
+                self.N_bits_pdl = 3
+            else:
+                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+        else:
+            if self.tipo_lut == "LUT3":
+                self.N_bits_pdl = 0
+            elif self.tipo_lut == "LUT4":
+                self.N_bits_pdl = self.N_inv
+            elif self.tipo_lut == "LUT5":
+                self.N_bits_pdl = 2*self.N_inv
+            elif self.tipo_lut == "LUT6":
+                self.N_bits_pdl = 3*self.N_inv
+            else:
+                print("ERROR: 'tipo_lut' introducido incorrecto\n")
         
     def help(self):
         """
         Esta función es un atajo para "help('fpga.oscmatrix.GAROMATRIX')"
         """
-        help('fpga.ring_osc.GaloisMatrix')
+        help('myfpga.ring_osc.GaloisMatrix')
         
     def save(self, file_name):
         """
@@ -1302,195 +1461,78 @@ class GaloisMatrix:
         función "implement()".
         """
         with open(out_name, "w") as f:
-            bel_ocupacion = ["BEL=\"A6LUT\"","BEL=\"B6LUT\"","BEL=\"C6LUT\"","BEL=\"D6LUT\""]
-            
-            pinmap_proc = []
-            intaux = 0
-            for i in range(len(self.pinmap)):
-                if self.pinmap[i]==';':
-                    saux = self.pinmap[intaux:i]
-                    intaux+=i+1
-                    if saux == "no":
-                        pinmap_proc.append(" ")
-                    else:
-                        pinmap_proc.append(f", LOCK_PINS=\"{saux}\" ")
-            for i in range(len(pinmap_proc),self.N_inv,1):
-                pinmap_proc.append(pinmap_proc[-1])
-                
             f.write(f"//N_osciladores de Galois: {self.N_osc}\n\n")
             
             f.write("module GAROMATRIX (\n")
-            f.write("   input clock,\n")
-            f.write("   input enable,\n")
-            f.write("   input clock_s,\n")
-            f.write(f"  input[{self.N_inv-2}:0] sel_poly,\n")
+            f.write("    input clock,\n")
+            f.write("    input clock_s,\n")
+            f.write(f"    input[{self.N_inv-2}:0] sel_poly,\n")
             
             if self.N_osc > 1:
-                f.write(f"  input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
+                f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
                 
-            if self.tipo_lut == "lut4":
+            if self.tipo_lut == "LUT4":
                 if not self.minsel:
-                    f.write(f"  input[{self.N_inv-1}:0] sel_pdl,\n")
+                    f.write(f"    input[{self.N_inv-1}:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[0:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut5":
+                    f.write(f"    input[0:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT5":
                 if not self.minsel:
-                    f.write(f"  input[{2*self.N_inv-1}:0] sel_pdl,\n")
+                    f.write(f"    input[{2*self.N_inv-1}:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[1:0] sel_pdl,\n")
-            elif self.tipo_lut == "lut6":
+                    f.write(f"    input[1:0] sel_pdl,\n")
+            elif self.tipo_lut == "LUT6":
                 if not self.minsel:
-                    f.write(f"  input[{3*self.N_inv-1}:0] sel_pdl,\n")
+                    f.write(f"    input[{3*self.N_inv-1}:0] sel_pdl,\n")
                 else:
-                    f.write(f"  input[2:0] sel_pdl,\n")
+                    f.write(f"    input[2:0] sel_pdl,\n")
                     
-            f.write("   output out\n")
-            f.write("   );\n\n")
-            f.write(f"  wire[{self.N_osc-1}:0] out_ro;\n")
-            f.write(f"  wire[{self.N_osc-1}:0] out_ro_sampled;\n")
-            f.write("   (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
-            f.write(f"  wire[{self.N_inv-1}:0]\n")
-            
-            for i in range(1, self.N_osc, 1):
-                f.write(f"      w_{i-1},\n")
-            f.write(f"      w_{self.N_osc-1};\n")
-            f.write("\n")
+            f.write("    output reg out\n")
+            f.write("    );\n\n")
 
-            if self.N_osc>1:
-                f.write("   assign out = enable? out_ro_sampled[sel_ro] : clock;\n")
+            f.write("    wire\n")
+            for i in range(self.N_osc-1):
+                f.write(f"    ring{i}_out, ring{i}_out_sampled,\n")
+            f.write(f"    ring{self.N_osc-1}_out, ring{self.N_osc-1}_out_sampled;\n\n")
+            
+            f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
+            f.write("    wire\n")
+            for i in range(self.N_osc-1):
+                f.write("    ")
+                for j in range(self.N_inv-1):
+                    f.write(f"ring{i}_w{j}, ")
+                f.write(f"ring{i}_w{self.N_inv-1},\n")
+            f.write("    ")
+            for j in range(self.N_inv-1):
+                f.write(f"ring{self.N_osc-1}_w{j}, ")
+            f.write(f"ring{self.N_osc-1}_w{self.N_inv-1};\n\n")
+            
+            if self.N_osc > 1:
+                f.write("    always @(*) begin\n")
+                f.write("        case(sel_ro)\n")
+                for i in range(self.N_osc):
+                    f.write(f"            {i}: out = ring{i}_out_sampled;\n")
+                f.write("        endcase\n")
+                f.write("    end\n\n")
             else:
-                f.write("   assign out = enable? out_ro_sampled[0] : clock;\n")
-            f.write("\n\n")
+                f.write("    always @(*) begin\n")
+                f.write(f"        out = ring{0}_out_sampled;\n")
+                f.write("    end\n\n")
             
-            if self.tipo_lut == "lut3":
-                for i in range(self.N_osc):
-                    celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                    f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[0]}*) LUT3 #(8'h95) inv_{i}_0(.O(w_{i}[{0}]), .I0(w_{i}[{self.N_inv-1}]), .I1(1'b0), .I2(1'b0));\n")
-                    
-                    aux=1
-                    ocupacion_celda=1
-                    while True:
-                        if ocupacion_celda==4:
-                            if celda[0]%2 == 0:
-                                celda[0]+=1
-                            else:
-                                celda[1]+=1
-                            ocupacion_celda=0
-                        if aux == self.N_inv:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{self.N_inv-1}]));\n") # INV final
-                            f.write(f"  (* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-                            
-                            ocupacion_celda+=1
-                            
-                            break
-                            
-                        f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT3 #(8'h95) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]));\n")
-                        
-                        ocupacion_celda+=1
-                        aux+=1
-                    f.write("\n")
-
-            elif self.tipo_lut == "lut4":
-                for i in range(self.N_osc):
-                    celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                    f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[0]}*) LUT4 #(16'h9595) inv_{i}_{0}(.O(w_{i}[{0}]), .I0(w_{i}[{self.N_inv-1}]), .I1(1'b0), .I2(1'b0), .I3(sel_pdl[0]));\n")
-                    
-                    contador=1
-                    aux=1
-                    ocupacion_celda=1
-                    while True:
-                        if ocupacion_celda==4:
-                            if celda[0]%2 == 0:
-                                celda[0]+=1
-                            else:
-                                celda[1]+=1
-                            ocupacion_celda=0
-                        if aux == self.N_inv:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{self.N_inv-1}]));\n") # INV final
-                            f.write(f"  (* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-                            
-                            ocupacion_celda+=1
-                            
-                            break
-                                
-                        if not self.minsel:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h9595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[{contador}]));\n")
-                        else:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT4 #(16'h9595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[0]));\n")
-                                
-                        contador+=1
-                        ocupacion_celda+=1
-                        aux+=1
-                    f.write("\n")
-
-            elif self.tipo_lut == "lut5":
-                for i in range(self.N_osc):
-                    celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                    f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[0]}*) LUT5 #(32'h95959595) inv_{i}_{0}(.O(w_{i}[{0}]), .I0(w_{i}[{self.N_inv-1}]), .I1(1'b0), .I2(1'b0), .I3(sel_pdl[0]), .I4(sel_pdl[1]));\n")
-                    
-                    contador=2
-                    aux=1
-                    ocupacion_celda=1
-                    while True:
-                        if ocupacion_celda==4:
-                            if celda[0]%2 == 0:
-                                celda[0]+=1
-                            else:
-                                celda[1]+=1
-                            ocupacion_celda=0
-                        if aux == self.N_inv:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{self.N_inv-1}]));\n") # INV final
-                            f.write(f"  (* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-                            
-                            ocupacion_celda+=1
-                            
-                            break
-                            
-                        if not self.minsel:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h95959595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[{contador}]), .I4(sel_pdl[{contador+1}]));\n")
-                        else:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT5 #(32'h95959595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[0]), .I4(sel_pdl[1]));\n")
-                            
-                        contador+=2
-                        ocupacion_celda+=1
-                        aux+=1
-                    f.write("\n")
-
-            elif self.tipo_lut == "lut6":
-                for i in range(self.N_osc):
-                    celda=[self.osc_coord[0][i],self.osc_coord[1][i]]
-                    f.write(f"  (* {bel_ocupacion[0]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[0]}*) LUT6 #(64'h9595959595959595) inv_{i}_{0}(.O(w_{i}[{0}]), .I0(w_{i}[{self.N_inv-1}]), .I1(1'b0), .I2(1'b0), .I3(sel_pdl[0]), .I4(sel_pdl[1]), .I5(sel_pdl[2]));\n")
-                    
-                    contador=3
-                    aux=1
-                    ocupacion_celda=1
-                    while True:
-                        if ocupacion_celda==4:
-                            if celda[0]%2 == 0:
-                                celda[0]+=1
-                            else:
-                                celda[1]+=1
-                            ocupacion_celda=0
-                        if aux == self.N_inv:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) LUT1 #(2'b01) invout_{i}(.O(out_ro[{i}]), .I0(w_{i}[{self.N_inv-1}]));\n") # INV final
-                            f.write(f"  (* BEL=\"DFF\", LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\" *) FDCE ff_{i}(.Q(out_ro_sampled[{i}]), .C(clock_s), .CE(1'b1), .CLR(1'b0), .D(out_ro[{i}]));\n\n")
-                            
-                            ocupacion_celda+=1
-                            
-                            break
-                            
-                        if not self.minsel:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h9595959595959595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[{contador}]), .I4(sel_pdl[{contador+1}]), .I5(sel_pdl[{contador+2}]));\n")
-                        else:
-                            f.write(f"  (* {bel_ocupacion[ocupacion_celda]}, LOC=\"SLICE_X{celda[0]}Y{celda[1]}\", DONT_TOUCH=\"true\"{pinmap_proc[aux]}*) LUT6 #(64'h9595959595959595) inv_{i}_{aux}(.O(w_{i}[{aux}]), .I0(w_{i}[{aux-1}]), .I1(w_{i}[{self.N_inv-1}]), .I2(sel_poly[{aux-1}]), .I3(sel_pdl[0]), .I4(sel_pdl[1]), .I5(sel_pdl[2]));\n")
-                            
-                        contador+=3
-                        ocupacion_celda+=1
-                        aux+=1
-                    f.write("\n")
-                    
+            for i in range(self.N_osc):
+                f.write("    assign {")
+                for j in range(self.N_bits_poly-1):
+                    f.write(f"ring{i}_poly{self.N_bits_poly-1-j}, ")
+                f.write(f"ring{i}_poly{0}")
+                f.write("} = sel_poly;\n")
+            f.write("\n")
+            
+            for osc in self.osc_list:
+                for lut in osc.luts:
+                    f.write(f"    {lut.impl()}\n")
+                f.write("\n")
             f.write("endmodule\n")
-        
+            
     def implement(self, projname="project_garomatrix", projdir="./", njobs=4, linux=False, files=True, **kwargs):
         """
         Esta función copia/crea en el directorio 'projdir' todos los archivos necesarios para implementar una matriz
@@ -1532,44 +1574,12 @@ class GaloisMatrix:
                 síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable
                 comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
                 
-            tipo_lut = 'lut3' | 'lut4' | 'lut5' | 'lut6'
-                Esta opción especifica el tipo de LUT que utilizar (y con ello el número de posibles PDL).
-                
-            pinmap = 'no;'
-                Esta opción permite cambiar la asignación de puertos de cada LUT que componen los anillos. Esta opción debe darse
-                entre conmillas, y las asignaciones de cada inveror separadas por punto y coma ';'. por otro lado, cada
-                asignación debe hacerse respetando el lenguaje XDC: 'I0:Ax,I1:Ay,I2:Az,...'. Si se dan menos asignaciones que
-                inversores componen cada anillo, los inversores restantes se fijarán igual que el último inversor especificado. 
-                Alternativamente, puede darse como asignación la palabra 'no', en cuyo caso el correspondiente inversor se dejará
-                sin fijar (a elección del software de diseño). Recordar que el numero de entradas 'Ix' depende del tipo de LUT 
-                utilizado. La nomenclatura de los pines de cada LUT es A1,A2,A3,A4,A5,A6. El puerto 'I0' corresponde al
-                propagador de las oscilaciones. El resto de puertos ('I1' a 'I5') se utilizan o no en función del tipo de LUT 
-                (ver opción "tipo_lut"). Algunos ejemplos son:
-
-                pinmap = 'no;'
-                    Esta es la opción por defecto, y deja que el software elija qué pines utilizar para cada inversor.
-                    
-                pinmap = 'I0:A5;I0:A6;I0:A4'
-                    Con esta opción fijamos el pin propagador de la oscilación para tres inversores. Este iseño corresponde 
-                    al ruteado más compacto en una fpga Zynq7000.
-                
-                pinmap = 'I0:A5;no;I0:A4'
-                    Parecido al anterior, pero ahora no fijamos el segundo inversor.
-                
-                pinmap = 'I0:A1,I1:A2,I2:A3,I3:A4,I5:A6'
-                    Fijamos todos los inversores igual, utilizando el puerto A1 para propagar la señal y el resto para la 
-                    selección de PDL (en una lut tipo LUT6).
-                
-            minsel = False
-                Si esta opción está presente se realizará una selección mínima (únicamente 5 bits), que comparten todos
-                los inversores de cada oscilador. (NOTA: por ahora solo esta implementada en tipo=lut6).
-
             pblock =  False
                 Si esta opción está presente, el script añade una restricción PBLOCK para el módulo TOP (i.e., todos los
                 elementos auxiliares de la matriz de osciladores se colocarán dentro de este espacio). Esta opción debe ir
                 acompañada de dos puntos que representan respectivamente las esquinas inferior izda. y superior dcha. del
                 rectángulo de restricción, separados por un espacio:
-
+                
                     'X0,Y0 X1,Y1'
                     
                 El diseñador es responsable de que la fpga utilizada disponga de recursos suficientes en el bloque descrito.
@@ -1584,9 +1594,6 @@ class GaloisMatrix:
         self.board = 'pynqz2'
         self.qspi = False
         self.detail_routing = False
-        self.tipo_lut = 'lut3'
-        self.pinmap = 'no;'
-        self.minsel = False
         self.pblock = False
         self.data_width = 32
         self.buffer_out_width = 32
@@ -1597,24 +1604,13 @@ class GaloisMatrix:
                 self.qspi = kwargs[kw]
             if kw=='detail_routing' or kw=='dr':
                 self.detail_routing = kwargs[kw]
-            if kw=='tipo_lut' or kw=='tl':
-                self.tipo_lut = kwargs[kw]
-            if kw=='pinmap':
-                self.pinmap = kwargs[kw]
-            if kw=='minsel':
-                self.minsel = kwargs[kw]
             if kw=='pblock':
                 self.pblock = kwargs[kw]
             if kw=='data_width' or kw=='dw':
                 self.data_width = kwargs[kw]  
             if kw=='buffer_out_width' or kw=='bow':
                 self.buffer_out_width = kwargs[kw]
-                
-        self.N_bits_osc = clog2(self.N_osc)
-        self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
-        self.N_bits_resol = 5  
-        self.N_bits_fdiv = 5
-        
+
         if self.board=='cmoda7_15t':
             self.fpga_part="xc7a15tcpg236-1"
             self.board_part="digilentinc.com:cmod_a7-15t:part0:1.1"
@@ -1635,30 +1631,7 @@ class GaloisMatrix:
             self.board_part="tul.com.tw:pynq-z2:part0:1.0"
             self.memory_part="?"
             self.clk_name = "/processing_system7_0/FCLK_CLK0 (100 MHz)"
-        
-        if self.minsel:
-            if self.tipo_lut == "lut3":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "lut4":
-                self.N_bits_pdl = 1
-            elif self.tipo_lut == "lut5":
-                self.N_bits_pdl = 2
-            elif self.tipo_lut == "lut6":
-                self.N_bits_pdl = 3
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
-        else:
-            if self.tipo_lut == "lut3":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "lut4":
-                self.N_bits_pdl = self.N_inv
-            elif self.tipo_lut == "lut5":
-                self.N_bits_pdl = 2*self.N_inv
-            elif self.tipo_lut == "lut6":
-                self.N_bits_pdl = 3*self.N_inv
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
-                
+            
         self.buffer_in_width = self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly+self.N_bits_resol+self.N_bits_fdiv
         
         if files:
@@ -1898,18 +1871,10 @@ open_run synth_1 -name synth_1
 startgroup
             """)
                     for i in range(self.N_osc):
-                        f.write(f"""
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0]
-set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_0 }}]
-set_property is_bel_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_{i} }}]
-set_property is_loc_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_0 design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/AND_{i} }}]
-            """)
-                        for j in range(1,self.N_inv,1):
+                        for j in range(self.N_inv):
                             f.write(f"""
-route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_{j}]
-set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/w_{i}_{j} }}]
-set_property is_bel_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_{j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_${j-1} }}]
-set_property is_loc_fixed 1 [get_cells {{design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_{j} design_1_i/TOP_0/inst/romatrix_interfaz_pl_frontend/romatrix/inv_{i}_${j-1} }}]
+route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/ring{i}_w{j}]
+set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/ring{i}_w{j} }}]
             """) 
                     f.write(f"""
 endgroup
@@ -1983,7 +1948,7 @@ source {projdir}/partial_flows/launchsdk.tcl
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if self.tipo_lut == "lut3":
+                if self.tipo_lut == "LUT3":
                     aux1=""
                 else:
                     aux1=f".sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),"
@@ -2041,7 +2006,6 @@ module TOP (
     
     GAROMATRIX garomatrix (
         .clock(clock),
-        .enable(1'b1),
         .clock_s(clock_s),
         .sel_poly(buffer_in[{self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly-1}:{self.N_bits_osc+self.N_bits_pdl}]),
         {aux}
@@ -2269,6 +2233,7 @@ Número de pdl_list     = {N_pdl}
         if verbose:
             pinta_progreso.close()
         fpga.close()
-        tensor_medidas = TENSOR(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+        
+        tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         
         return tensor_medidas
