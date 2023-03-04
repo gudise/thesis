@@ -501,7 +501,7 @@ class StdMatrix:
             
         self.N_inv = N_inv
             
-        self.bel = ['' for i in range(N_inv+2)]
+        self.bel = ['' for i in range(N_inv+1)]
         if type(bel)==type([]):
             for i in range(len(bel)):
                 self.bel[i] = bel[i]
