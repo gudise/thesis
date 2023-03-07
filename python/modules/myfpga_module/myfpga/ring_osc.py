@@ -19,7 +19,9 @@ from mytensor               import  *
         
         
 def clog2(N):
-    """Numero de bits necesarios para especificar 'N' estados."""
+    """
+    Numero de bits necesarios para especificar 'N' estados.
+    """
     if N<=0:
         return 1
     else:
@@ -45,6 +47,10 @@ class StdRing():
     Lista de elementos (LUT) que constituyen un oscilador de anillo
     estándar junto con la información necesaria para su implementación
     en FPGA utilzando el software 'Vivado'.
+    
+    Un anillo 'StdRing' consta de N_inv+1 elementos:
+        . LUT tipo LUT2 (puerta AND).
+        . N_inv elementos tipo 'tipo_lut' (inversores).
     """
     def __init__(self, name, N_inv, loc, tipo_lut='LUT1', bel='', pin='', 
                  minsel=True):
@@ -191,7 +197,9 @@ class StdRing():
             self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
     def help(self):
-        """ Ayuda de la clase 'StdRing'. """
+        """
+        Ayuda de la clase 'StdRing'.
+        """
         help('myfpga.ring_osc.StdRing')
             
             
@@ -200,6 +208,12 @@ class GaloisRing():
     Lista de elementos (LUT) que constituyen un oscilador de anillo
     de Galois junto con la información necesaria para su implementación
     en FPGA utilzando el software 'Vivado'.
+    
+    Un anillo 'GaloisRing' consta de N_inv+2 elementos:
+        . LUT tipo LUT1 (inversor inicial).
+        . N_inv-1 elementos tipo 'tipo_lut' (inversores/XNOR).
+        . LUT tipo LUT1 (inversor de salida).
+        . flip-flop de muestreo.
     """
     def __init__(self, name, N_inv, loc, tipo_lut='LUT3', bel='', pin='', 
                  minsel=True):
@@ -375,7 +389,9 @@ class GaloisRing():
         self.elements.append(FlipFlop(name+f"_ff{i}", self.loc[N_inv], name+f"_out_sampled", 'clock_s', name+"_out", self.bel[N_inv+1]))
         
     def help(self):
-        """ Ayuda de la clase 'GaloisRing'. """
+        """
+        Ayuda de la clase 'GaloisRing'.
+        """
         help('myfpga.ring_osc.GaloisRing')
         
         
@@ -451,7 +467,9 @@ class Dominio:
                 x+=self.dx
                 
     def help(self):
-        """ Ayuda de la clase 'Dominio'. """
+        """
+        Ayuda de la clase 'Dominio'.
+        """
         help('myfpga.ring_osc.Dominio')
         
         
@@ -559,11 +577,15 @@ class StdMatrix:
                 print("ERROR: 'tipo_lut' introducido incorrecto\n")
                 
     def help(self):
-        """ Ayuda de la clase 'StdMatrix'."""
+        """
+        Ayuda de la clase 'StdMatrix'.
+        """
         help('myfpga.ring_osc.StdMatrix')
         
     def save(self, file_name):
-        """'Wrapper' para guardar objetos serializados con el módulo 'pickle'."""
+        """
+        'Wrapper' para guardar objetos serializados con el módulo 'pickle'.
+        """
         with open(file_name, "wb") as f:
             pickle_dump(self, f)
         
@@ -734,17 +756,16 @@ class StdMatrix:
                 pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
                 que esta opción sea del todo compatible con -qspi).
                 
-            pblock : <bool o string>
-                Si "True", el script añade una restricción PBLOCK para el módulo
-                TOP (i.e., todos los elementos auxiliares de la matriz de 
-                osciladores se colocarán dentro de este espacio). El formato de
-                esta opción es un string que consta de dos puntos separados por
-                un espacio, donde cada punto está dado por un par de coordenadas
-                X,Y separadas por una coma; estos  representan respectivamente
-                las esquinas inferior izda. y superior dcha. del rectángulo de 
-                restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable de que 
-                la FPGA utilizada disponga de recursos suficientes en el bloque
-                descrito.
+            pblock : <string>
+                Se añade una restricción PBLOCK para el módulo TOP (i.e., todos los
+                elementos auxiliares de la matriz de osciladores se colocarán 
+                dentro de este espacio). El formato de esta opción es un string que
+                consta de dos puntos separados por un espacio, donde cada punto 
+                está dado por un par de coordenadas X,Y separadas por una coma; 
+                estos  representan respectivamente las esquinas inferior izda. y 
+                superior dcha. del rectángulo de restricción: 'X0,Y0 X1,Y1'. El 
+                diseñador es responsable de que la FPGA utilizada disponga de 
+                recursos suficientes en el bloque descrito.
 
             data_width(dw) : <int>
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
@@ -877,9 +898,7 @@ class StdMatrix:
                 f.write(f"add_files -norecurse {{ {vivado_files} }}\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
-                #f.write(f"startgroup\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
-                #f.write(f"endgroup\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/data_in] [get_bd_pins axi_gpio_data/gpio2_io_o]\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/data_out] [get_bd_pins axi_gpio_data/gpio_io_i]\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/ctrl_in] [get_bd_pins axi_gpio_ctrl/gpio2_io_o]\n")
@@ -925,11 +944,9 @@ class StdMatrix:
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
-                    #f.write(f"startgroup\n")
                     f.write(f"set_property BITSTREAM.CONFIG.CONFIGRATE 6 [get_designs synth_1]\n")
                     f.write(f"set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [get_designs synth_1]\n")
                     f.write(f"set_property config_mode SPIx4 [current_design]\n")
-                    #f.write(f"endgroup\n")
                     f.write(f"save_constraints\n")
                     f.write(f"close_design\n")
 
@@ -943,24 +960,20 @@ class StdMatrix:
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
-                    #f.write(f"startgroup\n")
                     f.write(f"set_property BITSTREAM.CONFIG.CONFIGRATE 6 [get_designs synth_1]\n")
                     f.write(f"set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [get_designs synth_1]\n")
                     f.write(f"set_property config_mode SPIx4 [current_design]\n")
-                    #f.write(f"endgroup\n")
                     f.write(f"save_constraints\n")
                     f.write(f"close_design\n\n")
 
                 if self.routing:
                     f.write(f"open_run synth_1 -name synth_1\n\n")
 
-                    #f.write(f"startgroup\n")
                     for i in range(self.N_osc):
                         for j in range(self.N_inv):
                             f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix/ring{i}_w{j}]\n")
                             f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix/ring{i}_w{j} }}]\n\n")
 
-                    #f.write(f"endgroup\n")
                     f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
                     f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc w ]\n")
                     f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
@@ -1274,7 +1287,7 @@ class GaloisMatrix:
             for i in range(len(bel)):
                 self.bel[i] = bel[i]
         else:
-            bel[0] = bel
+            self.bel[0] = bel
         
         self.pin = ['' for i in range(N_inv+1)]
         if type(pin)==type([]):
@@ -1320,11 +1333,15 @@ class GaloisMatrix:
                 print("ERROR: 'tipo_lut' introducido incorrecto\n")
         
     def help(self):
-        """ Ayuda de la clase 'GaloisMatrix'."""
+        """ 
+        Ayuda de la clase 'GaloisMatrix'.
+        """
         help('myfpga.ring_osc.GaloisMatrix')
         
     def save(self, file_name):
-        """'Wrapper' para guardar objetos serializados con el módulo 'pickle'."""
+        """
+        'Wrapper' para guardar objetos serializados con el módulo 'pickle'.
+        """
         with open(file_name, "wb") as f:
             pickle_dump(self, f)
         
@@ -1466,16 +1483,15 @@ class GaloisMatrix:
                 que esta opción sea del todo compatible con -qspi).
                 
             pblock : <string>
-                Si "True", el script añade una restricción PBLOCK para el módulo
-                TOP (i.e., todos los elementos auxiliares de la matriz de 
-                osciladores se colocarán dentro de este espacio). El formato de
-                esta opción es un string que consta de dos puntos separados por
-                un espacio, donde cada punto está dado por un par de coordenadas
-                X,Y separadas por una coma; estos  representan respectivamente
-                las esquinas inferior izda. y superior dcha. del rectángulo de 
-                restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable de que 
-                la FPGA utilizada disponga de recursos suficientes en el bloque
-                descrito.
+                Se añade una restricción PBLOCK para el módulo TOP (i.e., todos los
+                elementos auxiliares de la matriz de osciladores se colocarán 
+                dentro de este espacio). El formato de esta opción es un string que
+                consta de dos puntos separados por un espacio, donde cada punto 
+                está dado por un par de coordenadas X,Y separadas por una coma; 
+                estos  representan respectivamente las esquinas inferior izda. y 
+                superior dcha. del rectángulo de restricción: 'X0,Y0 X1,Y1'. El 
+                diseñador es responsable de que la FPGA utilizada disponga de 
+                recursos suficientes en el bloque descrito.
 
             data_width : <int>
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
@@ -1607,9 +1623,7 @@ class GaloisMatrix:
                 f.write(f"add_files -norecurse {{ {vivado_files} }}\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
-                #f.write(f"startgroup\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
-                #f.write(f"endgroup\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/data_in] [get_bd_pins axi_gpio_data/gpio2_io_o]\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/data_out] [get_bd_pins axi_gpio_data/gpio_io_i]\n")
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/ctrl_in] [get_bd_pins axi_gpio_ctrl/gpio2_io_o]\n")
@@ -1652,11 +1666,9 @@ class GaloisMatrix:
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
-                    #f.write(f"startgroup\n")
                     f.write(f"set_property BITSTREAM.CONFIG.CONFIGRATE 6 [get_designs synth_1]\n")
                     f.write(f"set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [get_designs synth_1]\n")
                     f.write(f"set_property config_mode SPIx4 [current_design]\n")
-                    #f.write(f"endgroup\n")
                     f.write(f"save_constraints\n")
                     f.write(f"close_design\n")
                     
@@ -1670,17 +1682,14 @@ class GaloisMatrix:
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
-                    #f.write(f"startgroup\n")
                     f.write(f"set_property BITSTREAM.CONFIG.CONFIGRATE 6 [get_designs synth_1]\n")
                     f.write(f"set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [get_designs synth_1]\n")
                     f.write(f"set_property config_mode SPIx4 [current_design]\n")
-                    #f.write(f"endgroup\n")
                     f.write(f"save_constraints\n")
                     f.write(f"close_design\n")
                     
                 if self.routing:
                     f.write(f"open_run synth_1 -name synth_1\n\n")
-                    #f.write(f"startgroup\n\n")
                     
                     for i in range(self.N_osc):
                         for j in range(self.N_inv):
@@ -1690,7 +1699,6 @@ class GaloisMatrix:
                         f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/ring{i}_out]\n")
                         f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/ring{i}_out }}]\n\n")
                         
-                    #f.write(f"endgroup\n")
                     f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
                     f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc w ]\n")
                     f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
