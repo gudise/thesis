@@ -9,7 +9,9 @@ printf " fpga-package-upgrade.sh
 fi
 
 cd $REPO_fpga/python/modules/myfpga_module
-rm -r dist
 python3 setup.py sdist
 cd dist/
 pip install *
+
+rm -r $REPO_fpga/python/modules/myfpga_module/dist
+rm -r $REPO_fpga/python/modules/myfpga_module/myfpga.egg-info

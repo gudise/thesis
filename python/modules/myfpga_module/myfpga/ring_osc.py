@@ -698,7 +698,7 @@ class StdMatrix:
                     f.write(f"    CLOCK_DIVIDER cd_{i} (\n")
                     f.write("        .clock_in(clock),\n")
                     f.write(f"        .fdiv({i}),\n")
-                    f.write(f"        .clock_out(out_ro[{i}])\n")
+                    f.write(f"        .clock_out(ring{i}_out)\n")
                     f.write("    );\n")
                     f.write("\n")
                 f.write("endmodule\n")
