@@ -155,46 +155,46 @@ class StdRing():
         else:
             self.pin[0] = pin
         
-        self.elements = [Lut(name+'_AND', 'LUT2', "4'b1000", self.loc[0], name+'_w0', [name+'_enable', name+'_out'], self.bel[0], self.pin[0])]
+        self.elements = [Lut(f"AND_{name}", 'LUT2', "4'b1000", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
         for i in range(N_inv):
             if tipo_lut=='LUT1':
                 init = "2'b01"
-                w_in = [name+f"_w{i}"]
+                w_in = [f"w_{name}[{i}]"]
             elif tipo_lut=='LUT2':
                 init = "4'h5"
                 if minsel:
-                    w_in = [name+f"_w{i}", name+f"_pdl{0}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]"]
                 else:
-                    w_in = [name+f"_w{i}", name+f"_pdl{i}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{i}]"]
             elif tipo_lut=='LUT3':
                 init = "8'h55"
                 if minsel:
-                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]"]
                 else:
-                    w_in = [name+f"_w{i}", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
             elif tipo_lut=='LUT4':
                 init = "16'h5555"
                 if minsel:
-                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]"]
                 else:
-                    w_in = [name+f"_w{i}", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
             elif tipo_lut=='LUT5':
                 init = "32'h55555555"
                 if minsel:
-                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}", name+f"_pdl{3}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]"]
                 else:
-                    w_in = [name+f"_w{i}", name+f"_pdl{4*i}", name+f"_pdl{4*i+1}", name+f"_pdl{4*i+2}", name+f"_pdl{4*i+3}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{4*i}]", f"sel_pdl[{4*i+1}]", f"sel_pdl[{4*i+2}]", f"sel_pdl[{4*i+3}]"]
             elif tipo_lut=='LUT6':
                 init = "64'h5555555555555555"
                 if minsel:
-                    w_in = [name+f"_w{i}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}", name+f"_pdl{3}", name+f"_pdl{4}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
                 else:
-                    w_in = [name+f"_w{i}", name+f"_pdl{5*i}", name+f"_pdl{5*i+1}", name+f"_pdl{5*i+2}", name+f"_pdl{5*i+3}", name+f"_pdl{5*i+4}"]
+                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{5*i}]", f"sel_pdl[{5*i+1}]", f"sel_pdl[{5*i+2}]", f"sel_pdl[{5*i+3}]", f"sel_pdl[{5*i+4}]"]
             if i==N_inv-1:
-                w_out = name+'_out'
+                w_out = f"out_ro[{name}]"
             else:
-                w_out = name+f"_w{i+1}"
-            self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
+                w_out = f"w_{name}[{i+1}]"
+            self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
     def help(self):
         """
@@ -319,74 +319,74 @@ class GaloisRing():
         
         self.elements = []
         for i in range(N_inv):
-            w_out = name+f"_w{i}"
+            w_out = f"w_{name}[{i}]"
             
             if tipo_lut=='LUT3':
                 if i==0:
                     init = "2'b01"
-                    w_in = [name+f"_w{N_inv-1}"]
-                    self.elements.append(Lut(name+f"_inv{i}", 'LUT1', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    w_in = [f"w_{name}[{N_inv-1}]"]
+                    self.elements.append(Lut(f"inv_{name}_{i}", 'LUT1', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
                     init = "8'h95"
-                    w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}"]
-                    self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
+                    self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
             elif tipo_lut=='LUT4':
                 if minsel:
                     if i==0:
                         init = "4'h5"
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{0}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "16'h9595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
                     if i==0:
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{i}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{i}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "16'h9595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{i}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{i}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
             elif tipo_lut=='LUT5':
                 if minsel:
                     if i==0:
                         init = "8'h55"
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{0}", name+f"_pdl{1}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "32'h95959595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}", name+f"_pdl{1}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
                     if i==0:
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "32'h95959595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{2*i}", name+f"_pdl{2*i+1}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
             elif tipo_lut=='LUT6':
                 if minsel:
                     if i==0:
                         init = "16'h5555"
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "64'h9595959595959595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{0}", name+f"_pdl{1}", name+f"_pdl{2}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
                     if i==0:
-                        w_in = [name+f"_w{N_inv-1}", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
-                        self.elements.append(Lut(name+f"_inv{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                     else:
                         init = "64'h9595959595959595"
-                        w_in = [name+f"_w{i-1}", name+f"_w{N_inv-1}", name+f"_poly{i-1}", name+f"_pdl{3*i}", name+f"_pdl{3*i+1}", name+f"_pdl{3*i+2}"]
-                        self.elements.append(Lut(name+f"_inv{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-
-        self.elements.append(Lut(name+f"_invout", 'LUT1', "2'b01", self.loc[N_inv], name+"_out", w_out, self.bel[N_inv], self.pin[N_inv]))    
-        self.elements.append(FlipFlop(name+f"_ff{i}", self.loc[N_inv], name+f"_out_sampled", 'clock_s', name+"_out", self.bel[N_inv+1]))
+                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
+                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        
+        self.elements.append(Lut(f"invout_{name}", 'LUT1', "2'b01", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
+        self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
         
     def help(self):
         """
@@ -540,7 +540,7 @@ class StdMatrix:
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(StdRing(f"ring{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
@@ -643,49 +643,22 @@ class StdMatrix:
                 else:
                     f.write(f"    input[{5*self.N_inv-1}:0] sel_pdl,\n")
             
-            f.write("    output reg out\n")
+            f.write("    output out\n")
             f.write("    );\n\n")
             
             f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
-            f.write("    wire\n")
-            for i in range(self.N_osc-1):
-                f.write(f"    ring{i}_out,\n")
-            f.write(f"    ring{self.N_osc-1}_out;\n\n")
-            
-            f.write("    reg\n")
-            for i in range(self.N_osc-1):
-                f.write(f"    ring{i}_enable,\n")
-            f.write(f"    ring{self.N_osc-1}_enable;\n\n")
-            
-            f.write("    wire\n")
-            for i in range(self.N_osc-1):
-                f.write("    ")
-                for j in range(self.N_inv-1):
-                    f.write(f"ring{i}_w{j}, ")
-                f.write(f"ring{i}_w{self.N_inv-1},\n")
-            f.write("    ")
-            for j in range(self.N_inv-1):
-                f.write(f"ring{self.N_osc-1}_w{j}, ")
-            f.write(f"ring{self.N_osc-1}_w{self.N_inv-1};\n\n")
-            
-            if self.N_osc > 1:
-                f.write("    always @(*) begin\n")
-                f.write("        case(sel_ro)\n")
-                for i in range(self.N_osc):
-                    f.write(f"            {i}: begin\n")
-                    f.write(f"                out = ring{i}_out;\n")
-                    f.write(f"                if(enable) ring{i}_enable = 1;\n")
-                    f.write(f"                else ring{i}_enable = 0;\n")
-                    f.write(f"            end\n")
-                f.write("        endcase\n")
-                f.write("    end\n\n")
+            f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")        
+            f.write(f"    wire[{self.N_osc-1}:0] enable_ro;\n")            
+            for i in range(self.N_osc):
+                f.write(f"    wire[{self.N_inv-1}:0] w_{i};\n")
+            f.write("\n")
+            if self.N_osc>1:
+                f.write("    assign out = enable? out_ro[sel_ro]:clock;\n")
+                f.write(f"    assign enable_ro = enable? ({self.N_osc}'b1<<sel_ro):{self.N_osc}'b0 ;\n\n")
             else:
-                f.write("    always @(*) begin\n")
-                f.write(f"        out = ring{0}_out;\n")
-                f.write(f"        if(enable) ring{0}_enable = 1;\n")
-                f.write(f"        else ring{0}_enable = 0;\n")
-                f.write("    end\n\n")
-
+                f.write("    assign out = enable? out_ro[0]:clock;\n")
+                f.write(f"    assign enable_ro = enable? 1:0;;\n\n")
+            
             if not debug:
                 for osc in self.osc_list:
                     for lut in osc.elements:
@@ -1047,8 +1020,7 @@ class StdMatrix:
                 f.write(f"    always @(posedge clock) begin\n")
                 f.write(f"        case ({{sync,ack}})\n")
                 f.write(f"            2'b10:\n")
-                f.write(f"                enable_medidor <= 1;\n\n")
-                
+                f.write(f"                enable_medidor <= 1;\n")
                 f.write(f"            default:\n")
                 f.write(f"                enable_medidor <= 0;\n")
                 f.write(f"        endcase\n")
@@ -1072,7 +1044,7 @@ class StdMatrix:
                 
                 f.write(f"    ROMATRIX romatrix (\n")
                 f.write(f"        .clock(clock),\n")
-                f.write(f"        .enable(1'b1),\n")
+                f.write(f"        .enable(enable_medidor),\n")
                 f.write(f"        {aux}\n")
                 f.write(f"        {aux1}\n")
                 f.write(f"        .out(out_ro)\n")
@@ -1304,7 +1276,7 @@ class GaloisMatrix:
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"ring{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
@@ -1385,45 +1357,19 @@ class GaloisMatrix:
                 else:
                     f.write(f"    input[2:0] sel_pdl,\n")
                     
-            f.write("    output reg out\n")
+            f.write("    output out\n")
             f.write("    );\n\n")
             
-            f.write("    wire\n")
-            for i in range(self.N_osc-1):
-                f.write(f"    ring{i}_out, ring{i}_out_sampled,\n")
-            f.write(f"    ring{self.N_osc-1}_out, ring{self.N_osc-1}_out_sampled;\n\n")
-            
-            f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
-            f.write("    wire\n")
-            for i in range(self.N_osc-1):
-                f.write("    ")
-                for j in range(self.N_inv-1):
-                    f.write(f"ring{i}_w{j}, ")
-                f.write(f"ring{i}_w{self.N_inv-1},\n")
-            f.write("    ")
-            for j in range(self.N_inv-1):
-                f.write(f"ring{self.N_osc-1}_w{j}, ")
-            f.write(f"ring{self.N_osc-1}_w{self.N_inv-1};\n\n")
-            
-            if self.N_osc > 1:
-                f.write("    always @(*) begin\n")
-                f.write("        case(sel_ro)\n")
-                for i in range(self.N_osc):
-                    f.write(f"            {i}: out = ring{i}_out_sampled;\n")
-                f.write("        endcase\n")
-                f.write("    end\n\n")
-            else:
-                f.write("    always @(*) begin\n")
-                f.write(f"        out = ring{0}_out_sampled;\n")
-                f.write("    end\n\n")
+            f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")
+            f.write(f"    wire[{self.N_osc-1}:0] out_sampled;\n\n")
             
             for i in range(self.N_osc):
-                f.write("    assign {")
-                for j in range(self.N_bits_poly-1):
-                    f.write(f"ring{i}_poly{self.N_bits_poly-1-j}, ")
-                f.write(f"ring{i}_poly{0}")
-                f.write("} = sel_poly;\n")
+                f.write(f"    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *) wire[{self.N_inv-1}:0] w_{i};\n")
             f.write("\n")
+            if self.N_osc > 1:
+                f.write("    assign out = out_sampled[sel_ro];\n\n")
+            else:
+                f.write("    assign out = out_sampled;\n\n")
             
             for osc in self.osc_list:
                 for lut in osc.elements:
