@@ -648,16 +648,24 @@ class StdMatrix:
             
             f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
             f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")        
-            f.write(f"    wire[{self.N_osc-1}:0] enable_ro;\n")            
+            f.write(f"    reg[{self.N_osc-1}:0] enable_ro;\n")            
             for i in range(self.N_osc):
                 f.write(f"    wire[{self.N_inv-1}:0] w_{i};\n")
             f.write("\n")
             if self.N_osc>1:
-                f.write("    assign out = enable? out_ro[sel_ro]:clock;\n")
-                f.write(f"    assign enable_ro = enable? ({self.N_osc}'b1<<sel_ro):{self.N_osc}'b0 ;\n\n")
+                f.write(f"    always @(posedge clock) begin\n")
+                f.write(f"        enable_ro <= {self.N_osc}'b0;\n")
+                f.write(f"        if(enable) enable_ro[sel_ro] <= 1'b1;\n")
+                f.write(f"    end\n\n")
+                
+                f.write("    assign out = enable? out_ro[sel_ro]:clock;\n\n")
             else:
-                f.write("    assign out = enable? out_ro[0]:clock;\n")
-                f.write(f"    assign enable_ro = enable? 1:0;;\n\n")
+                f.write(f"    always @(posedge clock) begin\n")
+                f.write(f"        enable_ro <= {self.N_osc}'b0;\n")
+                f.write(f"        if(enable) enable_ro[0] <= 1'b1;\n")
+                f.write(f"    end\n\n")
+                
+                f.write("    assign out = enable? out_ro[0]:clock;\n\n")
             
             if not debug:
                 for osc in self.osc_list:
@@ -1006,7 +1014,7 @@ class StdMatrix:
                 f.write(f"    input           clock,\n")
                 f.write(f"    input[7:0]      ctrl_in,\n")
                 f.write(f"    output[7:0]     ctrl_out,\n")
-                f.write(f"    input[{self.data_width-1}:0] data_in,\n")
+                f.write(f"    input[{self.data_width-1}:0]    data_in,\n")
                 f.write(f"    output[{self.data_width-1}:0]    data_out\n")
                 f.write(f");\n\n")
                 
