@@ -49,11 +49,10 @@ class StdRing():
     en FPGA utilzando el software 'Vivado'.
     
     Un anillo 'StdRing' consta de N_inv+1 elementos:
-        . LUT tipo LUT2 (puerta AND).
-        . N_inv elementos tipo 'tipo_lut' (inversores).
+        . Puerta AND.
+        . N_inv inversores.
     """
-    def __init__(self, name, N_inv, loc, tipo_lut='LUT1', bel='', pin='', 
-                 minsel=True):
+    def __init__(self, name, N_inv, loc, bel='', pin='', config=False):
         """
         Inicialización del objeto 'StdRing'.
         
@@ -85,12 +84,6 @@ class StdRing():
                 La "celda inmediatamente superior" es X+1 si X es par, Y+1 si X es 
                 impar.
                 
-            tipo_lut : <string>
-                Este parámetro indica el tipo de las LUT que forman los inversores 
-                del anillo (ver parámetro 'tipo' de la clase 'Lut'). El tipo de LUT 
-                afecta al número de pines que quedan libres para la selección de 
-                líneas de retardo programables (PDL) en el anillo.
-                
             bel : <caracter o lista de caracteres> 
                 Lista de parámetros 'bel' para cada LUT del anillo (ver clase 'Lut').
                 Cada elemento de la lista se aplica en orden correlativo al elemento
@@ -121,11 +114,10 @@ class StdRing():
                 'I1'). Notar que el número de elementos total de un anillo "StdRing"
                 es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).
                 
-            minsel : <bool> 
-                Esta opción afecta a la manera en que se configuran las PDL en el
-                anillo. Si "True", el i-ésimo puerto PDL de todos los inversores del
-                anillo está cortocircuitado; si "False" cada puerto PDL de cada
-                inversor del anillo es independiente. 
+            config: <bool>
+                Si "True" las LUT que forman el anillo serán configurables mediante
+                PDL. Cada inversor tine disponibles 5 puertos para PDL, y el i-ésimo
+                puerto de todos los inversores está cortocircuitado con los demás.
         """
         self.name = name
         self.N_inv = N_inv
@@ -155,46 +147,20 @@ class StdRing():
         else:
             self.pin[0] = pin
         
-        self.elements = [Lut(f"AND_{name}", 'LUT2', "4'b1000", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
+        self.elements = [Lut6(f"AND_{name}", "64'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
         for i in range(N_inv):
-            if tipo_lut=='LUT1':
-                init = "2'b01"
+            if not config:
+                init = "64'h1"
                 w_in = [f"w_{name}[{i}]"]
-            elif tipo_lut=='LUT2':
-                init = "4'h5"
-                if minsel:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]"]
-                else:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{i}]"]
-            elif tipo_lut=='LUT3':
-                init = "8'h55"
-                if minsel:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]"]
-                else:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
-            elif tipo_lut=='LUT4':
-                init = "16'h5555"
-                if minsel:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]"]
-                else:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
-            elif tipo_lut=='LUT5':
-                init = "32'h55555555"
-                if minsel:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]"]
-                else:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{4*i}]", f"sel_pdl[{4*i+1}]", f"sel_pdl[{4*i+2}]", f"sel_pdl[{4*i+3}]"]
-            elif tipo_lut=='LUT6':
+            else:
                 init = "64'h5555555555555555"
-                if minsel:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
-                else:
-                    w_in = [f"w_{name}[{i}]", f"sel_pdl[{5*i}]", f"sel_pdl[{5*i+1}]", f"sel_pdl[{5*i+2}]", f"sel_pdl[{5*i+3}]", f"sel_pdl[{5*i+4}]"]
+                w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
+
             if i==N_inv-1:
                 w_out = f"out_ro[{name}]"
             else:
                 w_out = f"w_{name}[{i+1}]"
-            self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
+            self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
     def help(self):
         """
@@ -210,13 +176,12 @@ class GaloisRing():
     en FPGA utilzando el software 'Vivado'.
     
     Un anillo 'GaloisRing' consta de N_inv+2 elementos:
-        . LUT tipo LUT1 (inversor inicial).
-        . N_inv-1 elementos tipo 'tipo_lut' (inversores/XNOR).
-        . LUT tipo LUT1 (inversor de salida).
+        . Inversor inicial.
+        . N_inv-1 elementos inversores/XNOR.
+        . Inversor de salida.
         . flip-flop de muestreo.
     """
-    def __init__(self, name, N_inv, loc, tipo_lut='LUT3', bel='', pin='', 
-                 minsel=True):
+    def __init__(self, name, N_inv, loc, bel='', pin='', config=False):
         """
         Inicialización del objeto 'GaloisRing'.
         
@@ -245,12 +210,6 @@ class GaloisRing():
                 la celda inmediatamente superior (de modo que, dadas las coordenadas
                 del primer elemento, las demás están predeterminadas). La "celda 
                 inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
-                
-            tipo_lut : <string> 
-                Este parámetro indica el tipo de las LUT que forman los inversores 
-                del anillo (ver parámetro 'tipo' de la clase 'Lut'). El tipo de LUT 
-                afecta al número de pines que quedan libres para la selección de 
-                líneas de retardo programables (PDL) en el anillo.
                 
             bel : <caracter o lista de caracteres> 
                 Lista de parámetros 'bel' para cada elemento del anillo (ver clase 
@@ -282,12 +241,11 @@ class GaloisRing():
                 el pin 'I0'). Notar que, aunque el número de elementos en un objeto 
                 'GaloisRing' sea N_inv+2, a efectos de la opción "pin" el último se 
                 ignora (esta restringe solo los pines de las LUT, no del flip-flop).
-                
-            minsel = <bool> 
-                Esta opción afecta a la manera en que se configuran las PDL en el
-                anillo. Si "True", el i-ésimo puerto PDL de todos los inversores del
-                anillo está cortocircuitado; si "False" cada puerto PDL de cada
-                inversor del anillo es independiente.
+            
+            config: <bool>
+                Si "True" las LUT que forman el anillo serán configurables mediante
+                PDL. Cada celda tine disponibles 3 puertos para PDL, y el i-ésimo
+                puerto de todos los inversores está cortocircuitado con los demás.
         """
         self.name = name
         self.N_inv = N_inv
@@ -321,71 +279,26 @@ class GaloisRing():
         for i in range(N_inv):
             w_out = f"w_{name}[{i}]"
             
-            if tipo_lut=='LUT3':
+            if not config:
                 if i==0:
-                    init = "2'b01"
+                    init = "64'h1"
                     w_in = [f"w_{name}[{N_inv-1}]"]
-                    self.elements.append(Lut(f"inv_{name}_{i}", 'LUT1', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    init = "8'h95"
+                    init = "64'h95"
                     w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
-                    self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-            elif tipo_lut=='LUT4':
-                if minsel:
-                    if i==0:
-                        init = "4'h5"
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "16'h9595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+            else:
+                if i==0:
+                    init = "64'h5555"
+                    w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    if i==0:
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{i}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT2', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "16'h9595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{i}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-            elif tipo_lut=='LUT5':
-                if minsel:
-                    if i==0:
-                        init = "8'h55"
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "32'h95959595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                else:
-                    if i==0:
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT3', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "32'h95959595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{2*i}]", f"sel_pdl[{2*i+1}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-            elif tipo_lut=='LUT6':
-                if minsel:
-                    if i==0:
-                        init = "16'h5555"
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "64'h9595959595959595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                else:
-                    if i==0:
-                        w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", 'LUT4', init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                    else:
-                        init = "64'h9595959595959595"
-                        w_in = [f"w_{name}[{i-1}]", name+f"_w{N_inv-1}", f"sel_poly[{i-1}]", f"sel_pdl[{3*i}]", f"sel_pdl[{3*i+1}]", f"sel_pdl[{3*i+2}]"]
-                        self.elements.append(Lut(f"inv_{name}_{i}", tipo_lut, init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                        
-        self.elements.append(Lut(f"invout_{name}", 'LUT1', "2'b01", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
+                    init = "64'h9595959595959595"
+                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))            
+                    
+        self.elements.append(Lut6(f"invout_{name}", "64'h1", self.loc[N_inv], f"out_ro[{name}]", [w_out], self.bel[N_inv], self.pin[N_inv]))    
         self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
         
     def help(self):
@@ -475,8 +388,7 @@ class Dominio:
         
 class StdMatrix:
     """Objeto que contiene una matriz de osciladores de anillo estándar."""
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', tipo_lut='LUT1', 
-                 minsel=True):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False):
         """
         Inicialización del objeto 'StdMatrix'.
         
@@ -500,15 +412,10 @@ class StdMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'StdRing').
                 
-            tipo_lut : <cadena de caracteres>
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'tipo_lut' en 'StdRing').
-            
-            minsel : <bool>
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'minsel' en 'StdRing').
+            config: <bool>
+                Si "True" las LUT que forman el anillo serán configurables mediante
+                PDL. Cada inversor tine disponibles 5 puertos para PDL, y el i-ésimo
+                puerto de todos los inversores está cortocircuitado con los demás.
         
         """
         self.dominios=[]
@@ -533,48 +440,21 @@ class StdMatrix:
         else:
             self.pin[0] = pin
 
-        self.tipo_lut = tipo_lut
-        self.minsel = minsel
+        self.config = config
             
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.config))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
         self.N_bits_resol = 5
-        if self.minsel:
-            if self.tipo_lut == "LUT1":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "LUT2":
-                self.N_bits_pdl = 1
-            elif self.tipo_lut == "LUT3":
-                self.N_bits_pdl = 2
-            elif self.tipo_lut == "LUT4":
-                self.N_bits_pdl = 3
-            elif self.tipo_lut == "LUT5":
-                self.N_bits_pdl = 4
-            elif self.tipo_lut == "LUT6":
-                self.N_bits_pdl = 5
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+        if not self.config:
+            self.N_bits_pdl = 0
         else:
-            if self.tipo_lut == "LUT1":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "LUT2":
-                self.N_bits_pdl = self.N_inv
-            elif self.tipo_lut == "LUT3":
-                self.N_bits_pdl = 2*self.N_inv
-            elif self.tipo_lut == "LUT4":
-                self.N_bits_pdl = 3*self.N_inv
-            elif self.tipo_lut == "LUT5":
-                self.N_bits_pdl = 4*self.N_inv
-            elif self.tipo_lut == "LUT6":
-                self.N_bits_pdl = 5*self.N_inv
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+            self.N_bits_pdl = 5
                 
     def help(self):
         """
@@ -616,33 +496,8 @@ class StdMatrix:
             
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
-                
-            if self.tipo_lut == "LUT2":
-                if self.minsel:
-                    f.write(f"    input[0:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[{self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT3":
-                if self.minsel:
-                    f.write(f"    input[1:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[{2*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT4":
-                if self.minsel:
-                    f.write(f"    input[2:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[{3*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT5":
-                if self.minsel:
-                    f.write(f"    input[3:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[{4*self.N_inv-1}:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT6":
-                if self.minsel:
-                    f.write(f"    input[4:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[{5*self.N_inv-1}:0] sel_pdl,\n")
-            
+            if self.config:
+                f.write(f"    input[4:0] sel_pdl,\n")
             f.write("    output out\n")
             f.write("    );\n\n")
             
@@ -1005,7 +860,7 @@ class StdMatrix:
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if self.tipo_lut == 'LUT1':
+                if not self.config:
                     aux1=""
                 else:
                     aux1=f".sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),"
@@ -1221,8 +1076,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', tipo_lut='LUT3',
-                 minsel=True):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1246,15 +1100,10 @@ class GaloisMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'GaloisRing').
                 
-            tipo_lut : <cadena de caracteres> (opcional)
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'tipo_lut' en 'GaloisRing').
-            
-            minsel : <bool> (opcional)
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'minsel' en 'GaloisRing').
+            config: <bool>
+                Si "True" las LUT que forman el anillo serán configurables mediante
+                PDL. Cada celda tine disponibles 3 puertos para PDL, y el i-ésimo
+                puerto de todos los inversores está cortocircuitado con los demás.
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
@@ -1278,41 +1127,23 @@ class GaloisMatrix:
         else:
             self.pin[0] = pin
 
-        self.tipo_lut = tipo_lut
-        self.minsel = minsel
+        self.config = config
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.tipo_lut, self.bel, self.pin, self.minsel))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.config))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
         self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
         self.N_bits_resol = 5  
         self.N_bits_fdiv = 5
-        if self.minsel:
-            if self.tipo_lut == "LUT3":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "LUT4":
-                self.N_bits_pdl = 1
-            elif self.tipo_lut == "LUT5":
-                self.N_bits_pdl = 2
-            elif self.tipo_lut == "LUT6":
-                self.N_bits_pdl = 3
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+        
+        if not self.config:
+            self.N_bits_pdl = 0
         else:
-            if self.tipo_lut == "LUT3":
-                self.N_bits_pdl = 0
-            elif self.tipo_lut == "LUT4":
-                self.N_bits_pdl = self.N_inv
-            elif self.tipo_lut == "LUT5":
-                self.N_bits_pdl = 2*self.N_inv
-            elif self.tipo_lut == "LUT6":
-                self.N_bits_pdl = 3*self.N_inv
-            else:
-                print("ERROR: 'tipo_lut' introducido incorrecto\n")
+            self.N_bits_pdl = 3
         
     def help(self):
         """ 
@@ -1348,23 +1179,8 @@ class GaloisMatrix:
             
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
-                
-            if self.tipo_lut == "LUT4":
-                if not self.minsel:
-                    f.write(f"    input[{self.N_inv-1}:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[0:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT5":
-                if not self.minsel:
-                    f.write(f"    input[{2*self.N_inv-1}:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[1:0] sel_pdl,\n")
-            elif self.tipo_lut == "LUT6":
-                if not self.minsel:
-                    f.write(f"    input[{3*self.N_inv-1}:0] sel_pdl,\n")
-                else:
-                    f.write(f"    input[2:0] sel_pdl,\n")
-                    
+            if self.config:
+                f.write(f"    input[2:0] sel_pdl,\n")     
             f.write("    output out\n")
             f.write("    );\n\n")
             
@@ -1703,7 +1519,7 @@ class GaloisMatrix:
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if self.tipo_lut == "LUT3":
+                if not self.config:
                     aux1=""
                 else:
                     aux1=f".sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),"

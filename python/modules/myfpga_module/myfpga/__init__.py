@@ -1,8 +1,8 @@
-class Lut:
+class Lut6:
     """
-    Modelo de FPGA-LUT.
+    Modelo de FPGA-LUT de 6 entradas.
     """
-    def __init__(self, name, tipo, init, loc, w_out, w_in, bel='', pin=''):
+    def __init__(self, name, init, loc, w_out, w_in, bel='', pin=''):
         """
         Inicialización del objeto 'Lut'.
 
@@ -10,10 +10,6 @@ class Lut:
         ---------
             name : <string>
                 Nombre de la instancia LUT.
-                
-            tipo : <string>
-                Tipo de la LUT. Las opciones aceptables son: 'LUT1', 'LUT2', 
-                'LUT3', 'LUT4', 'LUT5' o 'LUT6'.
                 
             init : <string>
                 Valor numérico que representa la función realizada por la LUT. 
@@ -39,14 +35,13 @@ class Lut:
             w_out : <string>
                 Nombre del cable que contiene la señal de salida de la LUT. 
                 
-            w_in : <string o lista de string>
+            w_in : <lista de string>
                 Nombres de los cables que contienen las señales de entrada a la 
                 LUT. Se trata de una lista con los nombres de las entrdas 
                 correspondientes a cada uno de los pines. Estos nombres se 
                 asignan de forma correlativa: el primero corresponde a 'I0', el 
-                segundo a 'I1', etc. por lo tanto, el número de elementos de 
-                esta lista está determinada por el tipo de LUT. Si tipo=LUT1 
-                puede darse solo el nombre (sin necesidad de pasarlo como lista).
+                segundo a 'I1', etc. Pueden darse menos de 6 nombres, pero los
+                puertos que falten se fijaran a 1'b0.
                 
             bel : <caracter>
                 Restricción BEL que indica qué LUT concreta es ocupada dentro de 
@@ -58,20 +53,15 @@ class Lut:
                 LOCK_PINS de XDC, i.e., un string de elementos 
                 'I<puerto lógico>:A<puerto físico>' separados por comas, donde 
                 los puertos lógicos varían de 'I0' a 'I5', y los puertos físicos
-                de 'A1' a 'A6'. Notar que la numeración de los puertos lógicos 
-                debe ser compatible con el tipo de LUT: una luto tipo 'LUT1' 
-                solo tiene un puerto lógico ('I0'), 'lut2' tiene dos puertos 
-                lógicos ('I0', 'I1'), etc.
+                de 'A1' a 'A6'.
         """
         self.name = name
-        self.tipo = tipo
         self.init = init
         self.loc = f"LOC=\"SLICE_X{loc.replace(' ','').split(',')[0]}Y{loc.replace(' ','').split(',')[1]}\""
         self.w_out = w_out
-        if type(w_in) == type([]):
-            self.w_in = w_in[:]
-        else:
-            self.w_in = [w_in]
+        self.w_in = w_in[:]
+        while len(self.w_in)<6:
+            self.w_in.append("1'b0")
         if bel=='':
             self.bel = ''
         else:
@@ -86,8 +76,7 @@ class Lut:
         Esta función devuelve un 'string' que contiene el código en lenguaje 
         Verilog necesario para implementar la LUT inicializada.
         """
-        aux = ', '.join([f".I{i}({self.w_in[i]})" for i in range(len(self.w_in))])
-        return f"(* {self.bel}{self.loc}{self.pin}, DONT_TOUCH=\"true\" *) {self.tipo} #({self.init}) {self.name}(.O({self.w_out}), {aux});"
+        return f"(* {self.bel}{self.loc}{self.pin}, DONT_TOUCH=\"true\" *) LUT6 #({self.init}) {self.name}(.O({self.w_out}), .I0({self.w_in[0]}), .I1({self.w_in[1]}), .I2({self.w_in[2]}), .I3({self.w_in[3]}), .I4({self.w_in[4]}), .I5({self.w_in[5]}));"
         
         
 class FlipFlop:
