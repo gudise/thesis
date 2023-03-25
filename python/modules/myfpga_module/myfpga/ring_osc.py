@@ -1051,6 +1051,7 @@ class StdMatrix:
         
         if verbose:
             pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
+            
         medidas=[]
         for rep in range(N_rep):
             for pdl in range(N_pdl):
@@ -1076,7 +1077,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False, trng=0):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1104,6 +1105,14 @@ class GaloisMatrix:
                 Si "True" las LUT que forman el anillo serán configurables mediante
                 PDL. Cada celda tine disponibles 3 puertos para PDL, y el i-ésimo
                 puerto de todos los inversores está cortocircuitado con los demás.
+                
+            trng: <int positivo>
+                Si esta variable se indica con un número positivo, el diseño incluirá un módulo para guardar los bits aleatorios
+                generados por cada oscilador, y los enviará junto con el dato de sesgo durante el proceso de medida. El número 
+                de bits empleados para el sesgo sigue siendo indicado por la variable 'buffer_out_width' de la función
+                'implement' como siempre; el número de esta variable será el número de bits aleatorios almacenados. En caso de 
+                utilizar esta opción, la función 'medir' devolverá dos números: el primero será el sesgo, y el segundo la 
+                secuencia de bits aleatorios dados como una string de ceros y unos.
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
@@ -1128,6 +1137,7 @@ class GaloisMatrix:
             self.pin[0] = pin
 
         self.config = config
+        self.trng = trng
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
@@ -1278,7 +1288,7 @@ class GaloisMatrix:
         self.routing = routing
         self.pblock = pblock
         self.data_width = data_width
-        self.buffer_out_width = buffer_out_width
+        self.buffer_out_width = buffer_out_width + self.trng
         
         if self.board=='cmoda7_15t':
             self.fpga_part="xc7a15tcpg236-1"
@@ -1384,6 +1394,8 @@ class GaloisMatrix:
             subprocess_run(["mkdir",f"{wdir}/partial_flows"])
 
             vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/garomatrix.v {projdir}/vivado_src/medidor_bias.cp.v {projdir}/vivado_src/clock_divider.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
+            if self.trng:
+                vivado_files+=f" {projdir}/vivado_src/bit_pool.cp.v"
             if self.pblock:
                 vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
 
@@ -1503,6 +1515,8 @@ class GaloisMatrix:
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{wdir}/vivado_src/interfaz_pspl.cp.v"])
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/medidor_bias.v",f"{wdir}/vivado_src/medidor_bias.cp.v"])
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/clock_divider.v",f"{wdir}/vivado_src/clock_divider.cp.v"])
+            if self.trng:
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/bit_pool.v",f"{wdir}/vivado_src/bit_pool.cp.v"])
 
             with open(f"{wdir}/vivado_src/interfaz_pspl_config.vh", "w") as f:
                 f.write(f"{dw_ge_biw}\n")
@@ -1538,7 +1552,14 @@ class GaloisMatrix:
                 f.write(f"    wire ack;\n")
                 f.write(f"    wire out_ro;\n")
                 f.write(f"    wire clock_s;\n")
-                f.write(f"    reg enable_medidor=0;\n\n")
+                f.write(f"    reg enable_medidor=0;\n")
+                f.write(f"    wire lock;\n")
+                if self.trng:
+                    f.write(f"    wire full;\n\n")
+                    
+                    f.write(f"    assign ack = lock && full;\n\n")
+                else:
+                    f.write(f"\n    assign ack = lock;\n\n")
                 
                 f.write(f"    always @(posedge clock) begin\n")
                 f.write(f"        case ({{sync,ack}})\n")
@@ -1582,15 +1603,26 @@ class GaloisMatrix:
                 f.write(f"    );\n\n")
                 
                 f.write(f"    MEDIDOR_BIAS #(\n")
-                f.write(f"        .OUT_WIDTH({self.buffer_out_width})\n")
+                f.write(f"        .OUT_WIDTH({self.buffer_out_width-self.trng})\n")
                 f.write(f"    ) medidor_bias (\n")
                 f.write(f"        .clock(clock_s),\n")
                 f.write(f"        .enable(enable_medidor),\n")
                 f.write(f"        .muestra(out_ro),\n")
                 f.write(f"        .resol(buffer_in[{self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly+self.N_bits_resol-1}:{self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly}]),\n")
-                f.write(f"        .lock(ack),\n")
-                f.write(f"        .out(buffer_out)\n")
+                f.write(f"        .lock(lock),\n")
+                f.write(f"        .out(buffer_out[{self.buffer_out_width-self.trng-1}:0])\n")
                 f.write(f"    );\n\n")
+                
+                if self.trng:
+                    f.write(f"    BIT_POOL #(\n")
+                    f.write(f"        .POOL_WIDTH({self.trng})\n")
+                    f.write(f"    ) bit_pool (\n")
+                    f.write(f"        .clock(clock_s),\n")
+                    f.write(f"        .enable(enable_medidor),\n")
+                    f.write(f"        .muestra(out_ro),\n")
+                    f.write(f"        .full(full),\n")
+                    f.write(f"        .out(buffer_out[{self.buffer_out_width-1}:{self.buffer_out_width-self.trng}])\n")
+                    f.write(f"    );\n\n")                
                 
                 f.write(f"endmodule\n")
                 
@@ -1772,22 +1804,39 @@ class GaloisMatrix:
         
         if verbose:
             pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
-        medidas=[]
+            
+        medidas_sesgo=[]
+        if self.trng:
+            medidas_trng=[[[] for j in range(N_pdl)] for i in range(N_rep)]
+            
         for rep in range(N_rep):
             for pdl in range(N_pdl):
                 for osc in range(N_osc):
                     buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_poly+buffer_sel_resol+buffer_sel_fdiv
                     scan(fpga, buffer_in, self.buffer_in_width)
-                    medida = bitstr_to_int(calc(fpga, self.buffer_out_width))
+                    medida = calc(fpga, self.buffer_out_width)
+                    if self.trng:
+                        medida_sesgo = bitstr_to_int(medida[:self.buffer_out_width-self.trng])
+                        medida_trng = medida[self.buffer_out_width-self.trng:]
+                    else:
+                        medida_sesgo = bitstr_to_int(medida)
+                        
                     if bias:
-                        medida/=2**resol
-                    medidas.append(medida)
+                        medida_sesgo/=2**resol
+                        
+                    medidas_sesgo.append(medida_sesgo)
+                    if self.trng:
+                        medidas_trng[rep][pdl].append(medida_trng)
+                        
                 if verbose:
                     pinta_progreso.update(N_osc)
         if verbose:
             pinta_progreso.close()
         fpga.close()
         
-        tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+        tensor_medidas = Tensor(array=np_reshape(medidas_sesgo, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+        
+        if self.trng:
+            return tensor_medidas,medidas_trng
         
         return tensor_medidas
