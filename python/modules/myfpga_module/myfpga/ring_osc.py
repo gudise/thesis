@@ -12,7 +12,7 @@ from serial                 import  Serial  as serial_Serial
 from time                   import  sleep   as time_sleep
 from numpy                  import  reshape as np_reshape,\
                                     log2    as np_log2
-from tqdm                   import  tqdm
+from myaux                  import  *
 from myfpga                 import  *
 from myfpga.interfaz_pcps   import  *
 from mytensor               import  *
@@ -52,7 +52,7 @@ class StdRing():
         . Puerta AND.
         . N_inv inversores.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', config=False):
+    def __init__(self, name, N_inv, loc, bel='', pin='', modo='min'):
         """
         Inicialización del objeto 'StdRing'.
         
@@ -114,10 +114,16 @@ class StdRing():
                 'I1'). Notar que el número de elementos total de un anillo "StdRing"
                 es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).
                 
-            config: <bool>
-                Si "True" las LUT que forman el anillo serán configurables mediante
-                PDL. Cada inversor tine disponibles 5 puertos para PDL, y el i-ésimo
-                puerto de todos los inversores está cortocircuitado con los demás.
+            modo : <string>
+                Esta opción determina el modo de implementación de las LUT del
+                anillo:
+                    'min'
+                        Minimalista, se utilizan modelos LUT1 para los inversores y
+                        LUT2 el enable AND.
+                    
+                    'config'
+                        Se utilizan modelos LUT6 para los inversores, permitiendo
+                        utilizar 5 puertos para configurar el anillo mediante PDL.
         """
         self.name = name
         self.N_inv = N_inv
@@ -146,21 +152,26 @@ class StdRing():
                 self.pin[i] = pin[i]
         else:
             self.pin[0] = pin
+            
+        if modo=='min':
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
+            for i in range(N_inv):
+                w_in = f"w_{name}[{i}]"
+                if i==N_inv-1:
+                    w_out = f"out_ro[{name}]"
+                else:
+                    w_out = f"w_{name}[{i+1}]"
+                self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
         
-        self.elements = [Lut6(f"AND_{name}", "64'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
-        for i in range(N_inv):
-            if not config:
-                init = "64'h1"
-                w_in = [f"w_{name}[{i}]"]
-            else:
-                init = "64'h5555555555555555"
+        elif modo=='config':
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
+            for i in range(N_inv):
                 w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
-
-            if i==N_inv-1:
-                w_out = f"out_ro[{name}]"
-            else:
-                w_out = f"w_{name}[{i+1}]"
-            self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
+                if i==N_inv-1:
+                    w_out = f"out_ro[{name}]"
+                else:
+                    w_out = f"w_{name}[{i+1}]"
+                self.elements.append(Lut6(f"inv_{name}_{i}", "64'h5555555555555555", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
     def help(self):
         """
@@ -181,7 +192,7 @@ class GaloisRing():
         . Inversor de salida.
         . flip-flop de muestreo.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', config=False):
+    def __init__(self, name, N_inv, loc, bel='', pin='', modo='min'):
         """
         Inicialización del objeto 'GaloisRing'.
         
@@ -242,10 +253,16 @@ class GaloisRing():
                 'GaloisRing' sea N_inv+2, a efectos de la opción "pin" el último se 
                 ignora (esta restringe solo los pines de las LUT, no del flip-flop).
             
-            config: <bool>
-                Si "True" las LUT que forman el anillo serán configurables mediante
-                PDL. Cada celda tine disponibles 3 puertos para PDL, y el i-ésimo
-                puerto de todos los inversores está cortocircuitado con los demás.
+            modo : <string>
+                Esta opción determina el modo de implementación de las LUT del
+                anillo:
+                    'min'
+                        Minimalista, se utilizan modelos LUT1 para los inversores y
+                        LUT2 el enable AND.
+                    
+                    'config'
+                        Se utilizan modelos LUT6 para los inversores, permitiendo
+                        utilizar 5 puertos para configurar el anillo mediante PDL.
         """
         self.name = name
         self.N_inv = N_inv
@@ -274,31 +291,32 @@ class GaloisRing():
                 self.pin[i] = pin[i]
         else:
             self.pin[0] = pin
-        
-        self.elements = []
-        for i in range(N_inv):
-            w_out = f"w_{name}[{i}]"
             
-            if not config:
+        if modo=='min':
+            self.elements = []
+            for i in range(N_inv):
+                w_out = f"w_{name}[{i}]"
+                
                 if i==0:
-                    init = "64'h1"
-                    w_in = [f"w_{name}[{N_inv-1}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    w_in = f"w_{name}[{N_inv-1}]"
+                    self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    init = "64'h95"
                     w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-            else:
+                    self.elements.append(Lut3(f"inv_{name}_{i}", "8'h95", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+        
+        elif modo=='config':
+            self.elements = []
+            for i in range(N_inv):
+                w_out = f"w_{name}[{i}]"
+                
                 if i==0:
-                    init = "64'h5555"
                     w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    self.elements.append(Lut4(f"inv_{name}_{i}", "16'h5555", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    init = "64'h9595959595959595"
                     w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", init, self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))            
+                    self.elements.append(Lut6(f"inv_{name}_{i}", "64'h9595959595959595", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))            
                     
-        self.elements.append(Lut6(f"invout_{name}", "64'h1", self.loc[N_inv], f"out_ro[{name}]", [w_out], self.bel[N_inv], self.pin[N_inv]))    
+        self.elements.append(Lut1(f"invout_{name}", "2'h1", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
         self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
         
     def help(self):
@@ -388,7 +406,7 @@ class Dominio:
         
 class StdMatrix:
     """Objeto que contiene una matriz de osciladores de anillo estándar."""
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', modo='min'):
         """
         Inicialización del objeto 'StdMatrix'.
         
@@ -412,10 +430,16 @@ class StdMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'StdRing').
                 
-            config: <bool>
-                Si "True" las LUT que forman el anillo serán configurables mediante
-                PDL. Cada inversor tine disponibles 5 puertos para PDL, y el i-ésimo
-                puerto de todos los inversores está cortocircuitado con los demás.
+            modo : <string>
+                Esta opción determina el modo de implementación de las LUT del
+                anillo:
+                    'min'
+                        Minimalista, se utilizan modelos LUT1 para los inversores y
+                        LUT2 el enable AND.
+                    
+                    'config'
+                        Se utilizan modelos LUT6 para los inversores, permitiendo
+                        utilizar 5 puertos para configurar el anillo mediante PDL.
         
         """
         self.dominios=[]
@@ -440,20 +464,20 @@ class StdMatrix:
         else:
             self.pin[0] = pin
 
-        self.config = config
+        self.modo = modo
             
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.config))
+                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.modo))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
         self.N_bits_resol = 5
-        if not self.config:
+        if self.modo=='min':
             self.N_bits_pdl = 0
-        else:
+        elif modo=='config':
             self.N_bits_pdl = 5
                 
     def help(self):
@@ -496,7 +520,7 @@ class StdMatrix:
             
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
-            if self.config:
+            if self.modo=='config':
                 f.write(f"    input[4:0] sel_pdl,\n")
             f.write("    output out\n")
             f.write("    );\n\n")
@@ -860,10 +884,11 @@ class StdMatrix:
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if not self.config:
-                    aux1=""
-                else:
+                
+                if self.modo=='config':
                     aux1=f".sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),"
+                else:
+                    aux1=""
                     
                 f.write(f"module TOP (\n")
                 f.write(f"    input           clock,\n")
@@ -1050,7 +1075,7 @@ class StdMatrix:
         time_sleep(.1)
         
         if verbose:
-            pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
+            pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
             
         medidas=[]
         for rep in range(N_rep):
@@ -1063,9 +1088,7 @@ class StdMatrix:
                         medida*=f_ref/2**resol
                     medidas.append(medida)
                 if verbose:
-                    pinta_progreso.update(N_osc)
-        if verbose:
-            pinta_progreso.close()
+                    pinta_progreso(N_osc)
         fpga.close()
         
         tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
@@ -1077,7 +1100,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', config=False, trng=0):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', modo='min', trng=0):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1101,10 +1124,16 @@ class GaloisMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'GaloisRing').
                 
-            config: <bool>
-                Si "True" las LUT que forman el anillo serán configurables mediante
-                PDL. Cada celda tine disponibles 3 puertos para PDL, y el i-ésimo
-                puerto de todos los inversores está cortocircuitado con los demás.
+            modo : <string>
+                Esta opción determina el modo de implementación de las LUT del
+                anillo:
+                    'min'
+                        Minimalista, se utilizan modelos LUT1 para los inversores y
+                        LUT2 el enable AND.
+                    
+                    'config'
+                        Se utilizan modelos LUT6 para los inversores, permitiendo
+                        utilizar 5 puertos para configurar el anillo mediante PDL.
                 
             trng: <int positivo>
                 Si esta variable se indica con un número positivo, el diseño incluirá un módulo para guardar los bits aleatorios
@@ -1136,13 +1165,13 @@ class GaloisMatrix:
         else:
             self.pin[0] = pin
 
-        self.config = config
+        self.modo = modo
         self.trng = trng
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.config))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.modo))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
@@ -1150,9 +1179,9 @@ class GaloisMatrix:
         self.N_bits_resol = 5  
         self.N_bits_fdiv = 5
         
-        if not self.config:
+        if self.modo=='min':
             self.N_bits_pdl = 0
-        else:
+        elif self.modo=='config':
             self.N_bits_pdl = 3
         
     def help(self):
@@ -1189,7 +1218,7 @@ class GaloisMatrix:
             
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
-            if self.config:
+            if self.modo=='config':
                 f.write(f"    input[2:0] sel_pdl,\n")     
             f.write("    output out\n")
             f.write("    );\n\n")
@@ -1533,10 +1562,11 @@ class GaloisMatrix:
                     aux=""
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                if not self.config:
-                    aux1=""
-                else:
+                
+                if self.modo=='config':
                     aux1=f".sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),"
+                else:
+                    aux1=""
                     
                 f.write(f"module TOP (\n")
                 f.write(f"    input           clock,\n")
@@ -1803,7 +1833,7 @@ class GaloisMatrix:
         time_sleep(.1)
         
         if verbose:
-            pinta_progreso = tqdm(total=N_osc*N_rep*N_pdl)
+            pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
             
         medidas_sesgo=[]
         if self.trng:
@@ -1829,9 +1859,7 @@ class GaloisMatrix:
                         medidas_trng[rep][pdl].append(medida_trng)
                         
                 if verbose:
-                    pinta_progreso.update(N_osc)
-        if verbose:
-            pinta_progreso.close()
+                    pinta_progreso(N_osc)
         fpga.close()
         
         tensor_medidas = Tensor(array=np_reshape(medidas_sesgo, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
