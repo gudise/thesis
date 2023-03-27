@@ -1,0 +1,1 @@
+Este proyecto contiene funciones auxiliares para diversos entornos.
