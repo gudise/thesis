@@ -154,21 +154,21 @@ class StdRing():
             self.pin[0] = pin
             
         if modo=='min':
-            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
             for i in range(N_inv):
                 w_in = f"w_{name}[{i}]"
                 if i==N_inv-1:
-                    w_out = f"out_ro[{name}]"
+                    w_out = f"out_romatrix[{name}]"
                 else:
                     w_out = f"w_{name}[{i+1}]"
                 self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
         
         elif modo=='config':
-            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_ro[{name}]", f"out_ro[{name}]"], self.bel[0], self.pin[0])]
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
             for i in range(N_inv):
                 w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
                 if i==N_inv-1:
-                    w_out = f"out_ro[{name}]"
+                    w_out = f"out_romatrix[{name}]"
                 else:
                     w_out = f"w_{name}[{i+1}]"
                 self.elements.append(Lut6(f"inv_{name}_{i}", "64'h5555555555555555", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
@@ -515,36 +515,16 @@ class StdMatrix:
             f.write(f"//N_osciladores: {self.N_osc}\n\n")
             
             f.write("module ROMATRIX (\n")
-            f.write("    input clock,\n")
-            f.write("    input enable,\n")
-            
-            if self.N_osc > 1:
-                f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
+            f.write(f"    input[{self.N_osc-1}:0] enable_romatrix,\n")
             if self.modo=='config':
                 f.write(f"    input[4:0] sel_pdl,\n")
-            f.write("    output out\n")
+            f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
+            f.write(f"    output[{self.N_osc-1}:0] out_romatrix\n")
             f.write("    );\n\n")
             
-            f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
-            f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")        
-            f.write(f"    reg[{self.N_osc-1}:0] enable_ro;\n")            
             for i in range(self.N_osc):
                 f.write(f"    wire[{self.N_inv-1}:0] w_{i};\n")
             f.write("\n")
-            if self.N_osc>1:
-                f.write(f"    always @(posedge clock) begin\n")
-                f.write(f"        enable_ro <= {self.N_osc}'b0;\n")
-                f.write(f"        if(enable) enable_ro[sel_ro] <= 1'b1;\n")
-                f.write(f"    end\n\n")
-                
-                f.write("    assign out = enable? out_ro[sel_ro]:clock;\n\n")
-            else:
-                f.write(f"    always @(posedge clock) begin\n")
-                f.write(f"        enable_ro <= {self.N_osc}'b0;\n")
-                f.write(f"        if(enable) enable_ro[0] <= 1'b1;\n")
-                f.write(f"    end\n\n")
-                
-                f.write("    assign out = enable? out_ro[0]:clock;\n\n")
             
             if not debug:
                 for osc in self.osc_list:
@@ -565,7 +545,7 @@ class StdMatrix:
                 
     def implement(self, projname='project_romatrix', projdir='.', njobs=4, linux=False, 
                   debug=False, files=True, board='pynqz2', qspi=False, routing=False, 
-                  pblock=False, data_width=32, buffer_out_width=32):
+                  pblock=False, data_width=32, buffer_out_width=32, f_clock=100):
         """
         Copia en el directorio 'projdir' todos los archivos necesarios para 
         implementar una matriz de osciladores de anillo con medición de la 
@@ -634,6 +614,9 @@ class StdMatrix:
             buffer_out_width(bow) : <int> 
                 Esta opción especifica la anchura de la palabra de respuesta 
                 (i.e., de la medida).
+                
+            f_clock : <int>
+                Frecuencia del reloj del diseño (en MHz).
         """
         self.board = board
         self.qspi = qspi
@@ -641,27 +624,28 @@ class StdMatrix:
         self.pblock = pblock
         self.data_width = data_width
         self.buffer_out_width = buffer_out_width
+        self.f_clock = f_clock
             
         if self.board=='cmoda7_15t':
             self.fpga_part="xc7a15tcpg236-1"
             self.board_part="digilentinc.com:cmod_a7-15t:part0:1.1"
             self.memory_part="mx25l3233"
-            self.clk_name="/clk_wiz_1/clk_out1 (100 MHz)"
+            self.clk_name=f"/clk_wiz_1/clk_out1 ({self.f_clock} MHz)"
         elif self.board=='cmoda7_35t':
             self.fpga_part="xc7a35tcpg236-1"
             self.board_part="digilentinc.com:cmod_a7-35t:part0:1.1"
             self.memory_part="mx25l3233"
-            self.clk_name="/clk_wiz_1/clk_out1 (100 MHz)"
+            self.clk_name=f"/clk_wiz_1/clk_out1 ({self.f_clock} MHz)"
         elif self.board=='zybo':
             self.fpga_part="xc7z010clg400-1"
             self.board_part="digilentinc.com:zybo:part0:1.0"
             self.memory_part="?"
-            self.clk_name = "/processing_system7_0/FCLK_CLK0 (100 MHz)"
+            self.clk_name =f"/processing_system7_0/FCLK_CLK0 ({self.f_clock} MHz)"
         elif self.board=='pynqz2':
             self.fpga_part="xc7z020clg400-1"
             self.board_part="tul.com.tw:pynq-z2:part0:1.0"
             self.memory_part="?"
-            self.clk_name = "/processing_system7_0/FCLK_CLK0 (100 MHz)"
+            self.clk_name =f"/processing_system7_0/FCLK_CLK0 ({self.f_clock} MHz)"
             
         self.buffer_in_width = self.N_bits_osc+self.N_bits_pdl+self.N_bits_resol
         
@@ -744,7 +728,7 @@ class StdMatrix:
             ## partial flows (tcl)
             subprocess_run(["mkdir",f"{wdir}/partial_flows"])
 
-            vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/romatrix.v {projdir}/vivado_src/medidor_frec.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
+            vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/romatrix.v {projdir}/vivado_src/medidor_frec.cp.v {projdir}/vivado_src/interfaz_romatrix.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
             if debug:
                 vivado_files+=f" {projdir}/vivado_src/clock_divider.cp.v"
             if self.pblock:
@@ -767,14 +751,17 @@ class StdMatrix:
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/ctrl_out] [get_bd_pins axi_gpio_ctrl/gpio_io_i]\n")
                 f.write(f"apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {{Clk {self.clk_name} }}  [get_bd_pins TOP_0/clock]\n")
                 f.write(f"regenerate_bd_layout\n")
-                f.write(f"validate_bd_design\n")
-                f.write(f"save_bd_design\n")
                 f.write(f"make_wrapper -files [get_files {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/design_1.bd] -top\n")
                 f.write(f"add_files -norecurse {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property top design_1_wrapper [current_fileset]\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property STEPS.SYNTH_DESIGN.ARGS.RESOURCE_SHARING off [get_runs synth_1]\n")
+                if self.f_clock!=100:
+                    if self.board=="zybo" or self.board=="pynqz2":
+                        f.write(f"set_property -dict [list CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {{{self.f_clock}}}] [get_bd_cells processing_system7_0]\n")
+                f.write(f"validate_bd_design\n")
+                f.write(f"save_bd_design\n")
                 
             with open(f"{wdir}/partial_flows/genbitstream.tcl", "w") as f:
                 f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
@@ -866,6 +853,7 @@ class StdMatrix:
             subprocess_run(["mkdir",f"{wdir}/vivado_src"])
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{wdir}/vivado_src/interfaz_pspl.cp.v"])
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/medidor_frec.v",f"{wdir}/vivado_src/medidor_frec.cp.v"])
+            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_romatrix.v",f"{wdir}/vivado_src/interfaz_romatrix.cp.v"])
             if debug:
                 subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/clock_divider.v",f"{wdir}/vivado_src/clock_divider.cp.v"])
 
@@ -880,16 +868,6 @@ class StdMatrix:
             self.gen_romatrix(out_name=f"{wdir}/vivado_src/romatrix.v", debug=debug)
 
             with open(f"{wdir}/vivado_src/top.v", "w") as f:
-                if self.N_osc==1:
-                    aux=""
-                else:
-                    aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                
-                if self.modo=='config':
-                    aux1=f".sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),"
-                else:
-                    aux1=""
-                    
                 f.write(f"module TOP (\n")
                 f.write(f"    input           clock,\n")
                 f.write(f"    input[7:0]      ctrl_in,\n")
@@ -902,6 +880,8 @@ class StdMatrix:
                 f.write(f"    wire[{self.buffer_out_width-1}:0] buffer_out;\n")
                 f.write(f"    wire sync;\n")
                 f.write(f"    wire ack;\n")
+                f.write(f"    wire[{self.N_osc-1}:0] enable_romatrix;\n")
+                f.write(f"    wire[{self.N_osc-1}:0] out_romatrix;\n")
                 f.write(f"    wire out_ro;\n")
                 f.write(f"    reg enable_medidor=0;\n\n")
                 
@@ -930,14 +910,27 @@ class StdMatrix:
                 f.write(f"        .buffer_out(buffer_out)\n")
                 f.write(f"    );\n\n")
                 
-                f.write(f"    ROMATRIX romatrix (\n")
+                f.write(f"    (* DONT_TOUCH=\"true\" *)\n")
+                f.write(f"    INTERFAZ_ROMATRIX #(\n")
+                f.write(f"        .N_OSC({self.N_osc})\n")
+                f.write(f"    ) interfaz_romatrix (\n")
                 f.write(f"        .clock(clock),\n")
                 f.write(f"        .enable(enable_medidor),\n")
-                f.write(f"        {aux}\n")
-                f.write(f"        {aux1}\n")
+                f.write(f"        .sel_ro(buffer_in[{self.N_bits_osc-1}:0]),\n")
+                f.write(f"        .out_romatrix(out_romatrix),\n")
+                f.write(f"        .enable_romatrix(enable_romatrix),\n")
                 f.write(f"        .out(out_ro)\n")
                 f.write(f"    );\n\n")
                 
+                f.write(f"    (* DONT_TOUCH=\"true\" *)\n")
+                f.write(f"    ROMATRIX romatrix (\n")
+                f.write(f"        .enable_romatrix(enable_romatrix),\n")
+                if self.modo=='config':
+                    f.write(f"        .sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),\n")
+                f.write(f"        .out_romatrix(out_romatrix)\n")
+                f.write(f"    );\n\n")
+                
+                f.write(f"    (* DONT_TOUCH=\"true\" *)\n")
                 f.write(f"    MEDIDOR_FREC #(\n")
                 f.write(f"        .OUT_WIDTH({self.buffer_out_width})\n")
                 f.write(f"    ) medidor_frec (\n")
@@ -957,7 +950,7 @@ class StdMatrix:
                 PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
                 with open(f"{wdir}/vivado_src/pblock.xdc", "w") as f:
                     f.write(f"create_pblock pblock_TOP_0\n")
-                    f.write(f"add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0]]\n")
+                    f.write(f"add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_pspl design_1_i/TOP_0/inst/interfaz_romatrix design_1_i/TOP_0/inst/medidor_frec]]\n")
                     f.write(f"resize_pblock [get_pblocks pblock_TOP_0] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n")
                     
             ## sdk sources

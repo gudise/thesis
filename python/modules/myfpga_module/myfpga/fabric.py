@@ -39,7 +39,7 @@ for j in range(50):
     pynqz2[9][j] = '1 L left'
 # SLICE_X10
 for j in range(50):
-    pynqz2[10][j] = '0 M left'
+    pynqz2[10][j] = '0 M right'
 # SLICE_X11
 for j in range(50):
     pynqz2[11][j] = '1 L right'
@@ -51,7 +51,7 @@ for j in range(50):
     pynqz2[13][j] = '1 L right'
 # SLICE_X14
 for j in range(50):
-    pynqz2[14][j] = '0 M right'
+    pynqz2[14][j] = '0 M left'
 # SLICE_X15
 for j in range(50):
     pynqz2[15][j] = '1 L left'
@@ -81,10 +81,10 @@ for j in range(50):
     pynqz2[23][j] = '1 L right'
 # SLICE_X24
 for j in range(50):
-    pynqz2[24][j] = '0 L left'
+    pynqz2[24][j] = '0 L right'
 # SLICE_X25
 for j in range(50):
-    pynqz2[25][j] = '1 L left'
+    pynqz2[25][j] = '1 L right'
     
 # SLICE_X26
 for j in range(150):
