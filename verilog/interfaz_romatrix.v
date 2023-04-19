@@ -1,12 +1,12 @@
 module INTERFAZ_ROMATRIX #(
     parameter N_OSC = 10
     ) (
-    input                    clock,
-    input                    enable,
-    input[$clog2(N_OSC)-1:0] sel_ro,
-    input[N_OSC-1:0]         out_romatrix,
-    output reg[N_OSC-1:0]    enable_romatrix,
-    output                   out
+    input                            clock,
+    input                            enable,
+    input[$clog2(N_OSC)-(N_OSC>1):0] sel_ro,
+    input[N_OSC-1:0]                 out_romatrix,
+    output reg[N_OSC-1:0]            enable_romatrix,
+    output                           out
     );
     
     always @(posedge clock) begin

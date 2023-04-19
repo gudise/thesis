@@ -916,7 +916,10 @@ class StdMatrix:
                 f.write(f"    ) interfaz_romatrix (\n")
                 f.write(f"        .clock(clock),\n")
                 f.write(f"        .enable(enable_medidor),\n")
-                f.write(f"        .sel_ro(buffer_in[{self.N_bits_osc-1}:0]),\n")
+                if self.N_osc>1:
+                    f.write(f"        .sel_ro(buffer_in[{self.N_bits_osc-1}:0]),\n")
+                else:
+                    f.write(f"        .sel_ro(1'b0),\n")
                 f.write(f"        .out_romatrix(out_romatrix),\n")
                 f.write(f"        .enable_romatrix(enable_romatrix),\n")
                 f.write(f"        .out(out_ro)\n")

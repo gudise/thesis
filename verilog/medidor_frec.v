@@ -36,7 +36,7 @@ module MEDIDOR_FREC #(
     end
     
     always @(posedge clock_u) begin
-        if(enable) begin
+        if(enable && contador>0) begin // merece la pena estudiar la diferencia entre poner o no la condición 'contador>0'
             contador_u <= contador_u+32'b1;
         end
         else begin
