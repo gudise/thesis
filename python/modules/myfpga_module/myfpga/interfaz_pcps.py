@@ -10,16 +10,9 @@ OCT1 =	256			# 256^1
 OCT2 =	65536		# 256^2
 OCT3 =	16777216	# 256^3
 
-cmd_idle =			0
 cmd_calc =			1
 cmd_scan =			2
-cmd_print =			3
 cmd_end =			4
-
-cmd_idle_sync =		5
-cmd_calc_sync =		6
-cmd_scan_sync =		7
-cmd_print_sync =	8
 
 
 def int_to_bytestr(entrada):
