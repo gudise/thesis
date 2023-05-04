@@ -43,7 +43,6 @@
 `define cmd_calc		1
 `define cmd_scan		2
 `define cmd_print		3
-`define cmd_end			4
 `define cmd_idle_sync	5
 `define cmd_calc_sync	6
 `define cmd_scan_sync	7
