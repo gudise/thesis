@@ -37,7 +37,6 @@
 #define cmd_calc 		1
 #define cmd_scan		2
 #define cmd_print		3
-#define cmd_end			4
 #define cmd_idle_sync	5
 #define cmd_calc_sync	6
 #define cmd_scan_sync	7
@@ -106,7 +105,6 @@ XGpio gpio_data;
 int main(void)
 {
 	int state=IDLE;
-	char program_end=0;
 	char busy;
 	u8 ctrl_in=0;
 	u8 octeto_in[OCTETO_IN_WIDTH];
@@ -131,10 +129,6 @@ int main(void)
 						
 					case cmd_scan:
 						state = SCAN;
-						break;
-						
-					case cmd_end:
-						program_end = 1;
 						break;
 						
 					default:
@@ -168,8 +162,6 @@ int main(void)
 				break;
 		}
 		ctrl_in=0;
-		if(program_end)
-			break;
 	}
 	return 0;
 }
