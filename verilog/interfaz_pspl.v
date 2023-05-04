@@ -39,14 +39,22 @@
 `define PRINT		6
 `define PRINT_SYNC	7
 
-`define cmd_idle		0
-`define cmd_calc		1
-`define cmd_scan		2
-`define cmd_print		3
-`define cmd_idle_sync	5
-`define cmd_calc_sync	6
-`define cmd_scan_sync	7
-`define cmd_print_sync	8
+`define cmd_idle_sync   0
+`define cmd_idle_ack    1
+//`define cmd_idle_wait   
+//`define cmd_idle_done
+`define cmd_calc_sync   2
+`define cmd_calc_ack    3
+//`define cmd_calc_wait   
+//`define cmd_calc_done   
+`define cmd_scan_sync   4
+`define cmd_scan_ack    4
+`define cmd_scan_wait   5
+`define cmd_scan_done   5
+`define cmd_print_sync  6
+`define cmd_print_ack   6
+`define cmd_print_wait  7
+`define cmd_print_done  7
 
 module INTERFAZ_PSPL #(
 	parameter	DATA_WIDTH=32,
@@ -105,20 +113,20 @@ module INTERFAZ_PSPL #(
 		case(state)
 
 			`IDLE: begin
-				ctrl_out <= `cmd_idle_sync;
+				ctrl_out <= `cmd_idle_ack;
 				
 				contador_std <= 0;
 				
 				case(ctrl_in_reg)
-					`cmd_calc: begin
+					`cmd_calc_sync: begin
 						state <= `CALC;
 						busy_backend[0] <= 0;
 					end
-					`cmd_scan: begin
+					`cmd_scan_sync: begin
 						state <= `SCAN;
 						busy_backend[0] <= 0;
 					end
-					`cmd_print: begin
+					`cmd_print_sync: begin
 						state <= `PRINT;
 						busy_backend[0] <= 0;
 					end
@@ -141,9 +149,9 @@ module INTERFAZ_PSPL #(
 			end
 			
 			`CALC_SYNC: begin
-				ctrl_out <= `cmd_calc_sync;
+				ctrl_out <= `cmd_calc_ack;
 				
-				if(ctrl_in_reg==`cmd_idle) begin
+				if(ctrl_in_reg==`cmd_idle_sync) begin
 					state <= `IDLE;
 					busy_backend[0] <= 0;
 				end
@@ -154,9 +162,9 @@ module INTERFAZ_PSPL #(
 			end
 			
 			`SCAN: begin
-				ctrl_out <= `cmd_scan;
+				ctrl_out <= `cmd_scan_ack;
 				
-				if(ctrl_in_reg==`cmd_scan_sync) begin
+				if(ctrl_in_reg==`cmd_scan_wait) begin
 					`ifdef DW_GE_BIW
 						buffer_in <= data_in;
 					
@@ -183,13 +191,13 @@ module INTERFAZ_PSPL #(
 			end
 			
 			`SCAN_SYNC: begin
-				ctrl_out <= `cmd_scan_sync;
+				ctrl_out <= `cmd_scan_done;
 				
-				if(ctrl_in_reg==`cmd_idle) begin
+				if(ctrl_in_reg==`cmd_idle_sync) begin
 					state <= `IDLE;
 					busy_backend[0] <= 0;
 				end
-				else if(ctrl_in_reg==`cmd_scan) begin
+				else if(ctrl_in_reg==`cmd_scan_sync) begin
 					state <= `SCAN;
 					contador_std <= contador_std + 1;
 					busy_backend[0] <= 0;
@@ -201,7 +209,7 @@ module INTERFAZ_PSPL #(
 			end
 			
 			`PRINT: begin
-				ctrl_out <= `cmd_print;
+				ctrl_out <= `cmd_print_ack;
 								
 				`ifdef DW_GE_BOW
 					data_out <= buffer_out;
@@ -219,7 +227,7 @@ module INTERFAZ_PSPL #(
 				
 				`endif
 				
-				if(ctrl_in_reg==`cmd_print_sync) begin
+				if(ctrl_in_reg==`cmd_print_wait) begin
 					state <= `PRINT_SYNC;
 					busy_backend[0] <= 0;
 				end
@@ -230,13 +238,13 @@ module INTERFAZ_PSPL #(
 			end
 			
 			`PRINT_SYNC: begin
-				ctrl_out <= `cmd_print_sync;
+				ctrl_out <= `cmd_print_done;
 								
-				if(ctrl_in_reg==`cmd_idle) begin
+				if(ctrl_in_reg==`cmd_idle_sync) begin
 					state <= `IDLE;
 					busy_backend[0] <= 0;
 				end
-				else if(ctrl_in_reg==`cmd_print) begin
+				else if(ctrl_in_reg==`cmd_print_sync) begin
 					state <= `PRINT;
 					contador_std <= contador_std + 1;
 					busy_backend[0] <= 0;

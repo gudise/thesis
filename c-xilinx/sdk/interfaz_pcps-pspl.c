@@ -33,14 +33,25 @@
 #define PRINT		6
 #define PRINT_SYNC	7
 
-#define cmd_idle 		0
 #define cmd_calc 		1
 #define cmd_scan		2
-#define cmd_print		3
-#define cmd_idle_sync	5
-#define cmd_calc_sync	6
-#define cmd_scan_sync	7
-#define cmd_print_sync	8
+
+#define cmd_idle_sync   0
+#define cmd_idle_ack    1
+//#define cmd_idle_wait   
+//#define cmd_idle_done
+#define cmd_calc_sync   2
+#define cmd_calc_ack    3
+//#define cmd_calc_wait   
+//#define cmd_calc_done   
+#define cmd_scan_sync   4
+#define cmd_scan_ack    4
+#define cmd_scan_wait   5
+#define cmd_scan_done   5
+#define cmd_print_sync  6
+#define cmd_print_ack   6
+#define cmd_print_wait  7
+#define cmd_print_done  7
 
 
 #ifndef DATA_WIDTH
@@ -243,11 +254,11 @@ void idle_handshake()
 {
 	u32 ctrl_out;
 
-	 XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_idle);
+	 XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_idle_sync);
 	 while(1)
 	 {
 		 ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		 if(ctrl_out==cmd_idle_sync)
+		 if(ctrl_out==cmd_idle_ack)
 			 break;
 	 }
 }
@@ -256,11 +267,11 @@ void calc_handshake()
 {
 	u32 ctrl_out;
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_calc);
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_calc_sync);
 	 while(1)
 	 {
 		 ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		 if(ctrl_out==cmd_calc_sync)
+		 if(ctrl_out==cmd_calc_ack)
 			 break;
 	 }
 }
@@ -269,11 +280,11 @@ void scan_handshake()
 {
 	u32 ctrl_out;
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan);
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan_sync);
 	while(1)
 	{
 		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1); //xil_printf("%d\n", ctrl_out);
-		if(ctrl_out==cmd_scan)
+		if(ctrl_out==cmd_scan_ack)
 			break;
 	}
 }
@@ -282,11 +293,11 @@ void scan_sync_handshake()
 {
 	u32 ctrl_out;
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan_sync);
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_scan_wait);
 	while(1)
 	{
 		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_scan_sync)
+		if(ctrl_out==cmd_scan_done)
 			break;
 	}
 }
@@ -295,11 +306,11 @@ void print_handshake()
 {
 	u32 ctrl_out;
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print);
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print_sync);
 	while(1)
 	{
 		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_print)
+		if(ctrl_out==cmd_print_ack)
 			break;
 	}
 }
@@ -308,11 +319,11 @@ void print_sync_handshake()
 {
 	u32 ctrl_out;
 
-	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print_sync);
+	XGpio_DiscreteWrite(&gpio_ctrl, 2, cmd_print_wait);
 	while(1)
 	{
 		ctrl_out = XGpio_DiscreteRead(&gpio_ctrl, 1);
-		if(ctrl_out==cmd_print_sync)
+		if(ctrl_out==cmd_print_done)
 			break;
 	}
 }
