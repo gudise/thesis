@@ -1,7 +1,0 @@
-setup.py
-mypuf/__init__.py
-mypuf.egg-info/PKG-INFO
-mypuf.egg-info/SOURCES.txt
-mypuf.egg-info/dependency_links.txt
-mypuf.egg-info/not-zip-safe
-mypuf.egg-info/top_level.txt

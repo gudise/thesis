@@ -7,8 +7,20 @@ from mytensor import *
 
 
 def hamming(array1, array2, porciento=False):
-    """
-    Esta función calcula la distancia de Hamming de dos arrays de símbolos
+    """Esta función calcula la distancia de Hamming de dos arrays de símbolos.
+    
+    :param array1: Lista de caracteres de entrada
+    :type array1: str
+    
+    :param array2: Lista de caracteres de entrada
+    :type array2: str
+    
+    :param porciento: Si `True` devuelve la salida en tanto por ciento., por defecto `False`
+    :type porciento: bool, opcional
+    
+    :return: Número de símbolos diferentes entre las entradas
+    :rtype: float
+    
     """
     if len(array1) != len(array2):
         print("ERROR en 'hamming': arrays de distinto tamaño")
@@ -23,12 +35,26 @@ def hamming(array1, array2, porciento=False):
         return result
 
 
-class PUFTOPOL:
-    """
-    Este objeto contiene una función que devuelve una lista de valores enteros, la cual representa las parejas de
+class PufTopol:
+    """Este objeto contiene una función que devuelve una lista de valores enteros, la cual representa las parejas de
     celdas (osciladores) empleadas para construir una respuesta binaria
+    
+    :param N_osc: Número de celdas de que consta la PUF.
+    :type N_osc: int
+    
+    :param topol: Este parámetro indica la topología de la PUF. Las opciones admitidas son:
+        * `all_pairs` | `ap`, todas las comparaciones posibles
+        * `n/2`, comparaciones sin repetir osciladores
+        * `n-1`, comparaciones repitiendo un oscilador cada vez
+        * `custom`, comparaciones 'custom' tal y como se dan en el parámetro "custom"
+    :type topol: str, opcional
+    
+    :param custom: Lista de parejas; cada elemento de "custom" es una lista de dos osciladores a comparar
+    :type custom: list, opcional
     """
     def __init__(self, N_osc, topol='all_pairs', custom=[[]]):
+        """Método de inicialización
+        """
         self.topol = topol
         self.N_osc = N_osc
         self.grafo = []
@@ -46,6 +72,23 @@ class PUFTOPOL:
             self.grafo = custom
             
     def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, export_pdf=False):
+        """Dibuja un grafo con la topología
+        
+        :param color_vert: Color de los vértices del grafo, por defecto `black`
+        :type color_vert: str, opcional
+        
+        :parram size_vert: Tamaño de los vértices del grafo, por defecto `20`
+        :type size_vert: float, opcional
+        
+        :param color_link: Color de los link del grafo, por defecto `tab:gray`
+        :type color_link: str, opcional
+        
+        :param size_link: Tamaño de los link del grafo, por defecto `1.5`
+        :type size_link: float, opcional
+        
+        :param export_pdf: Nombre del fichero .pdf en el cual volcará el dibujo 
+        :type export_pdf: str, opcional
+        """
         angulos=[2*np_pi/self.N_osc*i for i in range(self.N_osc)]
         x_coords=[np_cos(angulo) for angulo in angulos]
         y_coords=[np_sin(angulo) for angulo in angulos]
@@ -67,10 +110,13 @@ class PUFTOPOL:
             plt_show()
             
     def __call__(self, random=True):
-        """
-        Al llamar a un objeto "PUFTOPOL" se devuelve una lista de parejas que conforman una iteración aleatoria de la
-        topología (i.e., después de permutar la lista de osciladores). Si se utiliza random=False se devuelve el grafo
-        original.
+        """Método de llamada.
+        
+        :param random: Si `True` devuelve una iteración aleatoria de la topología, si `False` devuelve el grafo original.
+        :type random: bool, opcional
+        
+        :return: Lista de parejas que conforman una iteración de la topología (i.e., después de permutar la lista de osciladores)
+        :rtype: list
         """
         if not random:
             return [pair for pair in self.grafo]
@@ -79,7 +125,7 @@ class PUFTOPOL:
             return [[perm[pair[0]], perm[pair[1]]] for pair in self.grafo]
 
 
-class PUFEXP:
+class PufExp:
     """
     Estos objetos son esencialmente un TENSOR que solo almacena valores binarios, y cuyos ejes están predefinidos:
     axis=['retos', 'inst', 'rep']. Además puede guardar una lista que relacione el índice del eje 'retos' con una
