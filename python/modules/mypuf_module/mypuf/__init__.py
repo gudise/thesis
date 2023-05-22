@@ -7,20 +7,20 @@ from mytensor import *
 
 
 def hamming(array1, array2, porciento=False):
-    """Esta función calcula la distancia de Hamming de dos arrays de símbolos.
+    """
+    Esta función devuelve la distancia de Hamming de dos arrays de
+    símbolos.
     
-    :param array1: Lista de caracteres de entrada
-    :type array1: str
-    
-    :param array2: Lista de caracteres de entrada
-    :type array2: str
-    
-    :param porciento: Si `True` devuelve la salida en tanto por ciento., por defecto `False`
-    :type porciento: bool, opcional
-    
-    :return: Número de símbolos diferentes entre las entradas
-    :rtype: float
-    
+    Parámetros:
+    -----------
+    array1 : <str>
+        Primer array de entrada.
+        
+    array2 . <str>
+        Segundo array de entrada.
+        
+    porciento : <bool, opcional, por defecto 'False'>
+        Si 'True', devuelve la salida en tanto por ciento.
     """
     if len(array1) != len(array2):
         print("ERROR en 'hamming': arrays de distinto tamaño")
@@ -36,21 +36,32 @@ def hamming(array1, array2, porciento=False):
 
 
 class PufTopol:
-    """Este objeto contiene una función que devuelve una lista de valores enteros, la cual representa las parejas de
-    celdas (osciladores) empleadas para construir una respuesta binaria
+    """
+    Este objeto contiene una función que devuelve una lista de
+    valores enteros, la cual representa las parejas de celdas
+    (osciladores) empleadas para construir una respuesta binaria.
     
-    :param N_osc: Número de celdas de que consta la PUF.
-    :type N_osc: int
+    Parámetros:
+    -----------
+    N_osc : <int>
+        Número de celdas de que consta la PUF.
     
-    :param topol: Este parámetro indica la topología de la PUF. Las opciones admitidas son:
-        * `all_pairs` | `ap`, todas las comparaciones posibles
-        * `n/2`, comparaciones sin repetir osciladores
-        * `n-1`, comparaciones repitiendo un oscilador cada vez
-        * `custom`, comparaciones 'custom' tal y como se dan en el parámetro "custom"
-    :type topol: str, opcional
-    
-    :param custom: Lista de parejas; cada elemento de "custom" es una lista de dos osciladores a comparar
-    :type custom: list, opcional
+    topol : <str, opcional>
+        Este parámetro indica la topología de la PUF. Las opciones
+        admitidas son:
+            'all_pairs' o 'ap'
+                todas las comparaciones posibles
+            'n/2'
+                comparaciones sin repetir osciladores
+            'n-1'
+                comparaciones repitiendo un oscilador cada vez
+            'custom'
+                comparaciones 'custom' tal y como se dan en el parámetro
+                "custom"
+                
+    custom : <list, opcional>
+        Lista de parejas. Cada elemento de 'custom' es una lista de dos
+        osciladores a comparar.
     """
     def __init__(self, N_osc, topol='all_pairs', custom=[[]]):
         """Método de inicialización
@@ -72,22 +83,25 @@ class PufTopol:
             self.grafo = custom
             
     def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, export_pdf=False):
-        """Dibuja un grafo con la topología
+        """
+        Dibuja un grafo con la topología.
         
-        :param color_vert: Color de los vértices del grafo, por defecto `black`
-        :type color_vert: str, opcional
+        Parámetros:
+        -----------
+        color_vert : <str, opcional, por defecto 'black'>
+            Color de los vértices del grafo.
         
-        :parram size_vert: Tamaño de los vértices del grafo, por defecto `20`
-        :type size_vert: float, opcional
+        size_vert : <float, opcional, por defecto 20>
+            Tamaño de los vértices del grafo.
         
-        :param color_link: Color de los link del grafo, por defecto `tab:gray`
-        :type color_link: str, opcional
+        color_link : <str, opcional, por defecto 'tab:gray'>
+            Color de los link del grafo.
         
-        :param size_link: Tamaño de los link del grafo, por defecto `1.5`
-        :type size_link: float, opcional
+        size_link : <float, opcional, por defecto 1.5>
+            Tamaño de los link del grafo.
         
-        :param export_pdf: Nombre del fichero .pdf en el cual volcará el dibujo 
-        :type export_pdf: str, opcional
+        export_pdf : <str o bool, opcional, por defecto False>
+            Nombre del fichero .pdf en el cual volcará el dibujo.
         """
         angulos=[2*np_pi/self.N_osc*i for i in range(self.N_osc)]
         x_coords=[np_cos(angulo) for angulo in angulos]
@@ -110,13 +124,16 @@ class PufTopol:
             plt_show()
             
     def __call__(self, random=True):
-        """Método de llamada.
+        """
+        Método de llamada; devuelve una lista de parejas que
+        conforman una iteración de la topología (i.e., después de
+        permutar la lista de osciladores)
         
-        :param random: Si `True` devuelve una iteración aleatoria de la topología, si `False` devuelve el grafo original.
-        :type random: bool, opcional
-        
-        :return: Lista de parejas que conforman una iteración de la topología (i.e., después de permutar la lista de osciladores)
-        :rtype: list
+        Parámetros:
+        -----------
+        random : <bool, opcional, por defecto True>
+            Si 'True' devuelve una iteración aleatoria de la topología,
+            si 'False' devuelve el grafo original.
         """
         if not random:
             return [pair for pair in self.grafo]
@@ -127,34 +144,51 @@ class PufTopol:
 
 class PufExp:
     """
-    Estos objetos son esencialmente un TENSOR que solo almacena valores binarios, y cuyos ejes están predefinidos:
-    axis=['retos', 'inst', 'rep']. Además puede guardar una lista que relacione el índice del eje 'retos' con una
-    representación de cada reto (en principio arbitraria, en la práctica será una lista de parejas de las celdas
-    empleadas para obtener cada bit).
+    Estos objetos son esencialmente un TENSOR que solo almacena valores
+    binarios, y cuyos ejes están predefinidos: axis=['retos', 'inst', 'rep']
+    Además puede guardar una lista que relacione el índice del eje 'retos'
+    con una representación de cada reto (en principio arbitraria, en la
+    práctica será una lista de parejas de las celdas empleadas para obtener
+    cada bit).
     """
-    def __init__(self, topol, instancias, retos=[], d_pdl=False):
+    def __init__(self, instancias, retos, d_pdl=False):
         """
+        Función de inicialización.
+        
+        Parámetros:
+        -----------        
+        instancias : <objeto Tensor o lista de objetos Tensor>
+            Tensor tal y como es devuelto por la función
+            myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'osc', 'pdl'.
+            
+        retos : <lista de parejas de int>
+            Lista que contiene 'N_bits' parejas (i.e., listas de dos elementos),
+            tal y como son devueltas por la llamada a un objeto PufTopol. El
+            número de parejas que contenga este parámetro será el número de bits
+            base (sin tener en cuenta PDL ni multibit) de las respuestas.
+        
+        d_pdl : <bool, opcional, por defecto False>
+        
+        multibit : <bool, opcional, por defecto False>
         """
-        self.topol = topol
         if type(instancias)==type([]):
             self.instancias = instancias # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
         else:
             self.instancias=[instancias]
             
         self.N_inst = len(self.instancias)
-        self.N_pdl = self.instancias[0].shape[self.instancias[0].axis.index('pdl')]
-        self.N_rep = self.instancias[0].shape[self.instancias[0].axis.index('rep')]
-        self.N_osc = topol.N_osc
-        self.N_bits_partial = len(topol.grafo) # Número de bits sin tener en cuenta el "boost" PDL.
+        self.N_pdl = self.instancias[0].size('pdl')
+        self.N_rep = self.instancias[0].size('rep')
+        self.N_osc = self.instancias[0].size('osc')
+        self.N_bits_partial = len(retos) # Número de bits sin tener en cuenta el "boost" PDL.
         self.N_bits = self.N_bits_partial*self.N_pdl # Número de bits real de cada respuesta.
         
-        if len(retos)>0:
-            self.retos = retos
-            self.N_retos = len(self.retos)
+        self.retos = retos
+        self.N_retos = len(self.retos)
         self.data=[[[] for j in self.instancias] for i in self.retos]
-        for i_reto,reto in enumerate(self.retos):
-            for i_inst,inst in enumerate(self.instancias):
-                for i_rep in range(self.N_rep):
+        for i_reto,reto in enumerate(self.retos): # retos
+            for i_inst,inst in enumerate(self.instancias): # instancias
+                for i_rep in range(self.N_rep): # repeticiones
                     aux=[]
                     for i_pdl in range(self.N_pdl):
                         for bit in range(self.N_bits_partial):
