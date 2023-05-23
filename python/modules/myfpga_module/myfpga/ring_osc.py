@@ -866,8 +866,8 @@ class StdMatrix:
 
                     for i in range(self.N_osc):
                         for j in range(self.N_inv):
-                            f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix/ring{i}_w{j}]\n")
-                            f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix/ring{i}_w{j} }}]\n\n")
+                            f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix/w_{i}[{j}]]\n")
+                            f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix/w_{i}[{j}] }}]\n\n")
 
                     f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
                     f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc w ]\n")
