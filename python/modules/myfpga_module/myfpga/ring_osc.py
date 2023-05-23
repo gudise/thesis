@@ -11,11 +11,57 @@ from pickle                 import  dump    as pickle_dump,\
 from serial                 import  Serial  as serial_Serial
 from time                   import  sleep   as time_sleep
 from numpy                  import  reshape as np_reshape,\
-                                    log2    as np_log2
+                                    log2    as np_log2,\
+                                    transpose as np_transpose
+from numpy.random           import  normal  as np_normal
 from myaux                  import  *
 from myfpga                 import  *
 from myfpga.interfaz_pcps   import  *
 from mytensor               import  *
+
+
+def sim_romatrix(N_rep=1, N_pdl=1, N_osc=1, std_rep=1, std_pdl=10, std_osc=100):
+    """
+    Esta función proporciona un simulador naíf de una matriz de celdas; reproduce
+    las medidas de una instancia para un número de repeticiones (N_rep), pdl (N_pdl)
+    y celdas (N_osc), así como ajustar las desviaciones estándar de cada proceso.
+    El comportamiento estándar es:
+        std_rep<std_pdl<std_osc
+    La función genera los valores aleatorios como una distribución normal, pero
+    luego los escala para devolver siempre valores enteros positivos.
+    
+    Parámetros:
+    -----------
+    N_rep : <int, opcional, por defecto 1>
+        Número de repeticiones simuladas.
+        
+    N_pdl : <int, opcional, por defecto 1>
+        Número de PDL simulados.
+        
+    N_osc : <int, opcional, por defecto 1>
+        Número de celdas simuladas.
+        
+    std_rep : <float, opcional, por defecto 1.0>
+        Desviación estándar de una misma celda, para un mismo PDL entre
+        medidas sucesivas.
+        
+    std_pdl : <float, opcional, por defecto 10.0>
+        Desviación estandar de una misma celda entre distintos PDL
+        
+    std_osc : <float, opcional, por defecto 100.0>
+        Desviación estándar entre distintas celdas.
+    """
+    sim_osc = [np_normal(scale=std_osc) for i in range(N_osc)] # rep,pdl,osc
+    
+    sim_osc_pdl = [[sim_osc[i]+np_normal(scale=std_pdl) for j in range(N_pdl)] for i in range(N_osc)]
+    
+    sim_osc_pdl_rep = [[[sim_osc_pdl[i][j]+np_normal(scale=std_rep) for k in range(N_rep)] for j in range(N_pdl)] for i in range(N_osc)]
+    
+    sim_rep_pdl_osc = np_transpose(sim_osc_pdl_rep)
+    sim_rep_pdl_osc-=min(sim_rep_pdl_osc.flatten())
+    sim_rep_pdl_osc+=0.5*max(sim_rep_pdl_osc.flatten())
+    
+    return ((sim_rep_pdl_osc.round(6))*1000000).round(0) 
         
         
 def clog2(N):
