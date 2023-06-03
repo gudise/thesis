@@ -8,9 +8,9 @@ from numpy              import pi as np_pi,\
                                mean as np_mean,\
                                std as np_std,\
                                argmin as np_argmin
-from scipy.stats        import binom as sp_binomial,\
-                               norm as sp_normal,\
-                               fit as sp_fit
+from scipy.stats        import binom as sp_binomial
+                               #norm as sp_normal,\
+                               #fit as sp_fit
 from scipy.interpolate  import interp1d as sp_interp1d
 from matplotlib.pyplot  import plot as plt_plot,\
                                bar as plt_bar,\
@@ -167,27 +167,67 @@ class PufExp:
     con una representación de cada reto (en principio arbitraria, en la
     práctica será una lista de parejas de las celdas empleadas para obtener
     cada bit).
+    
+    Parámetros:
+    -----------        
+    instancias : <objeto Tensor o lista de objetos Tensor>
+        Tensor tal y como es devuelto por la función
+        myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'osc', 'pdl'.
+        
+    retos : <lista de lista de parejas de int>
+        Lista que contiene una lista de parejas (i.e., listas de dos elementos),
+        tal y como son devueltas por la llamada a un objeto PufTopol. El
+        número de parejas que contenga este parámetro será el número de bits
+        base (sin tener en cuenta PDL ni multibit) de las respuestas.
+    
+    d_pdl : <bool, opcional, por defecto False>
+    
+    multibit : <lista de int, opcional, por defecto [0]>
+        Esta opción indica qué bits de las comparaciones indicadas en la
+        opción 'retos' se utilizand para construir la respuesta. Esta
+        consta de 32 bits, desde 0 (bit de signo) hasta 31 (bit menos
+        significativo).
+        
+    Constantes:
+    -----------
+    N_inst
+    N_pdl
+    N_rep
+    N_osc
+    N_bits
+    N_retos
+    x
+    intradist
+    intradist_media
+    intrdist_std
+    intradist_p
+    intradist_ajuste_binom
+    intradist_ajuste_normal
+    interdist
+    interdist_media
+    interdist_std
+    interdist_p
+    interdist_ajuste_binom
+    interdist_ajuste_normal
+    far
+    frr
+    t_eer
+    eer
+    
+    Funciones:
+    ----------
+    print()
+        Esta función pinta el experimento PUF completo.
+        
+        Parámetros:
+        -----------
+        print_retos : <bool, opcional, por defecto True>
+            Si 'True' pinta también el reto asociado con cada respuesta.
+        
     """
     def __init__(self, instancias, retos, d_pdl=False, multibit=[0]):
         """
         Función de inicialización.
-        
-        Parámetros:
-        -----------        
-        instancias : <objeto Tensor o lista de objetos Tensor>
-            Tensor tal y como es devuelto por la función
-            myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'osc', 'pdl'.
-            
-        retos : <lista de lista de parejas de int>
-            Lista que contiene 'N_bits' parejas (i.e., listas de dos elementos),
-            tal y como son devueltas por la llamada a un objeto PufTopol. El
-            número de parejas que contenga este parámetro será el número de bits
-            base (sin tener en cuenta PDL ni multibit) de las respuestas.
-        
-        d_pdl : <bool, opcional, por defecto False>
-        
-        multibit : <lista de int, opcional, por defecto [0]>
-            Esta opción indica 
         """
         if type(instancias)==type([]):
             self.instancias = instancias # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
@@ -201,6 +241,7 @@ class PufExp:
         self.N_bits_partial = len(retos[0]) # Número de bits sin tener en cuenta el "boost" PDL.
         self.N_bits = self.N_bits_partial*self.N_pdl*len(multibit) # Número de bits real de cada respuesta.
         self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
+        self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
         
         self.retos = retos
         self.N_retos = len(self.retos)
@@ -256,7 +297,7 @@ class PufExp:
         for x in self.x:
             self.intradist[x]/=intradist_sum
         self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
-        self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
+        #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
         ## Inter-distancia
         self.interdist_set=[]
@@ -279,11 +320,11 @@ class PufExp:
         for x in self.x:
             self.interdist[x]/=interdist_sum
         self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
-        self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
+        #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
         
         # Identificabilidad
         self.far = sp_binomial.cdf(self.x, n=self.N_bits, p=self.interdist_p)
-        self.frr = 1-sp_binomial.cdf(self.x, n=self.N_bits, p=self.intradist_p) 
+        self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
         self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
         self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
         
