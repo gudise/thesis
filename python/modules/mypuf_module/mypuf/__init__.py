@@ -172,7 +172,7 @@ class PufExp:
     -----------        
     instancias : <objeto Tensor o lista de objetos Tensor>
         Tensor tal y como es devuelto por la función
-        myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'osc', 'pdl'.
+        myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'pdl', 'osc'.
         
     retos : <lista de lista de parejas de int>
         Lista que contiene una lista de parejas (i.e., listas de dos elementos),
@@ -299,35 +299,36 @@ class PufExp:
         self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
         #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
-        ## Inter-distancia
-        self.interdist_set=[]
-        for i_reto in range(self.N_retos):
-            
-            for i_inst in range(self.N_inst):
+        ## Inter-distancia: solo si N_inst > 1:
+        if self.N_inst>1:
+            self.interdist_set=[]
+            for i_reto in range(self.N_retos):
                 
-                for j_inst in range(i_inst+1,self.N_inst,1): 
+                for i_inst in range(self.N_inst):
                     
-                    for i_rep in range(self.N_rep):
-                        self.interdist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][j_inst][i_rep]))
-        
-        self.interdist_media = np_mean(self.interdist_set)
-        self.interdist_std = np_std(self.interdist_set)
-        self.interdist_p = self.interdist_media/self.N_bits
-        self.interdist = [0 for x in self.x]
-        for x,y in zip(*np_unique(self.interdist_set, return_counts=True)):
-            self.interdist[x]=y
-        interdist_sum = sum(self.interdist)
-        for x in self.x:
-            self.interdist[x]/=interdist_sum
-        self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
-        #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
-        
-        # Identificabilidad
-        self.far = sp_binomial.cdf(self.x, n=self.N_bits, p=self.interdist_p)
-        self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
-        self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
-        self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
-        self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
+                    for j_inst in range(i_inst+1,self.N_inst,1): 
+                        
+                        for i_rep in range(self.N_rep):
+                            self.interdist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][j_inst][i_rep]))
+            
+            self.interdist_media = np_mean(self.interdist_set)
+            self.interdist_std = np_std(self.interdist_set)
+            self.interdist_p = self.interdist_media/self.N_bits
+            self.interdist = [0 for x in self.x]
+            for x,y in zip(*np_unique(self.interdist_set, return_counts=True)):
+                self.interdist[x]=y
+            interdist_sum = sum(self.interdist)
+            for x in self.x:
+                self.interdist[x]/=interdist_sum
+            self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
+            #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
+            
+            # Identificabilidad: solo si N_inst > 1:
+            self.far = sp_binomial.cdf(self.x, n=self.N_bits, p=self.interdist_p)
+            self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
+            self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
+            self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
+            self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
         
                 
     def print(self, print_retos=True):
