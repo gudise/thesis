@@ -327,6 +327,7 @@ class PufExp:
         self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
         self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
         self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
+        self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
         
                 
     def print(self, print_retos=True):
