@@ -194,6 +194,7 @@ class PufExp:
         de n_rep_code respuestas binarias; cada bit posicional de la respuesta
         se calcula como la moda de bits del grupo. Notar que esto reduce el 
         número de repeticiones efectivo introducido en un factor 1/n_rep_code.
+        Es recomendable que esta cantidad sea impar.
         
     del_bits : <lista de int, opcional, por defecto []>
         Esta opción indica los canales de bits que se eliminarán de la respuesta
@@ -247,12 +248,16 @@ class PufExp:
         """
         def sesgo_data_bin(data):
             """Esta función extrae el sesgo de cada bit a partir de una lista (data) de vectores binarios"""
-            result = [0 for i in range(len(data[0]))]
-            for i in range(len(result)):
-                for j in range(len(data)):
+            N_data = len(data)
+            N_bits = len(data[0])
+            
+            result = [0 for i in range(N_bits)]
+            for i in range(N_bits):
+                for j in range(N_data):
                     if data[j][i]=='1':
                         result[i]+=1
-                result[i]/=len(data)
+                result[i]/=N_data
+                
             return result
         
         if type(instancias)==type([]):
@@ -290,9 +295,9 @@ class PufExp:
                             for bit in range(self.N_bits_partial):
                                 
                                 if d_pdl: # Usamos la primera erivada de la línea PDL para extraer la respuesta. 
-                                    diff = (inst.item(osc=reto[bit][0], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl)) - (inst.item(osc=reto[bit][1], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl))
+                                    diff = (inst.item(osc=reto[bit][0], rep=n_rep_code*i_rep+i_n_rep_code, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][0], rep=n_rep_code*i_rep+i_n_rep_code, pdl=i_pdl)) - (inst.item(osc=reto[bit][1], rep=n_rep_code*i_rep+i_n_rep_code, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][1], rep=n_rep_code*i_rep+i_n_rep_code, pdl=i_pdl))
                                 else:
-                                    diff = inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) - inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl)
+                                    diff = inst.item(osc=reto[bit][0], rep=n_rep_code*i_rep+i_n_rep_code, pdl=i_pdl) - inst.item(osc=reto[bit][1], rep=n_rep_code*i_rep+i_n_rep_code, pdl=i_pdl)
                                 
                                 if diff<0:
                                     diff_sign = '0'
@@ -307,10 +312,10 @@ class PufExp:
                     response_bin="" # respuesta corregida por un método de votación.
                     for i_bit,bit in enumerate(sesgo_data_bin(lista_rep_code)):
                         if i_bit not in del_bits: # Solo copiamos canales de bit que no hayan sido vetados.
-                            if round(bit)==1:
+                            if round(bit)>0.5:
                                 response_bin+='1'
                             else:
-                                response_bin+='0'
+                                response_bin+='0'                         
 
                     self.pufexp[i_reto][i_inst].append(response_bin)
                     
