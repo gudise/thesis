@@ -161,12 +161,10 @@ class PufTopol:
 
 class PufExp:
     """
-    Estos objetos son esencialmente un TENSOR que solo almacena valores
-    binarios, y cuyos ejes están predefinidos: axis=['retos', 'inst', 'rep']
-    Además puede guardar una lista que relacione el índice del eje 'retos'
-    con una representación de cada reto (en principio arbitraria, en la
-    práctica será una lista de parejas de las celdas empleadas para obtener
-    cada bit).
+    Este objeto contiene un experimento PUF. Además puede guardar una lista 
+    que relacione el índice del eje 'retos' con una representación de cada 
+    reto (en principio arbitraria, en la práctica será una lista de parejas 
+    de las celdas empleadas para obtener cada bit).
     
     Parámetros:
     -----------        
@@ -188,8 +186,20 @@ class PufExp:
         consta de 32 bits, desde 0 (bit de signo) hasta 31 (bit menos
         significativo).
         
+    n_rep_code : <int, opcional, por defecto 1>
+        Esta opción indica el número de repeticiones que se utilizarán para
+        corregir la respuesta PUF una vez digitalizada, utilizando un código
+        de repetición, i.e., un esquema de corrección de errores por 
+        repetición: el número de repeticiones introducido se divide en grupos
+        de n_rep_code respuestas binarias; cada bit posicional de la respuesta
+        se calcula como la moda de bits del grupo. Notar que esto reduce el 
+        número de repeticiones efectivo introducido en un factor 1/n_rep_code.
+        
     Constantes:
     -----------
+    pufexp : lista de tres dimensiones que almacena los valores binarios de la 
+             respuesta PUF, y cuyos ejes están predefinidos y dados en el orden: 
+             [retos][inst][rep]
     N_inst
     N_pdl
     N_rep
@@ -225,7 +235,7 @@ class PufExp:
             Si 'True' pinta también el reto asociado con cada respuesta.
         
     """
-    def __init__(self, instancias, retos, d_pdl=False, multibit=[0]):
+    def __init__(self, instancias, retos, d_pdl=False, multibit=[0], n_rep_code=1):
         """
         Función de inicialización.
         """
