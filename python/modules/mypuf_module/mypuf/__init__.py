@@ -195,6 +195,11 @@ class PufExp:
         se calcula como la moda de bits del grupo. Notar que esto reduce el 
         número de repeticiones efectivo introducido en un factor 1/n_rep_code.
         
+    del_bits : <lista de int, opcional, por defecto []>
+        Esta opción indica los canales de bits que se eliminarán de la respuesta
+        final (el primer canal corresponde al índice 0). Esto permite eliminar
+        bits que son muy ruidosos.
+        
     Constantes:
     -----------
     pufexp : lista de tres dimensiones que almacena los valores binarios de la 
@@ -207,6 +212,7 @@ class PufExp:
     N_bits
     N_retos
     x
+    sesgo_bit
     intradist
     intradist_media
     intrdist_std
@@ -235,10 +241,20 @@ class PufExp:
             Si 'True' pinta también el reto asociado con cada respuesta.
         
     """
-    def __init__(self, instancias, retos, d_pdl=False, multibit=[0], n_rep_code=1):
+    def __init__(self, instancias, retos, d_pdl=False, multibit=[0], n_rep_code=1, del_bits=[]):
         """
         Función de inicialización.
         """
+        def sesgo_data_bin(data):
+            """Esta función extrae el sesgo de cada bit a partir de una lista (data) de vectores binarios"""
+            result = [0 for i in range(len(data[0]))]
+            for i in range(len(result)):
+                for j in range(len(data)):
+                    if data[j][i]=='1':
+                        result[i]+=1
+                result[i]/=len(data)
+            return result
+        
         if type(instancias)==type([]):
             self.instancias = instancias # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
         else:
@@ -246,10 +262,10 @@ class PufExp:
             
         self.N_inst = len(self.instancias)
         self.N_pdl = self.instancias[0].size('pdl')
-        self.N_rep = self.instancias[0].size('rep')
+        self.N_rep = self.instancias[0].size('rep')//n_rep_code # N. total de repticiones.
         self.N_osc = self.instancias[0].size('osc')
         self.N_bits_partial = len(retos[0]) # Número de bits sin tener en cuenta el "boost" PDL.
-        self.N_bits = self.N_bits_partial*self.N_pdl*len(multibit) # Número de bits real de cada respuesta.
+        self.N_bits = self.N_bits_partial*self.N_pdl*len(multibit)-len(del_bits) # Número de bits real de cada respuesta.
         self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
         self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
         
@@ -265,26 +281,41 @@ class PufExp:
                 
                 for i_rep in range(self.N_rep): # repeticiones
                     
-                    response_bin=""
-                    for i_pdl in range(self.N_pdl):
+                    lista_rep_code=[] # lista de respuestas de un lote de corrección de errores
+                    for i_n_rep_code in range(n_rep_code):
                         
-                        for bit in range(self.N_bits_partial):
+                        rep_code="" # respuesta de corrección de errores
+                        for i_pdl in range(self.N_pdl):
                             
-                            if d_pdl: # Usamos la primera erivada de la línea PDL para extraer la respuesta. 
-                                diff = (inst.item(osc=reto[bit][0], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl)) - (inst.item(osc=reto[bit][1], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl))
+                            for bit in range(self.N_bits_partial):
+                                
+                                if d_pdl: # Usamos la primera erivada de la línea PDL para extraer la respuesta. 
+                                    diff = (inst.item(osc=reto[bit][0], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl)) - (inst.item(osc=reto[bit][1], rep=i_rep, pdl=(i_pdl+1)%self.N_pdl)-inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl))
+                                else:
+                                    diff = inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) - inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl)
+                                
+                                if diff<0:
+                                    diff_sign = '0'
+                                else:
+                                    diff_sign = '1'
+                                diff_abs_bin = format(int(abs(diff)), '031b') # Convierte 'abs(diff)' en un string binario de 31 dígitos con 'leading zeroes'.
+                                diff_bin = diff_sign+diff_abs_bin
+                                
+                                rep_code+="".join([diff_bin[i] for i in self.multibit]) # Solo nos quedmos con los bit indicados en la opción 'multibit'.
+                        lista_rep_code.append(rep_code)
+                        
+                    response_bin="" # respuesta corregida por un método de votación.
+                    for i_bit,bit in enumerate(sesgo_data_bin(lista_rep_code)):
+                        if i_bit not in del_bits: # Solo copiamos canales de bit que no hayan sido vetados.
+                            if round(bit)==1:
+                                response_bin+='1'
                             else:
-                                diff = inst.item(osc=reto[bit][0], rep=i_rep, pdl=i_pdl) - inst.item(osc=reto[bit][1], rep=i_rep, pdl=i_pdl)
-                            
-                            if diff<0:
-                                diff_sign = '0'
-                            else:
-                                diff_sign = '1'
-                            diff_abs_bin = format(int(abs(diff)), '031b') # Convierte 'abs(diff)' en un string binario de 31 dígitos con 'leading zeroes'.
-                            diff_bin = diff_sign+diff_abs_bin
-                            
-                            response_bin+="".join([diff_bin[i] for i in self.multibit]) # Solo nos quedmos con los bit indicados en la opción 'multibit'.
+                                response_bin+='0'
 
                     self.pufexp[i_reto][i_inst].append(response_bin)
+                    
+        ## Sesgo de cada bit
+        self.sesgo_bit = [[sesgo_data_bin(self.pufexp[i_reto][i_inst]) for i_inst in range(len(self.instancias))] for i_reto in range(len(self.retos))]
         
         ## Intra-distancia
         self.intradist_set=[]
