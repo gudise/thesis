@@ -311,11 +311,13 @@ class PufExp:
                         
                     response_bin="" # respuesta corregida por un método de votación.
                     for i_bit,bit in enumerate(sesgo_data_bin(lista_rep_code)):
-                        if i_bit not in del_bits: # Solo copiamos canales de bit que no hayan sido vetados.
+                        if i_bit not in del_bits: # Si el canal de bits no ha sido vetado calculamos el bit mediano...
                             if round(bit)>0.5:
                                 response_bin+='1'
                             else:
-                                response_bin+='0'                         
+                                response_bin+='0'
+                        else:
+                            response_bin+='0' # ... en caso contrario escribimos '0' por convenio.
 
                     self.pufexp[i_reto][i_inst].append(response_bin)
                     
