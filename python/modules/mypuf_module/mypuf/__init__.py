@@ -97,7 +97,7 @@ class PufTopol:
             for i in range(0, self.N_osc-1, 1):
                 self.grafo.append([i,i+1])
         elif topol=='custom':
-            self.grafo = custom
+            self.grafo = custom[:]
             
     def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, export_pdf=False):
         """
@@ -261,7 +261,7 @@ class PufExp:
             return result
         
         if type(instancias)==type([]):
-            self.instancias = instancias # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
+            self.instancias = instancias[:] # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
         else:
             self.instancias=[instancias]
             
@@ -274,9 +274,9 @@ class PufExp:
         self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
         self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
         
-        self.retos = retos
+        self.retos = retos[:]
         self.N_retos = len(self.retos)
-        self.multibit = multibit
+        self.multibit = multibit[:]
         
         # Experimento PUF
         self.pufexp=[[[] for j in self.instancias] for i in self.retos]
@@ -392,3 +392,60 @@ class PufExp:
                     else:
                         print(f" {i_reto},{i_inst},{i_rep} = {' '.join(str(bit) for bit in self.pufexp[i_reto][i_inst][i_rep])}")
                         
+                        
+class PufExpAmpliado:
+    """
+    Esta clase contiene un experimento PUF ampliado, que es un conjunto de objetos 'PufExp' realizados en diferentes
+    condiciones ambientales. Cada condición ambiental se identifica internamente mediante un índice entero.
+
+    Parámetros:
+    -----------
+    experimentos : <lista de objetos 'PufExp'>
+        Este parámetro introduce la lista de experimentos PUF realizados en diferentes condiciones ambientales.
+        
+    cond_amb : <lista de 'float', opcional, por defecto range(len(experimentos))>
+        Esta opción es un alias para asignar un valor real al índice identificador de cada condición ambiental
+        introducida. Por ejemplo, para asignar temperaturas reales medidas con unidades.
+        
+    cond_ref : <int, opcional, por defecto 0>
+        Permite identificar cuál es la condición ambiental de referencia, dada la lista 'experimentos'. Notar que
+        aunque es opcional, generalmente el valor por defecto (0) será incorrecto.
+        
+    Constantes:
+    -----------
+    self.experimentos
+    self.cond_amb
+    self.cond_ref
+    self.N_amb
+    self.intradist_amb_set
+    self.intradist_amb
+
+    """
+
+    def __init__(self, experimentos, cond_amb=False, cond_ref=0):
+        """ Función de inicialización."""
+        self.experimentos = experimentos[:]
+        if cond_amb != False:
+            self.cond_amb = cond_amb[:]
+        else:
+            self.cond_amb = list(range(len(experimentos)))
+        self.cond_ref = cond_ref
+        self.N_retos = experimentos[0].N_retos
+        self.N_inst = experimentos[0].N_inst
+        self.N_rep = experimentos[0].N_rep
+        self.N_amb = len(experimentos)
+        self.N_bits = experimentos[0].N_bits
+        
+        self.intradist_amb_set=[]
+        for i_reto in range(self.N_retos):
+            
+            for i_inst in range(self.N_inst):
+                
+                for i_rep in range(self.N_rep):
+                
+                    for i_amb,amb in enumerate(experimentos):
+                        self.intradist_amb_set.append(hamming(amb.pufexp[i_reto][i_inst][i_rep],experimentos[cond_ref].pufexp[i_reto][i_inst][i_rep]))
+        self.intradist_amb_set = np_reshape(self.intradist_amb_set, (self.N_retos,self.N_inst,self.N_rep,self.N_amb))
+        
+        self.curva_v = np_mean(self.intradist_amb_set, axis=(0,1,2)) # Promedio sobre N_retos, N_inst y N_rep.
+        
