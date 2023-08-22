@@ -8,7 +8,7 @@ printf " mypuf-package-upgrade.sh
 	exit
 fi
 
-cd $REPO_puf/python/modules/mypuf_module
+cd mypuf_module
 rm -r dist
 python3 setup.py sdist
 cd dist/

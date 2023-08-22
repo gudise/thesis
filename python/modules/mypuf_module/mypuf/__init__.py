@@ -4,10 +4,13 @@ from numpy              import pi as np_pi,\
                                cos as np_cos,\
                                sin as np_sin,\
                                log as np_log,\
+                               sqrt as np_sqrt,\
                                unique as np_unique,\
                                mean as np_mean,\
                                std as np_std,\
-                               argmin as np_argmin
+                               argmin as np_argmin,\
+                               argsort as np_argsort,\
+                               flip as np_flip
 from scipy.stats        import binom as sp_binomial
                                #norm as sp_normal,\
                                #fit as sp_fit
@@ -216,13 +219,15 @@ class PufExp:
     sesgo_bit
     intradist
     intradist_media
-    intrdist_std
+    intradist_std
+    intradist_error_media
     intradist_p
     intradist_ajuste_binom
     intradist_ajuste_normal
     interdist
     interdist_media
     interdist_std
+    interdist_error_media
     interdist_p
     interdist_ajuste_binom
     interdist_ajuste_normal
@@ -337,6 +342,7 @@ class PufExp:
         
         self.intradist_media = np_mean(self.intradist_set)
         self.intradist_std = np_std(self.intradist_set)
+        self.intradist_error_media = self.intradist_std/np_sqrt(len(self.intradist_set)) # desviación estándar de la media (teorema del límite central)
         self.intradist_p = self.intradist_media/self.N_bits
         self.intradist = [0 for x in self.x]
         for x,y in zip(*np_unique(self.intradist_set, return_counts=True)):
@@ -361,6 +367,7 @@ class PufExp:
             
             self.interdist_media = np_mean(self.interdist_set)
             self.interdist_std = np_std(self.interdist_set)
+            self.interdist_error_media = self.interdist_std/np_sqrt(len(self.interdist_set)) # desviación estándar de la media (teorema del límite central)
             self.interdist_p = self.interdist_media/self.N_bits
             self.interdist = [0 for x in self.x]
             for x,y in zip(*np_unique(self.interdist_set, return_counts=True)):
@@ -377,8 +384,42 @@ class PufExp:
             self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
             self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
             self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
+            
+            
+    def noisy_bits(self, metodo_calc='flip'):
+        """
+        Esta función devuelve una lista de canales bit ordenada en orden decreciente de variabilidad. Utilizar para decidir qué canales
+        bit suprimir como parte del 'helper_data'. La función devuelve de hecho una lista [i][j][k] donde:
+            i --> Reto
+            j --> Instancia
+            k --> k-ésimo canal bit
+        El método de cálculo (metodo_calc) admite dos opciones: 'flip' (por defecto) y 'std'. La primera calcula los peores canales como
+        aquellos que flipan un mayor número de veces, i.e., prima el hecho de que un bit tenga una baja entropía. En en segundo caso, tiene
+        más importancia el hecho de que el sesgo del bit se aleje de los valores 0/1.
+        """
+        result = [[ [] for j in range(self.N_inst)] for i in range(self.N_retos)]
+        for i in range(self.N_retos):
+            for j in range(self.N_inst):
+                for k in range(self.N_bits):
+                    if metodo_calc == 'flip':
+                        flips=0 # contador de flips
+                        for l in range(1,self.N_rep,1):
+                            if self.pufexp[i][j][l][k] != self.pufexp[i][j][l-1][k]:
+                                flips+=1
+                        result[i][j].append(flips)
+                    else:
+                        flips=[]
+                        for l in range(self.N_rep):
+                            if self.pufexp[i][j][l][k]=='0':
+                                flips.append(0)
+                            else:
+                                flips.append(1)
+                        result[i][j].append(np_std(flips))
+                        
+            
+        return np_flip(np_argsort(result, axis=2), axis=2)
         
-                
+        
     def print(self, print_retos=True):
         if print_retos:
             print("# reto,inst,rep = reto = respuesta\n")
@@ -413,12 +454,14 @@ class PufExpAmpliado:
         
     Constantes:
     -----------
-    self.experimentos
-    self.cond_amb
-    self.cond_ref
-    self.N_amb
-    self.intradist_amb_set
-    self.intradist_amb
+    experimentos
+    cond_amb
+    cond_ref
+    N_amb
+    intradist_amb_set
+    intradist_amb
+    curva_v
+    curva_v_error
 
     """
 
@@ -448,4 +491,5 @@ class PufExpAmpliado:
         self.intradist_amb_set = np_reshape(self.intradist_amb_set, (self.N_retos,self.N_inst,self.N_rep,self.N_amb))
         
         self.curva_v = np_mean(self.intradist_amb_set, axis=(0,1,2)) # Promedio sobre N_retos, N_inst y N_rep.
+        self.curva_v_error = np_std(self.intradist_amb_set, axis=(0,1,2))/np_sqrt(self.N_retos*self.N_inst*self.N_rep) # Desviación estándar de cada promedio.
         
