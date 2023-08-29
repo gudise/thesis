@@ -1,3 +1,7 @@
+from matplotlib.pyplot import figure as plt_figure
+
+
+
 class BarraProgreso:
     """
     Est aclase instancia un objeto "BarraProgreso".
@@ -47,3 +51,36 @@ class BarraProgreso:
             print(f" |{''.join([self.caracter for i in range(self.long_barra)])}| {100.00:.2f} %")
         else:
             print(f" |{''.join([self.caracter for i in range(n_puntos)])+''.join(['.' for i in range(self.long_barra-n_puntos)])}| {100*perone:.2f} %", end='\r')
+            
+            
+def export_legend_plt(ax, name='legend.pdf', pad_inches=0.1, **kwargs):
+    """
+    Esta función permite exportar la leyenda la figura actualmente
+    activa; muy útil para hacer múltiples plot en los cuales la
+    leyenda es compartida. Notar que para usarse, debe haberse 
+    creado una figura con 'plt.plot', la cual debe tener una leyenda,
+    y NO debe haberse realizado un 'plt.show()'.
+    
+    Parámetros:
+    ----------
+    ax : <Objeto Axe de pyplot>
+        Ejes de la figura cuya leyenda se quiere extraer. Si usamos
+        los comandos 'plot' etc, podemos obtener el eje del plot
+        activo como ax=plt.gca()
+    
+    name : <str, opcional, por defecto "legend.pdf">
+        Nombre de la imagen
+        
+    pad_inches : <float, opcional, por defecto 0.1>
+        Esta opción se pasa tal cual a la función 'savefig'.
+        
+    **kwargs : <>
+        Las opciones introducidas aquí son pasadas tal cual a la función 'ax.legend'.
+    """
+
+    # Create a legend without the plot lines in a new empty figure
+    fig_legend = plt_figure(figsize=(3, 3))  # Adjust the size as needed
+    legend = fig_legend.legend(*ax.get_legend_handles_labels(), frameon=False, **kwargs)
+
+    # Save the legend as a standalone image (in this case, PNG format)
+    fig_legend.savefig(name, bbox_inches='tight', pad_inches=pad_inches)
