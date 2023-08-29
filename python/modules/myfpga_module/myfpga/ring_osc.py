@@ -12,7 +12,8 @@ from serial                 import  Serial  as serial_Serial
 from time                   import  sleep   as time_sleep
 from numpy                  import  reshape as np_reshape,\
                                     log2    as np_log2,\
-                                    transpose as np_transpose
+                                    transpose as np_transpose,\
+                                    inf     as np_inf
 from numpy.random           import  normal  as np_normal
 from myaux                  import  *
 from myfpga                 import  *
@@ -98,7 +99,7 @@ class StdRing():
         . Puerta AND.
         . N_inv inversores.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', modo='min'):
+    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False):
         """
         Inicialización del objeto 'StdRing'.
         
@@ -160,16 +161,10 @@ class StdRing():
                 'I1'). Notar que el número de elementos total de un anillo "StdRing"
                 es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).
                 
-            modo : <string>
-                Esta opción determina el modo de implementación de las LUT del
-                anillo:
-                    'min'
-                        Minimalista, se utilizan modelos LUT1 para los inversores y
-                        LUT2 el enable AND.
-                    
-                    'config'
-                        Se utilizan modelos LUT6 para los inversores, permitiendo
-                        utilizar 5 puertos para configurar el anillo mediante PDL.
+            pdl : <bool, opcional, por defecto False>
+                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
+                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
+                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
         """
         self.name = name
         self.N_inv = N_inv
@@ -199,17 +194,7 @@ class StdRing():
         else:
             self.pin[0] = pin
             
-        if modo=='min':
-            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
-            for i in range(N_inv):
-                w_in = f"w_{name}[{i}]"
-                if i==N_inv-1:
-                    w_out = f"out_romatrix[{name}]"
-                else:
-                    w_out = f"w_{name}[{i+1}]"
-                self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
-        
-        elif modo=='config':
+        if pdl:
             self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
             for i in range(N_inv):
                 w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
@@ -218,6 +203,16 @@ class StdRing():
                 else:
                     w_out = f"w_{name}[{i+1}]"
                 self.elements.append(Lut6(f"inv_{name}_{i}", "64'h5555555555555555", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
+            
+        else:
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
+            for i in range(N_inv):
+                w_in = f"w_{name}[{i}]"
+                if i==N_inv-1:
+                    w_out = f"out_romatrix[{name}]"
+                else:
+                    w_out = f"w_{name}[{i+1}]"
+                self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
     def help(self):
         """
@@ -238,7 +233,7 @@ class GaloisRing():
         . Inversor de salida.
         . flip-flop de muestreo.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', modo='min'):
+    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False):
         """
         Inicialización del objeto 'GaloisRing'.
         
@@ -299,16 +294,10 @@ class GaloisRing():
                 'GaloisRing' sea N_inv+2, a efectos de la opción "pin" el último se 
                 ignora (esta restringe solo los pines de las LUT, no del flip-flop).
             
-            modo : <string>
-                Esta opción determina el modo de implementación de las LUT del
-                anillo:
-                    'min'
-                        Minimalista, se utilizan modelos LUT1 para los inversores y
-                        LUT2 el enable AND.
-                    
-                    'config'
-                        Se utilizan modelos LUT6 para los inversores, permitiendo
-                        utilizar 5 puertos para configurar el anillo mediante PDL.
+            pdl : <bool, opcional, por defecto False>
+                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
+                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
+                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
         """
         self.name = name
         self.N_inv = N_inv
@@ -338,7 +327,19 @@ class GaloisRing():
         else:
             self.pin[0] = pin
             
-        if modo=='min':
+        if pdl:
+            self.elements = []
+            for i in range(N_inv):
+                w_out = f"w_{name}[{i}]"
+                
+                if i==0:
+                    w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                    self.elements.append(Lut4(f"inv_{name}_{i}", "16'h5555", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                else:
+                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                    self.elements.append(Lut6(f"inv_{name}_{i}", "64'h9595959595959595", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+            
+        else:
             self.elements = []
             for i in range(N_inv):
                 w_out = f"w_{name}[{i}]"
@@ -349,18 +350,6 @@ class GaloisRing():
                 else:
                     w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
                     self.elements.append(Lut3(f"inv_{name}_{i}", "8'h95", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-        
-        elif modo=='config':
-            self.elements = []
-            for i in range(N_inv):
-                w_out = f"w_{name}[{i}]"
-                
-                if i==0:
-                    w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                    self.elements.append(Lut4(f"inv_{name}_{i}", "16'h5555", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
-                else:
-                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", "64'h9595959595959595", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))            
                     
         self.elements.append(Lut1(f"invout_{name}", "2'h1", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
         self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
@@ -378,36 +367,36 @@ class Dominio:
     osciladores dispuestos atendiendo a diversos parámetros geométricos 
     (ver función '__init__').
     """
-    def __init__(self, N_osc=10, x0=0, x1=99, dx=1, y0=0, y1=99, dy=1, directriz='y'):
+    def __init__(self, N_osc=10, x0=0, x1=np_inf, dx=1, y0=0, y1=np_inf, dy=1, directriz='y'):
         """
         Inicialización del objeto 'Dominio'.
         
         Parámetros:
         -----------
-            N_osc : <int>
+            N_osc : <int, opcional, por defecto 10>
                 Número de osciladores del dominio.
                 
-            x0 : <int>
+            x0 : <int, opcional, por defecto 0>
                 Coordenada X del primer oscilador de la matriz.
              
-            x1 : <int>
+            x1 : <int, opcional, por defecto infinito>
                 Coordenada X máxima de la matriz (no se sobrepasará).
                 
-            dx : <int>
+            dx : <int, opcional, por defecto 1>
                 Incremento de la coordenada X. Notar que habitualmente en las FPGA 
                 de Xilinx se reservan las coordenadas X par/impar para distintos
                 tipos de celda ('0' y '1').
                 
-            y0 : <int>
+            y0 : <int, opcional, por defecto 0>
                 Coordenada Y del primer oscilador de la matriz.
                 
-            y1 : <int>
+            y1 : <int, opcional, por defecto infinito>
                 Coordenada Y máxima de la matriz (no se sobrepasará).
                 
-            dy : <int>
+            dy : <int, opcional, por defecto 1>
                 Incremento de la coordenada Y.
                 
-            directriz : <caracter>
+            directriz : <char, opcional, por defecto 'y'>
                 Dirección de crecimiento de la matriz (hasta llegar a la coordenada 
                 máxima). Puede ser 'y' o 'x'.
         """
@@ -451,10 +440,7 @@ class Dominio:
         
         
 class StdMatrix:
-    """Objeto que contiene una matriz de osciladores de anillo estándar."""
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', modo='min'):
-        """
-        Inicialización del objeto 'StdMatrix'.
+    """Objeto que contiene una matriz de osciladores de anillo estándar.
         
         Parámetros:
         ---------
@@ -476,17 +462,14 @@ class StdMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'StdRing').
                 
-            modo : <string>
-                Esta opción determina el modo de implementación de las LUT del
-                anillo:
-                    'min'
-                        Minimalista, se utilizan modelos LUT1 para los inversores y
-                        LUT2 el enable AND.
-                    
-                    'config'
-                        Se utilizan modelos LUT6 para los inversores, permitiendo
-                        utilizar 5 puertos para configurar el anillo mediante PDL.
-        
+            pdl : <bool, opcional, por defecto False>
+                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
+                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
+                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
+    """
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False):
+        """
+        Inicialización del objeto 'StdMatrix'.
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
@@ -510,21 +493,22 @@ class StdMatrix:
         else:
             self.pin[0] = pin
 
-        self.modo = modo
+        self.pdl = pdl
             
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.modo))
+                self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
         self.N_bits_resol = 5
-        if self.modo=='min':
-            self.N_bits_pdl = 0
-        elif modo=='config':
+        
+        if self.pdl:
             self.N_bits_pdl = 5
+        else:
+            self.N_bits_pdl = 0
                 
     def help(self):
         """
@@ -562,7 +546,7 @@ class StdMatrix:
             
             f.write("module ROMATRIX (\n")
             f.write(f"    input[{self.N_osc-1}:0] enable_romatrix,\n")
-            if self.modo=='config':
+            if self.pdl:
                 f.write(f"    input[4:0] sel_pdl,\n")
             f.write("    (* ALLOW_COMBINATORIAL_LOOPS = \"true\", DONT_TOUCH = \"true\" *)\n")
             f.write(f"    output[{self.N_osc-1}:0] out_romatrix\n")
@@ -591,7 +575,8 @@ class StdMatrix:
                 
     def implement(self, projname='project_romatrix', projdir='.', njobs=4, linux=False, 
                   debug=False, files=True, board='pynqz2', qspi=False, routing=False, 
-                  pblock=False, data_width=32, buffer_out_width=32, f_clock=100):
+                  pblock_interfaz_ps=False, pblock_interfaz_romatrix=False, pblock_medidor_frec=False,
+                  data_width=32, buffer_out_width=32, f_clock=100):
         """
         Copia en el directorio 'projdir' todos los archivos necesarios para 
         implementar una matriz de osciladores de anillo con medición de la 
@@ -643,16 +628,38 @@ class StdMatrix:
                 pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
                 que esta opción sea del todo compatible con -qspi).
                 
-            pblock : <string>
-                Se añade una restricción PBLOCK para el módulo TOP (i.e., todos los
-                elementos auxiliares de la matriz de osciladores se colocarán 
-                dentro de este espacio). El formato de esta opción es un string que
-                consta de dos puntos separados por un espacio, donde cada punto 
-                está dado por un par de coordenadas X,Y separadas por una coma; 
-                estos  representan respectivamente las esquinas inferior izda. y 
-                superior dcha. del rectángulo de restricción: 'X0,Y0 X1,Y1'. El 
-                diseñador es responsable de que la FPGA utilizada disponga de 
-                recursos suficientes en el bloque descrito.
+            pblock_interfaz_ps : <string>
+                Se añade una restricción PBLOCK para todos los elementos de la
+                interfaz_ps, que se colocarán dentro de este espacio. El
+                formato de esta opción es un string que consta de dos puntos
+                separados por un espacio, donde cada punto está dado por un par
+                de coordenadas X,Y separadas por una coma; estos  representan
+                respectivamente las esquinas inferior izda. y superior dcha. del
+                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
+                de que la FPGA utilizada disponga de recursos suficientes en el
+                bloque descrito.
+                
+            pblock_interfaz_romatrix : <string>
+                Se añade una restricción PBLOCK para todos los elementos de la
+                interfaz_romatrix, que se colocarán dentro de este espacio. El
+                formato de esta opción es un string que consta de dos puntos
+                separados por un espacio, donde cada punto está dado por un par
+                de coordenadas X,Y separadas por una coma; estos  representan
+                respectivamente las esquinas inferior izda. y superior dcha. del
+                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
+                de que la FPGA utilizada disponga de recursos suficientes en el
+                bloque descrito.
+                
+            pblock_medidor_frec : <string>
+                Se añade una restricción PBLOCK para todos los elementos de 
+                medidor_frec, que se colocarán dentro de este espacio. El
+                formato de esta opción es un string que consta de dos puntos
+                separados por un espacio, donde cada punto está dado por un par
+                de coordenadas X,Y separadas por una coma; estos  representan
+                respectivamente las esquinas inferior izda. y superior dcha. del
+                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
+                de que la FPGA utilizada disponga de recursos suficientes en el
+                bloque descrito.                
 
             data_width(dw) : <int>
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
@@ -667,7 +674,9 @@ class StdMatrix:
         self.board = board
         self.qspi = qspi
         self.routing = routing
-        self.pblock = pblock
+        self.pblock_interfaz_ps = pblock_interfaz_ps
+        self.pblock_interfaz_romatrix = pblock_interfaz_romatrix
+        self.pblock_medidor_frec = pblock_medidor_frec
         self.data_width = data_width
         self.buffer_out_width = buffer_out_width
         self.f_clock = f_clock
@@ -777,7 +786,7 @@ class StdMatrix:
             vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/romatrix.v {projdir}/vivado_src/medidor_frec.cp.v {projdir}/vivado_src/interfaz_romatrix.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
             if debug:
                 vivado_files+=f" {projdir}/vivado_src/clock_divider.cp.v"
-            if self.pblock:
+            if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
                 vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
 
             with open(f"{wdir}/partial_flows/setupdesign.tcl", "w") as f:
@@ -974,7 +983,7 @@ class StdMatrix:
                 f.write(f"    (* DONT_TOUCH=\"true\" *)\n")
                 f.write(f"    ROMATRIX romatrix (\n")
                 f.write(f"        .enable_romatrix(enable_romatrix),\n")
-                if self.modo=='config':
+                if self.pdl:
                     f.write(f"        .sel_pdl(buffer_in[{self.buffer_in_width-5-1}:{self.N_bits_osc}]),\n")
                 f.write(f"        .out_romatrix(out_romatrix)\n")
                 f.write(f"    );\n\n")
@@ -993,14 +1002,31 @@ class StdMatrix:
                 
                 f.write(f"endmodule\n")
 
-            if self.pblock:
-                PBLOCK_CORNERS=self.pblock.split()
-                PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
-                PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
+            if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
                 with open(f"{wdir}/vivado_src/pblock.xdc", "w") as f:
-                    f.write(f"create_pblock pblock_TOP_0\n")
-                    f.write(f"add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_pspl design_1_i/TOP_0/inst/interfaz_romatrix design_1_i/TOP_0/inst/medidor_frec]]\n")
-                    f.write(f"resize_pblock [get_pblocks pblock_TOP_0] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n")
+                    if self.pblock_interfaz_ps:
+                        PBLOCK_CORNERS=self.pblock_interfaz_ps.split()
+                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
+                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
+                        f.write(f"create_pblock pblock_interfaz_ps\n")
+                        f.write(f"add_cells_to_pblock [get_pblocks pblock_interfaz_ps] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_pspl design_1_i/axi_gpio_ctrl design_1_i/axi_gpio_data design_1_i/ps7_0_axi_periph design_1_i/rst_ps7_0_100M]]\n")
+                        f.write(f"resize_pblock [get_pblocks pblock_interfaz_ps] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    
+                    if self.pblock_interfaz_romatrix:
+                        PBLOCK_CORNERS=self.pblock_interfaz_romatrix.split()
+                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
+                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
+                        f.write(f"create_pblock pblock_interfaz_romatrix\n")
+                        f.write(f"add_cells_to_pblock [get_pblocks pblock_interfaz_romatrix] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_romatrix]]\n")
+                        f.write(f"resize_pblock [get_pblocks pblock_interfaz_romatrix] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    
+                    if self.pblock_medidor_frec:
+                        PBLOCK_CORNERS=self.pblock_medidor_frec.split()
+                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
+                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
+                        f.write(f"create_pblock pblock_medidor_frec\n")
+                        f.write(f"add_cells_to_pblock [get_pblocks pblock_medidor_frec] [get_cells -quiet [list design_1_i/TOP_0/inst/medidor_frec]]\n")
+                        f.write(f"resize_pblock [get_pblocks pblock_medidor_frec] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")                    
                     
             ## sdk sources
             subprocess_run(["mkdir",f"{wdir}/sdk_src"])
@@ -1142,7 +1168,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', modo='min', trng=0):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1166,16 +1192,10 @@ class GaloisMatrix:
                 por diseño, esta opción es la misma que la aplicada para
                 un solo oscilador (ver 'pin' en 'GaloisRing').
                 
-            modo : <string>
-                Esta opción determina el modo de implementación de las LUT del
-                anillo:
-                    'min'
-                        Minimalista, se utilizan modelos LUT1 para los inversores y
-                        LUT2 el enable AND.
-                    
-                    'config'
-                        Se utilizan modelos LUT6 para los inversores, permitiendo
-                        utilizar 5 puertos para configurar el anillo mediante PDL.
+            pdl : <bool, opcional, por defecto False>
+                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
+                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
+                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
                 
             trng: <int positivo>
                 Si esta variable se indica con un número positivo, el diseño incluirá un módulo para guardar los bits aleatorios
@@ -1207,13 +1227,13 @@ class GaloisMatrix:
         else:
             self.pin[0] = pin
 
-        self.modo = modo
+        self.pdl = pdl
         self.trng = trng
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.modo))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
@@ -1221,10 +1241,10 @@ class GaloisMatrix:
         self.N_bits_resol = 5  
         self.N_bits_fdiv = 5
         
-        if self.modo=='min':
-            self.N_bits_pdl = 0
-        elif self.modo=='config':
+        if self.pdl:
             self.N_bits_pdl = 3
+        else:
+            self.N_bits_pdl = 0
         
     def help(self):
         """ 
@@ -1260,7 +1280,7 @@ class GaloisMatrix:
             
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
-            if self.modo=='config':
+            if self.pdl:
                 f.write(f"    input[2:0] sel_pdl,\n")     
             f.write("    output out\n")
             f.write("    );\n\n")
@@ -1605,7 +1625,7 @@ class GaloisMatrix:
                 else:
                     aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
                 
-                if self.modo=='config':
+                if self.pdl:
                     aux1=f".sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),"
                 else:
                     aux1=""
