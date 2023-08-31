@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='myfpga',
-      version='2.91',
+      version='2.92',
       description='Módulo de Python para el proyecto fpga.',
       author='gds',
       packages=['myfpga'],

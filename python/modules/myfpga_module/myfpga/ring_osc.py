@@ -170,13 +170,14 @@ class StdRing():
         self.N_inv = N_inv
         self.loc = [loc]
         x = int(self.loc[-1].replace(' ','').split(',')[0])
+        x0 = x # Coord. x inicial
         y = int(self.loc[-1].replace(' ','').split(',')[1])
         for i in range(N_inv):
             if (i+1)%4==0:  # N. luts por celda.
                 if x%2==0:
                     x+=1
                 else:
-                    x = int(self.loc[-1].replace(' ','').split(',')[0])
+                    x = x0-x0%2 # Mantenemos la x en la misma columna
                     y+=1
             self.loc.append(f"{x},{y}")
             
@@ -303,13 +304,14 @@ class GaloisRing():
         self.N_inv = N_inv
         self.loc = [loc]
         x = int(self.loc[-1].replace(' ','').split(',')[0])
+        x0 = x # Coord. x inicial
         y = int(self.loc[-1].replace(' ','').split(',')[1])
         for i in range(N_inv):
             if (i+1)%4==0:  # N. luts por celda.
                 if x%2==0:
                     x+=1
                 else:
-                    x = int(self.loc[-1].replace(' ','').split(',')[0])
+                    x = x0-x0%2 # Mantenemos la x en la misma columna
                     y+=1
             self.loc.append(f"{x},{y}")
             
@@ -364,8 +366,11 @@ class GaloisRing():
 class Dominio:
     """
     Este objeto contiene las localizaciones de un conjunto de 
-    osciladores dispuestos atendiendo a diversos parámetros geométricos 
-    (ver función '__init__').
+    osciladores dispuestos atendiendo a diversos parámetros geométricos.
+    Si directriz=y, estos se colocan formando una matriz rectangular, la cual crece en
+    dirección y en incrementos de dy. Cuando se alcanza el límite y1, la matriz se incrementa
+    una cantidad dx en la dirección x, y vuelve a la coordenada y0. Si directriz=x, el 
+    comentario anterior se aplica substituyendo x <-> y.
     """
     def __init__(self, N_osc=10, x0=0, x1=np_inf, dx=1, y0=0, y1=np_inf, dy=1, directriz='y'):
         """
