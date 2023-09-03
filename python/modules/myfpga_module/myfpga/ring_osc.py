@@ -898,16 +898,32 @@ class StdMatrix:
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
 
-            with open(f"{wdir}/partial_flows/launchsdk.tcl", "w") as f:
+            with open(f"{wdir}/partial_flows/exporthwd.tcl", "w") as f:
                 f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
                 f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"## Aqui termina la generacion de hwd_platform\n")
+                f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
 
-            with open(f"{wdir}/mkhwdplatform.tcl", "w") as f:
+            with open(f"{wdir}/partial_flows/vivado_flow.tcl", "w") as f:
                 f.write(f"source {projdir}/partial_flows/setupdesign.tcl\n")
                 f.write(f"source {projdir}/partial_flows/genbitstream.tcl\n")
-                f.write(f"source {projdir}/partial_flows/launchsdk.tcl\n")
+                f.write(f"source {projdir}/partial_flows/exporthwd.tcl\n")
+                
+            with open(f"{wdir}/vivado_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+                f.write("import os\n")
+                f.write("from subprocess import run\n\n")
+                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"partial_flows/vivado_flow.tcl\"])\n")
+                
+            if self.board == "zybo":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                
+            elif self.board == "pynqz2":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                
+            with open(f"{wdir}/program_fpga.py", "w") as f:
+                f.write("import os\n")
+                f.write("from subprocess import run\n\n")
+                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"partial_flows/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
+                
 
             ## vivado sources
             subprocess_run(["mkdir",f"{wdir}/vivado_src"])
@@ -1596,16 +1612,33 @@ class GaloisMatrix:
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
                 
-            with open(f"{wdir}/partial_flows/launchsdk.tcl", "w") as f:
+            with open(f"{wdir}/partial_flows/exporthwd.tcl", "w") as f:
                 f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
                 f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
                 f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
 
-            with open(f"{wdir}/mkhwdplatform.tcl", "w") as f:
+            with open(f"{wdir}/partial_flows/vivado_flow.tcl", "w") as f:
                 f.write(f"source {projdir}/partial_flows/setupdesign.tcl\n")
                 f.write(f"source {projdir}/partial_flows/genbitstream.tcl\n")
-                f.write(f"source {projdir}/partial_flows/launchsdk.tcl\n")
-
+                f.write(f"source {projdir}/partial_flows/exporthwd.tcl\n")
+                
+            with open(f"{wdir}/vivado_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+                f.write("import os\n")
+                f.write("from subprocess import run\n\n")
+                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"partial_flows/vivado_flow.tcl\"])\n")
+                
+            if self.board == "zybo":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                
+            elif self.board == "pynqz2":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                
+            with open(f"{wdir}/program_fpga.py", "w") as f:
+                f.write("import os\n")
+                f.write("from subprocess import run\n\n")
+                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"partial_flows/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
+                
+                
             ## vivado sources
             subprocess_run(["mkdir",f"{wdir}/vivado_src"])
             subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{wdir}/vivado_src/interfaz_pspl.cp.v"])
