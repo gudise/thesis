@@ -785,8 +785,8 @@ class StdMatrix:
                 else:
                     subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
 
-            ## partial flows (tcl)
-            subprocess_run(["mkdir",f"{wdir}/partial_flows"])
+            ## Design flow (tcl)
+            subprocess_run(["mkdir",f"{wdir}/design_flow"])
 
             vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/romatrix.v {projdir}/vivado_src/medidor_frec.cp.v {projdir}/vivado_src/interfaz_romatrix.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
             if debug:
@@ -794,7 +794,7 @@ class StdMatrix:
             if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
                 vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
 
-            with open(f"{wdir}/partial_flows/setupdesign.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/setupdesign.tcl", "w") as f:
                 f.write(f"create_project {projname} {projdir}/{projname} -part {self.fpga_part}\n")
                 f.write(f"set_property board_part {self.board_part} [current_project]\n")
                 f.write(f"source {projdir}/block_design/bd_design_1.tcl\n")
@@ -823,7 +823,7 @@ class StdMatrix:
                 f.write(f"validate_bd_design\n")
                 f.write(f"save_bd_design\n")
                 
-            with open(f"{wdir}/partial_flows/genbitstream.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/genbitstream.tcl", "w") as f:
                 f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
                 f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
                 f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
@@ -898,31 +898,52 @@ class StdMatrix:
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
 
-            with open(f"{wdir}/partial_flows/exporthwd.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/exporthwd.tcl", "w") as f:
                 f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
                 f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
-
-            with open(f"{wdir}/partial_flows/vivado_flow.tcl", "w") as f:
-                f.write(f"source {projdir}/partial_flows/setupdesign.tcl\n")
-                f.write(f"source {projdir}/partial_flows/genbitstream.tcl\n")
-                f.write(f"source {projdir}/partial_flows/exporthwd.tcl\n")
+                #f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
                 
-            with open(f"{wdir}/vivado_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+            with open(f"{wdir}/design_flow/vivado_flow.tcl", "w") as f:
+                f.write(f"source {projdir}/design_flow/setupdesign.tcl\n")
+                f.write(f"source {projdir}/design_flow/genbitstream.tcl\n")
+                f.write(f"source {projdir}/design_flow/exporthwd.tcl\n")
+            
+            with open(f"{wdir}/design_flow/sdk_flow.tcl", "w") as f:
+                f.write(f"setws {projdir}/{projname}/{projname}.sdk\n")
+                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
+                f.write(f"hsi open_hw_design {projdir}/{projname}/{projname}.sdk/design_1_wrapper_hw_platform_0/system.hdf\n")
+                if self.board=="zybo" or self.board=="pynqz2":
+                    f.write("createbsp -name app_bsp -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone\n")
+                    f.write("createapp -name app -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone -lang C -app {Empty Application} -bsp app_bsp\n")
+                elif self.board=="cmoda7_15t" or self.board=="cmoda7_35t":
+                    pass
+                f.write(f"importsources -name app -path {projdir}/sdk_src\n")
+                f.write("build -type bsp  -name app_bsp\n")
+                f.write("build -type app -name app\n")
+                f.write("clean -type all\n")
+                f.write("build -type all\n")
+                
+            with open(f"{wdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"partial_flows/vivado_flow.tcl\"])\n")
+                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
                 
+                
+            ## Program FPGA
             if self.board == "zybo":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
-                
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
             elif self.board == "pynqz2":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+            elif self.board == "cmoda7_15t":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+            elif self.board == "cmoda7_35t":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
                 
             with open(f"{wdir}/program_fpga.py", "w") as f:
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"partial_flows/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
+                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
                 
 
             ## vivado sources
@@ -1502,8 +1523,8 @@ class GaloisMatrix:
                 else:
                     subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
 
-            ## partial flows (tcl)
-            subprocess_run(["mkdir",f"{wdir}/partial_flows"])
+            ## design flow (tcl)
+            subprocess_run(["mkdir",f"{wdir}/design_flow"])
 
             vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/garomatrix.v {projdir}/vivado_src/medidor_bias.cp.v {projdir}/vivado_src/clock_divider.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
             if self.trng:
@@ -1511,7 +1532,7 @@ class GaloisMatrix:
             if self.pblock:
                 vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
 
-            with open(f"{wdir}/partial_flows/setupdesign.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/setupdesign.tcl", "w") as f:
                 f.write(f"create_project {projname} {projdir}/{projname} -part {self.fpga_part}\n")
                 f.write(f"set_property board_part {self.board_part} [current_project]\n")
                 f.write(f"source {projdir}/block_design/bd_design_1.tcl\n")
@@ -1537,7 +1558,7 @@ class GaloisMatrix:
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property STEPS.SYNTH_DESIGN.ARGS.RESOURCE_SHARING off [get_runs synth_1]\n")
                 
-            with open(f"{wdir}/partial_flows/genbitstream.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/genbitstream.tcl", "w") as f:
                 f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
                 f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
                 f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
@@ -1612,31 +1633,52 @@ class GaloisMatrix:
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
                 
-            with open(f"{wdir}/partial_flows/exporthwd.tcl", "w") as f:
+            with open(f"{wdir}/design_flow/exporthwd.tcl", "w") as f:
                 f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
                 f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-
-            with open(f"{wdir}/partial_flows/vivado_flow.tcl", "w") as f:
-                f.write(f"source {projdir}/partial_flows/setupdesign.tcl\n")
-                f.write(f"source {projdir}/partial_flows/genbitstream.tcl\n")
-                f.write(f"source {projdir}/partial_flows/exporthwd.tcl\n")
+                #f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
                 
-            with open(f"{wdir}/vivado_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+            with open(f"{wdir}/design_flow/vivado_flow.tcl", "w") as f:
+                f.write(f"source {projdir}/design_flow/setupdesign.tcl\n")
+                f.write(f"source {projdir}/design_flow/genbitstream.tcl\n")
+                f.write(f"source {projdir}/design_flow/exporthwd.tcl\n")
+            
+            with open(f"{wdir}/design_flow/sdk_flow.tcl", "w") as f:
+                f.write(f"setws {projdir}/{projname}/{projname}.sdk\n")
+                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
+                f.write(f"hsi open_hw_design {projdir}/{projname}/{projname}.sdk/design_1_wrapper_hw_platform_0/system.hdf\n")
+                if self.board=="zybo" or self.board=="pynqz2":
+                    f.write("createbsp -name app_bsp -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone\n")
+                    f.write("createapp -name app -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone -lang C -app {Empty Application} -bsp app_bsp\n")
+                elif self.board=="cmoda7_15t" or self.board=="cmoda7_35t":
+                    pass
+                f.write(f"importsources -name app -path {projdir}/sdk_src\n")
+                f.write("build -type bsp  -name app_bsp\n")
+                f.write("build -type app -name app\n")
+                f.write("clean -type all\n")
+                f.write("build -type all\n")
+                
+            with open(f"{wdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"partial_flows/vivado_flow.tcl\"])\n")
-                
+                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
+            
+            
+            ## Program FPGA
             if self.board == "zybo":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
-                
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
             elif self.board == "pynqz2":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/partial_flows/program_fpga.tcl"])
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+            elif self.board == "cmoda7_15t":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+            elif self.board == "cmoda7_35t":
+                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
                 
             with open(f"{wdir}/program_fpga.py", "w") as f:
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"partial_flows/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
+                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
                 
                 
             ## vivado sources
