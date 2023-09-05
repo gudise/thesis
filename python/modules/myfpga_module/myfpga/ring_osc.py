@@ -4,8 +4,10 @@ medir una matriz de osciladores de anillo en FPGA, tanto estándar como
 de Galois.
 """
 
-from os                     import  environ as os_environ
-from subprocess             import  run     as subprocess_run
+import os
+import shutil as sh
+from subprocess import  run
+
 from pickle                 import  dump    as pickle_dump,\
                                     load    as pickle_load
 from serial                 import  Serial  as serial_Serial
@@ -578,12 +580,12 @@ class StdMatrix:
                     f.write("\n")
                 f.write("endmodule\n")
                 
-    def implement(self, projname='project_romatrix', projdir='.', njobs=4, linux=False, 
+    def implement(self, projname='project_romatrix', projdir='.', njobs=4,
                   debug=False, files=True, board='pynqz2', qspi=False, routing=False, 
                   pblock_interfaz_ps=False, pblock_interfaz_romatrix=False, pblock_medidor_frec=False,
                   data_width=32, buffer_out_width=32, f_clock=100):
         """
-        Copia en el directorio 'projdir' todos los archivos necesarios para 
+        Copia en el directorio 'self.projdir' todos los archivos necesarios para 
         implementar una matriz de osciladores de anillo con medición de la 
         frecuencia y comunicación pc <-> microprocesador <-> FPGA.
 
@@ -599,12 +601,7 @@ class StdMatrix:
             njobs : <int>
                 Número de núcleos que utiilizará Vivado paralelamente para la 
                 síntesis/implementación.
-
-            linux : <bool>
-                Marcar esta opción como True si la versión de Vivado que se va a
-                utilizar está instalado en una máquina linux (de forma que los 
-                PATH se gestionen correctamente).
-
+                
             debug : <bool>
                 Si "True", se implementará una matriz de divisores de reloj de 
                 frecuencia conocida, lo que permite depurar el diseño al conocer
@@ -676,6 +673,8 @@ class StdMatrix:
             f_clock : <int>
                 Frecuencia del reloj del diseño (en MHz).
         """
+        self.projname = projname
+        self.projdir = os.path.join(projdir, projname)
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -752,56 +751,48 @@ class StdMatrix:
             else:
                 bow_misaligned_dw='`define BOW_MISALIGNED_DW'
                 
-            ## projdir
-            wdir = projdir
-            if projdir=='.':
-                projdir = os_environ['PWD']
-            if not linux:
-                projdir = subprocess_run(["wslpath","-w",projdir], capture_output=True, text=True).stdout.replace("\\","/").replace("\n","")
+                
+            ## Project directory
+            os.mkdir(self.projdir)
+                
                 
             ## block design
-            subprocess_run(["mkdir",f"{wdir}/block_design"])
+            os.mkdir(f"{self.projdir}/block_design")
             if self.board == "cmoda7_15t":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl", f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl", f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "cmoda7_35t":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "zybo":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "pynqz2":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             ## Design flow (tcl)
-            subprocess_run(["mkdir",f"{wdir}/design_flow"])
-
-            vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/romatrix.v {projdir}/vivado_src/medidor_frec.cp.v {projdir}/vivado_src/interfaz_romatrix.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
-            if debug:
-                vivado_files+=f" {projdir}/vivado_src/clock_divider.cp.v"
-            if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
-                vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
-
-            with open(f"{wdir}/design_flow/setupdesign.tcl", "w") as f:
-                f.write(f"create_project {projname} {projdir}/{projname} -part {self.fpga_part}\n")
+            os.mkdir(f"{self.projdir}/design_flow")
+            
+            with open(f"{self.projdir}/design_flow/setupdesign.tcl", "w") as f:
+                f.write(f"create_project project_vivado {self.projdir}/project_vivado -part {self.fpga_part}\n")
                 f.write(f"set_property board_part {self.board_part} [current_project]\n")
-                f.write(f"source {projdir}/block_design/bd_design_1.tcl\n")
+                f.write(f"source {self.projdir}/block_design/bd_design_1.tcl\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
-                f.write(f"add_files -norecurse {{ {vivado_files} }}\n")
+                f.write(f"add_files -norecurse {self.projdir}/vivado_src\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
@@ -811,8 +802,8 @@ class StdMatrix:
                 f.write(f"connect_bd_net [get_bd_pins TOP_0/ctrl_out] [get_bd_pins axi_gpio_ctrl/gpio_io_i]\n")
                 f.write(f"apply_bd_automation -rule xilinx.com:bd_rule:clkrst -config {{Clk {self.clk_name} }}  [get_bd_pins TOP_0/clock]\n")
                 f.write(f"regenerate_bd_layout\n")
-                f.write(f"make_wrapper -files [get_files {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/design_1.bd] -top\n")
-                f.write(f"add_files -norecurse {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v\n")
+                f.write(f"make_wrapper -files [get_files {self.projdir}/project_vivado/project_vivado.srcs/sources_1/bd/design_1/design_1.bd] -top\n")
+                f.write(f"add_files -norecurse {self.projdir}/project_vivado/project_vivado.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property top design_1_wrapper [current_fileset]\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
@@ -823,18 +814,18 @@ class StdMatrix:
                 f.write(f"validate_bd_design\n")
                 f.write(f"save_bd_design\n")
                 
-            with open(f"{wdir}/design_flow/genbitstream.tcl", "w") as f:
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
-                f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
-                f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
+            with open(f"{self.projdir}/design_flow/genbitstream.tcl", "w") as f:
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
+                f.write(f"    export_ip_user_files -of_objects  [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
+                f.write(f"    remove_files  -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc\n")
                 f.write(f"}}\n")
                 f.write("\n")
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]==1}} {{\n")
-                f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc] -no_script -reset -force -quiet\n")
-                f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]==1}} {{\n")
+                f.write(f"    export_ip_user_files -of_objects  [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc] -no_script -reset -force -quiet\n")
+                f.write(f"    remove_files  -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
                 f.write(f"}}\n")
                 f.write("\n")
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.runs/synth_1]==1}} {{\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.runs/synth_1]==1}} {{\n")
                 f.write(f"    reset_run synth_1\n")
                 f.write(f"}}\n")
                 f.write("\n")
@@ -844,12 +835,12 @@ class StdMatrix:
                 f.write(f"wait_on_run synth_1\n")
                 
                 if self.qspi and self.board == "cmoda7_15t":
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1\n")
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
-                    f.write(f"set_property used_in_synthesis false [get_files  {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
+                    f.write(f"set_property used_in_synthesis false [get_files  {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
@@ -860,12 +851,12 @@ class StdMatrix:
                     f.write(f"close_design\n")
 
                 elif self.qspi and self.board == "cmoda7_35t":
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1\n")
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
-                    f.write(f"set_property used_in_synthesis false [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
+                    f.write(f"set_property used_in_synthesis false [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
@@ -883,78 +874,83 @@ class StdMatrix:
                             f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/romatrix/w_{i}[{j}]]\n")
                             f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/romatrix/w_{i}[{j}] }}]\n\n")
 
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc [current_fileset -constrset]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc [current_fileset -constrset]\n")
                     f.write(f"save_constraints -force\n")
                     f.write(f"close_design\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n") # Aqui termina detailed routing
 
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.runs/synth_1/__synthesis_is_complete__]==1}} {{\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.runs/synth_1/__synthesis_is_complete__]==1}} {{\n")
                 f.write(f"    reset_run synth_1\n")
                 f.write(f"}}\n")
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
 
-            with open(f"{wdir}/design_flow/exporthwd.tcl", "w") as f:
-                f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
-                f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                #f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
+            with open(f"{self.projdir}/design_flow/exporthwd.tcl", "w") as f:
+                f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.sdk\n")
+                f.write(f"file copy -force {self.projdir}/project_vivado/project_vivado.runs/impl_1/design_1_wrapper.sysdef {self.projdir}/project_vivado/project_vivado.sdk/design_1_wrapper.hdf\n")
                 
-            with open(f"{wdir}/design_flow/vivado_flow.tcl", "w") as f:
-                f.write(f"source {projdir}/design_flow/setupdesign.tcl\n")
-                f.write(f"source {projdir}/design_flow/genbitstream.tcl\n")
-                f.write(f"source {projdir}/design_flow/exporthwd.tcl\n")
+            with open(f"{self.projdir}/design_flow/vivado_flow.tcl", "w") as f:
+                f.write(f"source {self.projdir}/design_flow/setupdesign.tcl\n")
+                f.write(f"source {self.projdir}/design_flow/genbitstream.tcl\n")
+                f.write(f"source {self.projdir}/design_flow/exporthwd.tcl\n")
             
-            with open(f"{wdir}/design_flow/sdk_flow.tcl", "w") as f:
-                f.write(f"setws {projdir}/{projname}/{projname}.sdk\n")
-                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"hsi open_hw_design {projdir}/{projname}/{projname}.sdk/design_1_wrapper_hw_platform_0/system.hdf\n")
+            with open(f"{self.projdir}/design_flow/sdk_flow.tcl", "w") as f:
+                f.write(f"setws {self.projdir}/project_vivado/project_vivado.sdk\n")
+                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {self.projdir}/project_vivado/project_vivado.sdk/design_1_wrapper.hdf\n")
                 if self.board=="zybo" or self.board=="pynqz2":
                     f.write("createbsp -name app_bsp -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone\n")
                     f.write("createapp -name app -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone -lang C -app {Empty Application} -bsp app_bsp\n")
                 elif self.board=="cmoda7_15t" or self.board=="cmoda7_35t":
                     pass
-                f.write(f"importsources -name app -path {projdir}/sdk_src\n")
+                f.write(f"importsources -name app -path {self.projdir}/sdk_src\n")
                 f.write("build -type bsp  -name app_bsp\n")
                 f.write("build -type app -name app\n")
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            with open(f"{wdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+            with open(f"{self.projdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)                
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
+                f.write("if os.name=='nt': # Estamos en Windows\n")
+                f.write("    run([\"C:/Xilinx/Vivado/2019.1/bin/vivado.bat\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n\n")
+                f.write("elif os.name=='posix': # Estamos en Unix\n")
+                f.write("    run([\"/tools/Xilinx/Vivado/2019.1/bin/vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
                 
                 
             ## Program FPGA
             if self.board == "zybo":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "pynqz2":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "cmoda7_15t":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "cmoda7_35t":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
                 
-            with open(f"{wdir}/program_fpga.py", "w") as f:
+            with open(f"{self.projdir}/program_fpga.py", "w") as f:
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
-                
-
+                f.write("if os.name=='nt': # Estamos en Windows\n")
+                f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
+                f.write("elif os.name=='posix': # Estamos en Unix\n")
+                f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
+                    
+                    
             ## vivado sources
-            subprocess_run(["mkdir",f"{wdir}/vivado_src"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{wdir}/vivado_src/interfaz_pspl.cp.v"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/medidor_frec.v",f"{wdir}/vivado_src/medidor_frec.cp.v"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_romatrix.v",f"{wdir}/vivado_src/interfaz_romatrix.cp.v"])
+            os.mkdir(f"{self.projdir}/vivado_src")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{self.projdir}/vivado_src/interfaz_pspl.cp.v")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/medidor_frec.v",f"{self.projdir}/vivado_src/medidor_frec.cp.v")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_romatrix.v",f"{self.projdir}/vivado_src/interfaz_romatrix.cp.v")
             if debug:
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/clock_divider.v",f"{wdir}/vivado_src/clock_divider.cp.v"])
+                sh.copy(f"{os.environ['REPO_fpga']}/verilog/clock_divider.v",f"{self.projdir}/vivado_src/clock_divider.cp.v")
 
-            with open(f"{wdir}/vivado_src/interfaz_pspl_config.vh", "w") as f:
+            with open(f"{self.projdir}/vivado_src/interfaz_pspl_config.vh", "w") as f:
                 f.write(f"{dw_ge_biw}\n")
                 f.write(f"{biw_aligned_dw}\n")
                 f.write(f"{biw_misaligned_dw}\n")
@@ -962,9 +958,9 @@ class StdMatrix:
                 f.write(f"{bow_aligned_dw}\n")
                 f.write(f"{bow_misaligned_dw}\n")
             
-            self.gen_romatrix(out_name=f"{wdir}/vivado_src/romatrix.v", debug=debug)
+            self.gen_romatrix(out_name=f"{self.projdir}/vivado_src/romatrix.v", debug=debug)
 
-            with open(f"{wdir}/vivado_src/top.v", "w") as f:
+            with open(f"{self.projdir}/vivado_src/top.v", "w") as f:
                 f.write(f"module TOP (\n")
                 f.write(f"    input           clock,\n")
                 f.write(f"    input[7:0]      ctrl_in,\n")
@@ -1045,7 +1041,7 @@ class StdMatrix:
                 f.write(f"endmodule\n")
 
             if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
-                with open(f"{wdir}/vivado_src/pblock.xdc", "w") as f:
+                with open(f"{self.projdir}/vivado_src/pblock.xdc", "w") as f:
                     if self.pblock_interfaz_ps:
                         PBLOCK_CORNERS=self.pblock_interfaz_ps.split()
                         PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
@@ -1071,10 +1067,10 @@ class StdMatrix:
                         f.write(f"resize_pblock [get_pblocks pblock_medidor_frec] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")                    
                     
             ## sdk sources
-            subprocess_run(["mkdir",f"{wdir}/sdk_src"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{wdir}/sdk_src/interfaz_pcps-pspl.cp.c"])
+            os.mkdir(f"{self.projdir}/sdk_src")
+            sh.copy(f"{os.environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{self.projdir}/sdk_src/interfaz_pcps-pspl.cp.c")
 
-            with open(f"{wdir}/sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
+            with open(f"{self.projdir}/sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
                 if self.board == "cmoda7_15t" or self.board == "cmoda7_35t":
                     f.write("#include \"xuartlite.h\"\n\n")
                 elif self.board == "zybo" or self.board == "pynqz2":
@@ -1100,11 +1096,11 @@ class StdMatrix:
             print("Trama de datos:")
             print(f"    (0) <---sel_ro({self.N_bits_osc})---><---sel_pdl({self.N_bits_pdl})---><---sel_resol({self.N_bits_resol})---> ({self.buffer_in_width-1})\n")
             print(f"fpga part: {self.fpga_part}\n")
-            print(f"sdk source files: {projdir}/sdk_src/")
+            print(f"sdk source files: {self.projdir}/sdk_src/")
             if self.qspi:
                 print(f"q-spi part: {self.memory_part}")
 
-    def medir(self, puerto='S1', osc=[0], pdl=[0], N_rep=1, resol=17, f_ref=False, 
+    def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=17, f_ref=False, 
               log=False, verbose=True, baudrate=9600):
         """
         Esta función mide la frecuencia de una matriz de osciladores estándar 
@@ -1115,8 +1111,7 @@ class StdMatrix:
         -----------
             puerto : <string>
                 Esta opción especifica el puerto serie al que se conecta la 
-                FPGA. Actualmente está "hardcodeado" a formato linux (ya que 
-                incluso en Windows lo estoy midiendo con WSL).
+                FPGA.
                 
             osc : <int o lista de int>
                 Lista de osciladores a medir.
@@ -1181,7 +1176,7 @@ class StdMatrix:
              print(f"Número de repeticiones = {N_rep}\n")
              print(f"Número de PDL          = {N_pdl}\n")
             
-        fpga = serial_Serial(port='/dev/tty'+puerto, baudrate=baudrate, bytesize=8)
+        fpga = serial_Serial(port=puerto, baudrate=baudrate, bytesize=8)
         time_sleep(.1)
         
         if verbose:
@@ -1345,10 +1340,10 @@ class GaloisMatrix:
             f.write("endmodule\n")
             
     def implement(self, projname="project_garomatrix", projdir='.', njobs=4, 
-                  linux=False, files=True, board='pynqz2', qspi=False, routing=False, 
+                  files=True, board='pynqz2', qspi=False, routing=False, 
                   pblock=False, data_width=32, buffer_out_width=32):
         """
-        Copia en el directorio 'projdir' todos los archivos necesarios para 
+        Copia en el directorio 'self.projdir' todos los archivos necesarios para 
         implementar una matriz de osciladores de anillo de Galois con medición 
         del sesgo ("bias") y comunicación pc <-> microprocesador <-> FPGA.
 
@@ -1364,12 +1359,7 @@ class GaloisMatrix:
             njobs : <int>
                 Número de núcleos que utiilizará Vivado paralelamente para la 
                 síntesis/implementación.
-
-            linux : <bool>
-                Marcar esta opción como True si la versión de Vivado que se va a
-                utilizar está instalado en una máquina linux (de forma que los 
-                PATH se gestionen correctamente).
-
+            
             debug : <bool>
                 Si "True", se implementará una matriz de divisores de reloj de 
                 frecuencia conocida, lo que permite depurar el diseño al conocer
@@ -1416,6 +1406,8 @@ class GaloisMatrix:
                 Esta opción especifica la anchura de la palabra de respuesta 
                 (i.e., de la medida).
         """
+        self.projname = projname
+        self.projdir = os.path.join(projdir, projname)
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -1489,57 +1481,48 @@ class GaloisMatrix:
             else:
                 bow_misaligned_dw='`define BOW_MISALIGNED_DW'
                 
-            ## projdir
-            wdir = projdir
-            if projdir=='.':
-                projdir = os_environ['PWD']
-            if not linux:
-                projdir = subprocess_run(["wslpath","-w",projdir], capture_output=True, text=True).stdout.replace("\\","/").replace("\n","")
-
-
+                
+            ## Project directory
+            os.mkdir(self.projdir)
+                
+                
             ## block design
-            subprocess_run(["mkdir",f"{wdir}/block_design"])
+            os.mkdir(["mkdir",f"{self.projdir}/block_design"])
             if self.board == "cmoda7_15t":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "cmoda7_35t":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "zybo":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             elif self.board == "pynqz2":
                 if self.qspi:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
                 else:
-                    subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{wdir}/block_design/bd_design_1.tcl"])
+                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
 
             ## design flow (tcl)
-            subprocess_run(["mkdir",f"{wdir}/design_flow"])
-
-            vivado_files=f"{projdir}/vivado_src/top.v {projdir}/vivado_src/interfaz_pspl.cp.v {projdir}/vivado_src/garomatrix.v {projdir}/vivado_src/medidor_bias.cp.v {projdir}/vivado_src/clock_divider.cp.v {projdir}/vivado_src/interfaz_pspl_config.vh"
-            if self.trng:
-                vivado_files+=f" {projdir}/vivado_src/bit_pool.cp.v"
-            if self.pblock:
-                vivado_files+=f" {projdir}/vivado_src/pblock.xdc"
-
-            with open(f"{wdir}/design_flow/setupdesign.tcl", "w") as f:
-                f.write(f"create_project {projname} {projdir}/{projname} -part {self.fpga_part}\n")
+            os.mkdir(f"{self.projdir}/design_flow")
+            
+            with open(f"{self.projdir}/design_flow/setupdesign.tcl", "w") as f:
+                f.write(f"create_project project_vivado {self.projdir}/project_vivado -part {self.fpga_part}\n")
                 f.write(f"set_property board_part {self.board_part} [current_project]\n")
-                f.write(f"source {projdir}/block_design/bd_design_1.tcl\n")
+                f.write(f"source {self.projdir}/block_design/bd_design_1.tcl\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
-                f.write(f"add_files -norecurse {{ {vivado_files} }}\n")
+                f.write(f"add_files -norecurse {self.projdir}/vivado_src\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
@@ -1551,23 +1534,23 @@ class GaloisMatrix:
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"validate_bd_design\n")
                 f.write(f"save_bd_design\n")
-                f.write(f"make_wrapper -files [get_files {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/design_1.bd] -top\n")
-                f.write(f"add_files -norecurse {projdir}/{projname}/{projname}.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v\n")
+                f.write(f"make_wrapper -files [get_files {self.projdir}/project_vivado/project_vivado.srcs/sources_1/bd/design_1/design_1.bd] -top\n")
+                f.write(f"add_files -norecurse {self.projdir}/project_vivado/project_vivado.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property top design_1_wrapper [current_fileset]\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"set_property STEPS.SYNTH_DESIGN.ARGS.RESOURCE_SHARING off [get_runs synth_1]\n")
                 
-            with open(f"{wdir}/design_flow/genbitstream.tcl", "w") as f:
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
-                f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
-                f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
+            with open(f"{self.projdir}/design_flow/genbitstream.tcl", "w") as f:
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
+                f.write(f"    export_ip_user_files -of_objects  [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
+                f.write(f"    remove_files  -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc\n")
                 f.write(f"}}\n")
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]==1}} {{\n")
-                f.write(f"    export_ip_user_files -of_objects  [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc] -no_script -reset -force -quiet\n")
-                f.write(f"    remove_files  -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]==1}} {{\n")
+                f.write(f"    export_ip_user_files -of_objects  [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc] -no_script -reset -force -quiet\n")
+                f.write(f"    remove_files  -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
                 f.write(f"}}\n")
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.runs/synth_1]==1}} {{\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.runs/synth_1]==1}} {{\n")
                 f.write(f"    reset_run synth_1\n")
                 f.write(f"}}\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
@@ -1576,12 +1559,12 @@ class GaloisMatrix:
                 f.write(f"wait_on_run synth_1\n")
 
                 if self.qspi == 1 and self.board == "cmoda7_15t":
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1\n")
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
-                    f.write(f"set_property used_in_synthesis false [get_files  {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
+                    f.write(f"set_property used_in_synthesis false [get_files  {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
@@ -1592,12 +1575,12 @@ class GaloisMatrix:
                     f.write(f"close_design\n")
                     
                 elif self.qspi == 1 and self.board == "cmoda7_35t":
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1\n")
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
-                    f.write(f"set_property used_in_synthesis false [get_files {projdir}/{projname}/{projname}.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc [current_fileset -constrset]\n")
+                    f.write(f"set_property used_in_synthesis false [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/bitstreamconfig.xdc]\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")
                     f.write(f"open_run synth_1 -name synth_1\n")
@@ -1618,78 +1601,83 @@ class GaloisMatrix:
                         f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/ring{i}_out]\n")
                         f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/ring{i}_out }}]\n\n")
                         
-                    f.write(f"file mkdir {projdir}/{projname}/{projname}.srcs/constrs_1/new\n")
-                    f.write(f"close [ open {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc w ]\n")
-                    f.write(f"add_files -fileset constrs_1 {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc\n")
-                    f.write(f"set_property target_constrs_file {projdir}/{projname}/{projname}.srcs/constrs_1/new/routing.xdc [current_fileset -constrset]\n")
+                    f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
+                    f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc w ]\n")
+                    f.write(f"add_files -fileset constrs_1 {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc\n")
+                    f.write(f"set_property target_constrs_file {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc [current_fileset -constrset]\n")
                     f.write(f"save_constraints -force\n")
                     f.write(f"close_design\n")
                     f.write(f"update_compile_order -fileset sources_1\n")
                     f.write(f"update_module_reference design_1_TOP_0_0\n")# Aqui termina detailed routing
                     
-                f.write(f"if {{[file exists {projdir}/{projname}/{projname}.runs/synth_1/__synthesis_is_complete__]==1}} {{\n")
+                f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.runs/synth_1/__synthesis_is_complete__]==1}} {{\n")
                 f.write(f"    reset_run synth_1\n")
                 f.write(f"}}\n")                    
                 f.write(f"launch_runs impl_1 -to_step write_bitstream -jobs {njobs}\n")
                 f.write(f"wait_on_run impl_1\n")
                 
-            with open(f"{wdir}/design_flow/exporthwd.tcl", "w") as f:
-                f.write(f"file mkdir {projdir}/{projname}/{projname}.sdk\n")
-                f.write(f"file copy -force {projdir}/{projname}/{projname}.runs/impl_1/design_1_wrapper.sysdef {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                #f.write(f"launch_sdk -workspace {projdir}/{projname}/{projname}.sdk -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n") # Esto se debe hacer desde XSDK
+            with open(f"{self.projdir}/design_flow/exporthwd.tcl", "w") as f:
+                f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.sdk\n")
+                f.write(f"file copy -force {self.projdir}/project_vivado/project_vivado.runs/impl_1/design_1_wrapper.sysdef {self.projdir}/project_vivado/project_vivado.sdk/design_1_wrapper.hdf\n")
                 
-            with open(f"{wdir}/design_flow/vivado_flow.tcl", "w") as f:
-                f.write(f"source {projdir}/design_flow/setupdesign.tcl\n")
-                f.write(f"source {projdir}/design_flow/genbitstream.tcl\n")
-                f.write(f"source {projdir}/design_flow/exporthwd.tcl\n")
+            with open(f"{self.projdir}/design_flow/vivado_flow.tcl", "w") as f:
+                f.write(f"source {self.projdir}/design_flow/setupdesign.tcl\n")
+                f.write(f"source {self.projdir}/design_flow/genbitstream.tcl\n")
+                f.write(f"source {self.projdir}/design_flow/exporthwd.tcl\n")
             
-            with open(f"{wdir}/design_flow/sdk_flow.tcl", "w") as f:
-                f.write(f"setws {projdir}/{projname}/{projname}.sdk\n")
-                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {projdir}/{projname}/{projname}.sdk/design_1_wrapper.hdf\n")
-                f.write(f"hsi open_hw_design {projdir}/{projname}/{projname}.sdk/design_1_wrapper_hw_platform_0/system.hdf\n")
+            with open(f"{self.projdir}/design_flow/sdk_flow.tcl", "w") as f:
+                f.write(f"setws {self.projdir}/project_vivado/project_vivado.sdk\n")
+                f.write(f"createhw -name design_1_wrapper_hw_platform_0 -hwspec {self.projdir}/project_vivado/project_vivado.sdk/design_1_wrapper.hdf\n")
                 if self.board=="zybo" or self.board=="pynqz2":
                     f.write("createbsp -name app_bsp -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone\n")
                     f.write("createapp -name app -hwproject design_1_wrapper_hw_platform_0 -proc ps7_cortexa9_0 -os standalone -lang C -app {Empty Application} -bsp app_bsp\n")
                 elif self.board=="cmoda7_15t" or self.board=="cmoda7_35t":
                     pass
-                f.write(f"importsources -name app -path {projdir}/sdk_src\n")
+                f.write(f"importsources -name app -path {self.projdir}/sdk_src\n")
                 f.write("build -type bsp  -name app_bsp\n")
                 f.write("build -type app -name app\n")
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            with open(f"{wdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
+            with open(f"{self.projdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write("run([\"vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
+                f.write("if os.name=='nt': # Estamos en Windows\n")
+                f.write("    run([\"C:/Xilinx/Vivado/2019.1/bin/vivado.bat\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n\n")
+                f.write("elif os.name=='posix': # Estamos en Unix\n")
+                f.write("    run([\"/tools/Xilinx/Vivado/2019.1/bin/vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
+                f.write("    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
             
             
             ## Program FPGA
             if self.board == "zybo":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "pynqz2":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "cmoda7_15t":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
             elif self.board == "cmoda7_35t":
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{wdir}/design_flow/program_fpga.tcl"])
+                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
                 
-            with open(f"{wdir}/program_fpga.py", "w") as f:
+            with open(f"{self.projdir}/program_fpga.py", "w") as f:
                 f.write("import os\n")
                 f.write("from subprocess import run\n\n")
-                f.write(f"run([\"xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"{projdir}/{projname}/{projname}.sdk\",\"app\"])\n")
+                f.write("if os.name=='nt': # Estamos en Windows\n")
+                f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
+                f.write("elif os.name=='posix': # Estamos en Unix\n")
+                f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
                 
                 
             ## vivado sources
-            subprocess_run(["mkdir",f"{wdir}/vivado_src"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{wdir}/vivado_src/interfaz_pspl.cp.v"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/medidor_bias.v",f"{wdir}/vivado_src/medidor_bias.cp.v"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/clock_divider.v",f"{wdir}/vivado_src/clock_divider.cp.v"])
+            os.mkdir(f"{self.projdir}/vivado_src")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{self.projdir}/vivado_src/interfaz_pspl.cp.v")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/medidor_bias.v",f"{self.projdir}/vivado_src/medidor_bias.cp.v")
+            sh.copy(f"{os.environ['REPO_fpga']}/verilog/clock_divider.v",f"{self.projdir}/vivado_src/clock_divider.cp.v")
             if self.trng:
-                subprocess_run(["cp",f"{os_environ['REPO_fpga']}/verilog/bit_pool.v",f"{wdir}/vivado_src/bit_pool.cp.v"])
+                sh.copy(f"{os.environ['REPO_fpga']}/verilog/bit_pool.v",f"{self.projdir}/vivado_src/bit_pool.cp.v")
 
-            with open(f"{wdir}/vivado_src/interfaz_pspl_config.vh", "w") as f:
+            with open(f"{self.projdir}/vivado_src/interfaz_pspl_config.vh", "w") as f:
                 f.write(f"{dw_ge_biw}\n")
                 f.write(f"{biw_aligned_dw}\n")
                 f.write(f"{biw_misaligned_dw}\n")
@@ -1697,9 +1685,9 @@ class GaloisMatrix:
                 f.write(f"{bow_aligned_dw}\n")
                 f.write(f"{bow_misaligned_dw}\n")
 
-            self.gen_garomatrix(out_name=f"{wdir}/vivado_src/garomatrix.v")
+            self.gen_garomatrix(out_name=f"{self.projdir}/vivado_src/garomatrix.v")
 
-            with open(f"{wdir}/vivado_src/top.v", "w") as f:
+            with open(f"{self.projdir}/vivado_src/top.v", "w") as f:
                 if self.N_osc==1:
                     aux=""
                 else:
@@ -1802,16 +1790,16 @@ class GaloisMatrix:
                 PBLOCK_CORNERS=self.pblock.split()
                 PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
                 PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
-                with open(f"{wdir}/vivado_src/pblock.xdc", "w") as f:
+                with open(f"{self.projdir}/vivado_src/pblock.xdc", "w") as f:
                     f.write(f"create_pblock pblock_TOP_0\n")
                     f.write(f"add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0]]\n")
                     f.write(f"resize_pblock [get_pblocks pblock_TOP_0] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n")
 
             ## sdk sources
-            subprocess_run(["mkdir",f"{wdir}/sdk_src"])
-            subprocess_run(["cp",f"{os_environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{wdir}/sdk_src/interfaz_pcps-pspl.cp.c"])
+            os.mkdir(f"{self.projdir}/sdk_src")
+            sh.copy(f"{os.environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{self.projdir}/sdk_src/interfaz_pcps-pspl.cp.c")
 
-            with open(f"{wdir}/sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
+            with open(f"{self.projdir}/sdk_src/interfaz_pcps-pspl_config.h", "w") as f:
                 if self.board == "cmoda7_15t" or self.board == "cmoda7_35t":
                     f.write("#include \"xuartlite.h\"\n\n")
                 elif self.board == "zybo" or self.board == "pynqz2":
@@ -1841,12 +1829,12 @@ class GaloisMatrix:
             
             print(f"fpga part: {self.fpga_part}\n")
             
-            print(f"sdk source files: {projdir}/sdk_src/")
+            print(f"sdk source files: {self.projdir}/sdk_src/")
             
             if self.qspi == 1:
                 print(f"q-spi part: {self.memory_part}")
             
-    def medir(self, puerto='S1', osc=[0], pdl=[0], N_rep=1, resol=17, poly=0, fdiv=3, 
+    def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=17, poly=0, fdiv=3, 
               bias=False, log=False, verbose=True, baudrate=9600):
         """
         Esta función mide la frecuencia de una matriz de osciladores de Galois 
@@ -1857,8 +1845,7 @@ class GaloisMatrix:
         ---------
             puerto : <string>
                 Esta opción especifica el puerto serie al que se conecta la 
-                FPGA. Actualmente está "hardcodeado" a formato linux (ya que 
-                incluso en Windows lo estoy midiendo con WSL).
+                FPGA.
                 
             osc : <int o lista de int>
                 Lista de osciladores a medir.
@@ -1971,7 +1958,7 @@ class GaloisMatrix:
             print(f"Número de repeticiones = {N_rep}\n")
             print(f"Número de pdl_list     = {N_pdl}\n")
             
-        fpga = serial_Serial(port='/dev/tty'+puerto, baudrate=baudrate, bytesize=8)
+        fpga = serial_Serial(port=puerto, baudrate=baudrate, bytesize=8)
         time_sleep(.1)
         
         if verbose:
