@@ -940,6 +940,8 @@ class StdMatrix:
                 f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
                 f.write("elif os.name=='posix': # Estamos en Unix\n")
                 f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
+                
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                     
                     
             ## vivado sources
@@ -1667,6 +1669,8 @@ class GaloisMatrix:
                 f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
                 f.write("elif os.name=='posix': # Estamos en Unix\n")
                 f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
+                
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                 
                 
             ## vivado sources
