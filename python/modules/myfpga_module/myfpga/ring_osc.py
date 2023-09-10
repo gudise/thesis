@@ -674,7 +674,7 @@ class StdMatrix:
                 Frecuencia del reloj del diseño (en MHz).
         """
         self.projname = projname
-        self.projdir = os.path.join(projdir, projname)
+        self.projdir = os.path.join(os.path.abspath(projdir), projname).replace("\\","/")
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -912,15 +912,7 @@ class StdMatrix:
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            with open(f"{self.projdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)                
-                f.write("import os\n")
-                f.write("from subprocess import run\n\n")
-                f.write("if os.name=='nt': # Estamos en Windows\n")
-                f.write("    run([\"C:/Xilinx/Vivado/2019.1/bin/vivado.bat\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n\n")
-                f.write("elif os.name=='posix': # Estamos en Unix\n")
-                f.write("    run([\"/tools/Xilinx/Vivado/2019.1/bin/vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/design_flow.py",f"{self.projdir}/design_flow.cp.py")
                 
                 
             ## Program FPGA
@@ -933,13 +925,7 @@ class StdMatrix:
             elif self.board == "cmoda7_35t":
                 sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
                 
-            with open(f"{self.projdir}/program_fpga.py", "w") as f:
-                f.write("import os\n")
-                f.write("from subprocess import run\n\n")
-                f.write("if os.name=='nt': # Estamos en Windows\n")
-                f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
-                f.write("elif os.name=='posix': # Estamos en Unix\n")
-                f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                     
@@ -1409,7 +1395,7 @@ class GaloisMatrix:
                 (i.e., de la medida).
         """
         self.projname = projname
-        self.projdir = os.path.join(projdir, projname)
+        self.projdir = os.path.join(os.path.abspath(projdir), projname).replace("\\","/")
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -1641,16 +1627,8 @@ class GaloisMatrix:
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            with open(f"{self.projdir}/design_flow.py", "w") as f: # Script en python para ejecutar 'vivado_flow' (la idea es que sea cross-platform)
-                f.write("import os\n")
-                f.write("from subprocess import run\n\n")
-                f.write("if os.name=='nt': # Estamos en Windows\n")
-                f.write("    run([\"C:/Xilinx/Vivado/2019.1/bin/vivado.bat\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n\n")
-                f.write("elif os.name=='posix': # Estamos en Unix\n")
-                f.write("    run([\"/tools/Xilinx/Vivado/2019.1/bin/vivado\",\"-mode\",\"batch\",\"-source\",\"design_flow/vivado_flow.tcl\"])\n")
-                f.write("    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/sdk_flow.tcl\"])\n")
-            
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/design_flow.py",f"{self.projdir}/design_flow.cp.py")
+                
             
             ## Program FPGA
             if self.board == "zybo":
@@ -1662,13 +1640,7 @@ class GaloisMatrix:
             elif self.board == "cmoda7_35t":
                 sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
                 
-            with open(f"{self.projdir}/program_fpga.py", "w") as f:
-                f.write("import os\n")
-                f.write("from subprocess import run\n\n")
-                f.write("if os.name=='nt': # Estamos en Windows\n")
-                f.write(f"    run([\"C:/Xilinx/SDK/2019.1/bin/xsdk.bat\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n\n")
-                f.write("elif os.name=='posix': # Estamos en Unix\n")
-                f.write(f"    run([\"/tools/Xilinx/SDK/2019.1/bin/xsdk\",\"-batch\",\"-source\",\"design_flow/program_fpga.tcl\",\"./project_vivado/project_vivado.sdk\",\"app\"])\n")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                 

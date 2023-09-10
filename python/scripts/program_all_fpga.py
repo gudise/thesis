@@ -209,7 +209,9 @@ class FPGAs:
         for convenience
         """
         return range(len(self)).__iter__()
-
+        
+        
+projdir = os.path.dirname(__file__).replace("\\","/")        
 
 @run_as_admin
 def program_all_fpga():
@@ -230,7 +232,7 @@ def program_all_fpga():
             if j != i:
                 connected_fpgas.disable(j)
 
-        subprocess.run(["python","./program_fpga.py"])
+        subprocess.run(["python",f"{projdir}/program_fpga.cp.py"])
     for i, state in states:
         connected_fpgas.toggle(i, state)
         
