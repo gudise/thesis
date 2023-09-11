@@ -927,7 +927,7 @@ class StdMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                     
                     
             ## vivado sources
@@ -1475,7 +1475,7 @@ class GaloisMatrix:
                 
                 
             ## block design
-            os.mkdir(["mkdir",f"{self.projdir}/block_design"])
+            os.mkdir(f"{self.projdir}/block_design")
             if self.board == "cmoda7_15t":
                 if self.qspi:
                     sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl",f"{self.projdir}/block_design/bd_design_1.tcl")
@@ -1642,7 +1642,7 @@ class GaloisMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                 
                 
             ## vivado sources
