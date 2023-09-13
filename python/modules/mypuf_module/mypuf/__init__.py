@@ -175,7 +175,7 @@ class PufExp:
         Tensor tal y como es devuelto por la función
         myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'pdl', 'osc'.
         
-    retos : <Lista de parejas de int o lista de lista de parejas de int>
+    retos : <lista de lista de parejas de int>
         Lista que contiene una lista de parejas (i.e., listas de dos elementos),
         tal y como son devueltas por la llamada a un objeto PufTopol. El
         número de parejas que contenga este parámetro será el número de bits
@@ -279,8 +279,6 @@ class PufExp:
         self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
         self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
         
-        if type(retos)==type([[]]): # Sólo hay un reto.
-            retos = [retos]
         self.retos = retos[:]
         self.N_retos = len(self.retos)
         self.multibit = multibit[:]
