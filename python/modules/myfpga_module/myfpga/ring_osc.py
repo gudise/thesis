@@ -17,7 +17,7 @@ from numpy                  import  reshape as np_reshape,\
                                     transpose as np_transpose,\
                                     inf     as np_inf
 from numpy.random           import  normal  as np_normal
-from myaux                  import  *
+from myutils                import  *
 from myfpga                 import  *
 from myfpga.interfaz_pcps   import  *
 from mytensor               import  *
@@ -373,6 +373,10 @@ class Dominio:
     dirección y en incrementos de dy. Cuando se alcanza el límite y1, la matriz se incrementa
     una cantidad dx en la dirección x, y vuelve a la coordenada y0. Si directriz=x, el 
     comentario anterior se aplica substituyendo x <-> y.
+    
+    Variables:
+    ----------
+    osc_coord : coordenadas de los osciladores.
     """
     def __init__(self, N_osc=10, x0=0, x1=np_inf, dx=1, y0=0, y1=np_inf, dy=1, directriz='y'):
         """
@@ -406,6 +410,12 @@ class Dominio:
             directriz : <char, opcional, por defecto 'y'>
                 Dirección de crecimiento de la matriz (hasta llegar a la coordenada 
                 máxima). Puede ser 'y' o 'x'.
+                
+        Constantes:
+        -----------
+            osc_coord : <lista de string>
+                Esta variable contiene la lista de las coordenadas de los anillos, dados
+                en forma de par x,y.
         """
         self.N_osc = N_osc
         self.directriz = directriz
@@ -927,7 +937,7 @@ class StdMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                     
                     
             ## vivado sources
@@ -1163,7 +1173,8 @@ class StdMatrix:
              print(f"Número de osciladores  = {N_osc}\n")
              print(f"Número de repeticiones = {N_rep}\n")
              print(f"Número de PDL          = {N_pdl}\n")
-            
+             
+                         
         fpga = serial_Serial(port=puerto, baudrate=baudrate, bytesize=8)
         time_sleep(.1)
         
@@ -1642,7 +1653,7 @@ class GaloisMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                 
                 
             ## vivado sources
