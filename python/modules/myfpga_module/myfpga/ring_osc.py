@@ -937,7 +937,7 @@ class StdMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                     
                     
             ## vivado sources
@@ -1175,25 +1175,24 @@ class StdMatrix:
              print(f"Número de PDL          = {N_pdl}\n")
              
                          
-        fpga = serial_Serial(port=puerto, baudrate=baudrate, bytesize=8)
-        time_sleep(.1)
-        
-        if verbose:
-            pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
+        with serial_Serial(port=puerto, baudrate=baudrate, bytesize=8) as fpga:
+            time_sleep(.1)
             
-        medidas=[]
-        for rep in range(N_rep):
-            for pdl in range(N_pdl):
-                for osc in range(N_osc):
-                    buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_resol
-                    scan(fpga, buffer_in, self.buffer_in_width)
-                    medida = bitstr_to_int(calc(fpga, self.buffer_out_width))
-                    if f_ref:
-                        medida*=f_ref/2**resol
-                    medidas.append(medida)
-                if verbose:
-                    pinta_progreso(N_osc)
-        fpga.close()
+            if verbose:
+                pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
+                
+            medidas=[]
+            for rep in range(N_rep):
+                for pdl in range(N_pdl):
+                    for osc in range(N_osc):
+                        buffer_in = buffer_sel_ro[osc]+buffer_sel_pdl[pdl]+buffer_sel_resol
+                        scan(fpga, buffer_in, self.buffer_in_width)
+                        medida = bitstr_to_int(calc(fpga, self.buffer_out_width))
+                        if f_ref:
+                            medida*=f_ref/2**resol
+                        medidas.append(medida)
+                    if verbose:
+                        pinta_progreso(N_osc)
         
         tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         
@@ -1658,7 +1657,7 @@ class GaloisMatrix:
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
                 
                 
             ## vivado sources

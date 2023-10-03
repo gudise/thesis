@@ -2,7 +2,7 @@ import os
 from subprocess import run
 
 
-projdir = os.path.dirname(__file__).replace("\\","/")
+projdir = os.path.dirname(os.path.abspath(__file__)).replace("\\","/")
 
 if os.name=='nt': # Estamos en Windows
     run(["C:/Xilinx/Vivado/2019.1/bin/vivado.bat","-mode","batch","-source",f"{projdir}/design_flow/vivado_flow.tcl"])
