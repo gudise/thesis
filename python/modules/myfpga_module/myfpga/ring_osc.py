@@ -926,14 +926,7 @@ class StdMatrix:
                 
                 
             ## Program FPGA
-            if self.board == "zybo":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "pynqz2":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "cmoda7_15t":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "cmoda7_35t":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
+            sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/design_flow/program_fpga.cp.tcl")
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
@@ -1646,14 +1639,7 @@ class GaloisMatrix:
                 
             
             ## Program FPGA
-            if self.board == "zybo":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_zybo.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "pynqz2":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_pynqz2.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "cmoda7_15t":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_15t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
-            elif self.board == "cmoda7_35t":
-                sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_cmoda7_35t.tcl",f"{self.projdir}/design_flow/program_fpga.tcl")
+            sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/design_flow/program_fpga.cp.tcl")
                 
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
                 
