@@ -236,7 +236,7 @@ class GaloisRing():
         . Inversor de salida.
         . flip-flop de muestreo.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False):
+    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False, poly=-1):
         """
         Inicialización del objeto 'GaloisRing'.
         
@@ -301,6 +301,13 @@ class GaloisRing():
                 Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
                 utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
                 se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
+                
+            poly : <int, por defecto -1>
+                Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo
+                (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo
+                de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
+                utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
+                cantidad de recursos hardware, a costa de perder flexibilidad.                
         """
         self.name = name
         self.N_inv = N_inv
@@ -340,8 +347,17 @@ class GaloisRing():
                     w_in = [f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
                     self.elements.append(Lut4(f"inv_{name}_{i}", "16'h5555", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
-                    self.elements.append(Lut6(f"inv_{name}_{i}", "64'h9595959595959595", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    if poly<0:
+                        w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                        self.elements.append(Lut6(f"inv_{name}_{i}", "64'h9595959595959595", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    else:
+                        if poly%2: # XNOR
+                            w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                            self.elements.append(Lut5(f"inv_{name}_{i}", "32'h99999999", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        else: # NOT
+                            w_in = [f"w_{name}[{i-1}]", f"sel_pdl[{0}]", f"sel_pdl[{1}]", f"sel_pdl[{2}]"]
+                            self.elements.append(Lut4(f"inv_{name}_{i}", "16'h5555", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        poly=poly//2
             
         else:
             self.elements = []
@@ -352,8 +368,17 @@ class GaloisRing():
                     w_in = f"w_{name}[{N_inv-1}]"
                     self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                 else:
-                    w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
-                    self.elements.append(Lut3(f"inv_{name}_{i}", "8'h95", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    if poly<0:
+                        w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]", f"sel_poly[{i-1}]"]
+                        self.elements.append(Lut3(f"inv_{name}_{i}", "8'h95", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                    else:
+                        if poly%2: # XNOR
+                            w_in = [f"w_{name}[{i-1}]", f"w_{name}[{N_inv-1}]"]
+                            self.elements.append(Lut2(f"inv_{name}_{i}", "4'h9", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        else: # NOT
+                            w_in = f"w_{name}[{i-1}]"
+                            self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
+                        poly=poly//2
                     
         self.elements.append(Lut1(f"invout_{name}", "2'h1", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
         self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
@@ -1200,7 +1225,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0, poly=-1):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1236,6 +1261,13 @@ class GaloisMatrix:
                 tiene un tamaño 'trng' dado por esta variable. Alternativamente, si no se incluye esta
                 opción (o vale '0'), el diseño incluye un medidor de sesgo que devuelve el valor del sesgo
                 de cada GARO, en lugar de producir un arreglo de bits.
+                
+            poly : <int, por defecto -1>
+                Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo
+                (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo
+                de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
+                utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
+                cantidad de recursos hardware, a costa de perder flexibilidad.
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
@@ -1261,15 +1293,20 @@ class GaloisMatrix:
 
         self.pdl = pdl
         self.trng = trng
+        self.poly = poly
+        
         self.osc_list = []
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl, self.poly))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
-        self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
+        if self.poly<0:
+            self.N_bits_poly = self.N_inv-1 # El primer inversor no se puede modificar (es una puerta NOT).
+        else:
+            self.N_bits_poly = 0 # poly hardcoded.
         if self.trng:
             self.N_bits_resol = 0
         else:
@@ -1311,8 +1348,8 @@ class GaloisMatrix:
             f.write("module GAROMATRIX (\n")
             f.write("    input clock,\n")
             f.write("    input clock_s,\n")
-            f.write(f"    input[{self.N_inv-2}:0] sel_poly,\n")
-            
+            if self.poly<0:
+                f.write(f"    input[{self.N_inv-2}:0] sel_poly,\n")
             if self.N_osc > 1:
                 f.write(f"    input[{clog2(self.N_osc)-1}:0] sel_ro,\n")
             if self.pdl:
@@ -1674,16 +1711,6 @@ class GaloisMatrix:
             self.gen_garomatrix(out_name=f"{self.projdir}/source/vivado/garomatrix.v")
 
             with open(f"{self.projdir}/source/vivado/top.v", "w") as f:
-                if self.N_osc==1:
-                    aux=""
-                else:
-                    aux=f".sel_ro(buffer_in[{self.N_bits_osc-1}:0]),"
-                
-                if self.pdl:
-                    aux1=f".sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),"
-                else:
-                    aux1=""
-                    
                 f.write(f"module TOP (\n")
                 f.write(f"    input           clock,\n")
                 f.write(f"    input[7:0]      ctrl_in,\n")
@@ -1741,9 +1768,12 @@ class GaloisMatrix:
                 f.write(f"    GAROMATRIX garomatrix (\n")
                 f.write(f"        .clock(clock),\n")
                 f.write(f"        .clock_s(clock_s),\n")
-                f.write(f"        .sel_poly(buffer_in[{self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly-1}:{self.N_bits_osc+self.N_bits_pdl}]),\n")
-                f.write(f"        {aux}\n")
-                f.write(f"        {aux1}\n")
+                if self.poly<0:
+                    f.write(f"        .sel_poly(buffer_in[{self.N_bits_osc+self.N_bits_pdl+self.N_bits_poly-1}:{self.N_bits_osc+self.N_bits_pdl}]),\n")
+                if self.N_osc>1:
+                    f.write(f"        .sel_ro(buffer_in[{self.N_bits_osc-1}:0]),\n")
+                if self.pdl:
+                    f.write(f"        .sel_pdl(buffer_in[{self.N_bits_osc+self.N_bits_pdl-1}:{self.N_bits_osc}]),\n")
                 f.write(f"        .out(out_ro)\n")
                 f.write(f"    );\n\n")
                 
@@ -1937,7 +1967,10 @@ class GaloisMatrix:
             print(f"INFO LOG:\n\n")
             if not self.trng:
                 print(f"Resolución             = {resol}\n")
-            print(f"Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}\n")
+            if self.poly<0:
+                print(f"Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}\n")
+            else:
+                print(f"Polinomio (hardcoded)  = {self.poly} --> {poly_nomenclature(resize_array(int_to_bitstr(self.poly), self.N_inv-1))}\n")
             print(f"Factor divisor clk.    = {2**fdiv}\n")
             print(f"Número de osciladores  = {N_osc}\n")
             print(f"Número de repeticiones = {N_rep}\n")
