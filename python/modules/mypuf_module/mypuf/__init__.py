@@ -493,3 +493,44 @@ class PufExpAmpliado:
         self.curva_v = np_mean(self.intradist_amb_set, axis=(0,1,2)) # Promedio sobre N_retos, N_inst y N_rep.
         self.curva_v_error = np_std(self.intradist_amb_set, axis=(0,1,2))/np_sqrt(self.N_retos*self.N_inst*self.N_rep) # Desviación estándar de cada promedio.
         
+        
+def preliminar(medidas_in):
+    """
+    Esta función realiza un análisis rápido y automático de
+    un conjunto de medidas experimentales tal y como son devueltas
+    por una o varias funciones 'medir()' (ver 'myfpga.ring_osc').
+    El análisis es estándar, utilizando una topología 'n/2'.
+    
+    Parámetros:
+    ----------
+    medidas : <lista de Tensor>
+        Este parámetro contiene una lista de medidas tal y como son devueltas por 
+        las funciones 'medir()' del módulo 'myfpga.ring_osc'.
+    """
+    from matplotlib.pyplot import plot,bar,show
+    
+    try:
+        N_osc = medidas_in.size('osc')
+        N_inst = 1
+        medidas=[medidas_in]
+    except:
+        N_osc = medidas_in[0].size('osc')
+        N_inst = len(medidas_in)
+        medidas = medidas_in[:]
+    
+    topol = PufTopol(N_osc, topol='n/2')
+    pufexp = PufExp(instancias = medidas, retos=[topol()])
+    
+    if N_inst>1:
+        bar(pufexp.x, pufexp.intradist, color='tab:blue')
+        plot(pufexp.x, pufexp.intradist_ajuste_binom, color='tab:orange')
+        bar(pufexp.x,pufexp.interdist, color='tab:blue')
+        plot(pufexp.x, pufexp.interdist_ajuste_binom, color='tab:green')
+        show()
+        print(f"Intra-dist media: {pufexp.intradist_media/pufexp.N_bits*100}")
+        print(f"Inter-dist media: {pufexp.interdist_media/pufexp.N_bits*100}")
+    else:
+        bar(pufexp.x, pufexp.intradist, color='tab:blue')
+        plot(pufexp.x, pufexp.intradist_ajuste_binom, color='tab:orange')
+        show()
+        print(f"Intra-dist media: {pufexp.intradist_media/pufexp.N_bits*100}")
