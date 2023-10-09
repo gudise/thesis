@@ -830,6 +830,8 @@ class StdMatrix:
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"add_files -norecurse {self.projdir}/source/vivado\n")
+                if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
+                    f.write(f"add_files {self.projdir}/source/vivado/pblock.xdc\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
@@ -1563,6 +1565,8 @@ class GaloisMatrix:
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"add_files -norecurse {self.projdir}/source/vivado\n")
+                if pblock:
+                    f.write(f"add_files {self.projdir}/source/vivado/pblock.xdc\n")                
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
                 f.write(f"set_property -dict [list CONFIG.C_GPIO_WIDTH {self.data_width} CONFIG.C_GPIO2_WIDTH {self.data_width}] [get_bd_cells axi_gpio_data]\n")
