@@ -616,9 +616,8 @@ class StdMatrix:
                 f.write("endmodule\n")
                 
     def implement(self, projname='project_romatrix', projdir='.', njobs=4,
-                  debug=False, files=True, board='pynqz2', qspi=False, routing=False, 
-                  pblock_interfaz_ps=False, pblock_interfaz_romatrix=False, pblock_medidor_frec=False,
-                  data_width=32, buffer_out_width=32, f_clock=100):
+                  debug=False, files=True, board='pynqz2', qspi=False, routing=False,
+                  pblock=False, data_width=32, buffer_out_width=32, f_clock=100):
         """
         Copia en el directorio 'self.projdir' todos los archivos necesarios para 
         implementar una matriz de osciladores de anillo con medición de la 
@@ -665,38 +664,10 @@ class StdMatrix:
                 pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
                 que esta opción sea del todo compatible con -qspi).
                 
-            pblock_interfaz_ps : <string>
-                Se añade una restricción PBLOCK para todos los elementos de la
-                interfaz_ps, que se colocarán dentro de este espacio. El
-                formato de esta opción es un string que consta de dos puntos
-                separados por un espacio, donde cada punto está dado por un par
-                de coordenadas X,Y separadas por una coma; estos  representan
-                respectivamente las esquinas inferior izda. y superior dcha. del
-                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
-                de que la FPGA utilizada disponga de recursos suficientes en el
-                bloque descrito.
-                
-            pblock_interfaz_romatrix : <string>
-                Se añade una restricción PBLOCK para todos los elementos de la
-                interfaz_romatrix, que se colocarán dentro de este espacio. El
-                formato de esta opción es un string que consta de dos puntos
-                separados por un espacio, donde cada punto está dado por un par
-                de coordenadas X,Y separadas por una coma; estos  representan
-                respectivamente las esquinas inferior izda. y superior dcha. del
-                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
-                de que la FPGA utilizada disponga de recursos suficientes en el
-                bloque descrito.
-                
-            pblock_medidor_frec : <string>
-                Se añade una restricción PBLOCK para todos los elementos de 
-                medidor_frec, que se colocarán dentro de este espacio. El
-                formato de esta opción es un string que consta de dos puntos
-                separados por un espacio, donde cada punto está dado por un par
-                de coordenadas X,Y separadas por una coma; estos  representan
-                respectivamente las esquinas inferior izda. y superior dcha. del
-                rectángulo de restricción: 'X0,Y0 X1,Y1'. El diseñador es responsable
-                de que la FPGA utilizada disponga de recursos suficientes en el
-                bloque descrito.                
+            pblock : <bool, por defecto False>
+                Si esta opción es 'True' se inserta la matriz en un pblock tal que
+                el espacio dentro del bloque se excluye para toda lógica que no sea
+                la propia matriz.
 
             data_width(dw) : <int>
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
@@ -713,9 +684,7 @@ class StdMatrix:
         self.board = board
         self.qspi = qspi
         self.routing = routing
-        self.pblock_interfaz_ps = pblock_interfaz_ps
-        self.pblock_interfaz_romatrix = pblock_interfaz_romatrix
-        self.pblock_medidor_frec = pblock_medidor_frec
+        self.pblock = pblock
         self.data_width = data_width
         self.buffer_out_width = buffer_out_width
         self.f_clock = f_clock
@@ -822,6 +791,7 @@ class StdMatrix:
                 else:
                     sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
             
+            #### build hw
             with open(f"{self.projdir}/flow/design/setupdesign.tcl", "w") as f:
                 f.write(f"create_project project_vivado {self.projdir}/project_vivado -part {self.fpga_part}\n")
                 f.write(f"set_property board_part {self.board_part} [current_project]\n")
@@ -830,7 +800,7 @@ class StdMatrix:
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"add_files -norecurse {self.projdir}/source/vivado\n")
-                if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
+                if self.pblock:
                     f.write(f"add_files {self.projdir}/source/vivado/pblock.xdc\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
@@ -853,7 +823,6 @@ class StdMatrix:
                 f.write(f"validate_bd_design\n")
                 f.write(f"save_bd_design\n")
                 
-            #### build hw
             with open(f"{self.projdir}/flow/design/genbitstream.tcl", "w") as f:
                 f.write(f"if {{[file exists {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc]==1}} {{\n")
                 f.write(f"    export_ip_user_files -of_objects  [get_files {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc] -no_script -reset -force -quiet\n")
@@ -1062,31 +1031,23 @@ class StdMatrix:
                 
                 f.write(f"endmodule\n")
 
-            if self.pblock_interfaz_ps or self.pblock_interfaz_romatrix or self.pblock_medidor_frec:
+            if self.pblock:
                 with open(f"{self.projdir}/source/vivado/pblock.xdc", "w") as f:
-                    if self.pblock_interfaz_ps:
-                        PBLOCK_CORNERS=self.pblock_interfaz_ps.split()
-                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
-                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
-                        f.write(f"create_pblock pblock_interfaz_ps\n")
-                        f.write(f"add_cells_to_pblock [get_pblocks pblock_interfaz_ps] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_pspl design_1_i/axi_gpio_ctrl design_1_i/axi_gpio_data design_1_i/ps7_0_axi_periph design_1_i/rst_ps7_0_100M]]\n")
-                        f.write(f"resize_pblock [get_pblocks pblock_interfaz_ps] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    pblock_corner_xlist = []
+                    pblock_corner_ylist = []
+                    for osc in self.osc_list:
+                        for osc_loc in osc.loc:
+                            pblock_corner_xlist.append(int(osc_loc.split(',')[0]))
+                            pblock_corner_ylist.append(int(osc_loc.split(',')[1]))
+                            
+                    PBLOCK_CORNER_0=[min(pblock_corner_xlist),min(pblock_corner_ylist)]
                     
-                    if self.pblock_interfaz_romatrix:
-                        PBLOCK_CORNERS=self.pblock_interfaz_romatrix.split()
-                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
-                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
-                        f.write(f"create_pblock pblock_interfaz_romatrix\n")
-                        f.write(f"add_cells_to_pblock [get_pblocks pblock_interfaz_romatrix] [get_cells -quiet [list design_1_i/TOP_0/inst/interfaz_romatrix]]\n")
-                        f.write(f"resize_pblock [get_pblocks pblock_interfaz_romatrix] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    PBLOCK_CORNER_1=[max(pblock_corner_xlist),max(pblock_corner_ylist)]
                     
-                    if self.pblock_medidor_frec:
-                        PBLOCK_CORNERS=self.pblock_medidor_frec.split()
-                        PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
-                        PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
-                        f.write(f"create_pblock pblock_medidor_frec\n")
-                        f.write(f"add_cells_to_pblock [get_pblocks pblock_medidor_frec] [get_cells -quiet [list design_1_i/TOP_0/inst/medidor_frec]]\n")
-                        f.write(f"resize_pblock [get_pblocks pblock_medidor_frec] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")                    
+                    f.write(f"create_pblock pblock_romatrix\n")
+                    f.write(f"add_cells_to_pblock [get_pblocks pblock_romatrix] [get_cells -quiet [list design_1_i/TOP_0/inst/romatrix]]\n")
+                    f.write(f"resize_pblock [get_pblocks pblock_romatrix] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    f.write("set_property EXCLUDE_PLACEMENT TRUE [get_pblocks pblock_romatrix]")
                     
             ### sdk
             os.mkdir(f"{self.projdir}/source/sdk")
@@ -1425,16 +1386,10 @@ class GaloisMatrix:
                 pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
                 que esta opción sea del todo compatible con -qspi).
                 
-            pblock : <string>
-                Se añade una restricción PBLOCK para el módulo TOP (i.e., todos los
-                elementos auxiliares de la matriz de osciladores se colocarán 
-                dentro de este espacio). El formato de esta opción es un string que
-                consta de dos puntos separados por un espacio, donde cada punto 
-                está dado por un par de coordenadas X,Y separadas por una coma; 
-                estos  representan respectivamente las esquinas inferior izda. y 
-                superior dcha. del rectángulo de restricción: 'X0,Y0 X1,Y1'. El 
-                diseñador es responsable de que la FPGA utilizada disponga de 
-                recursos suficientes en el bloque descrito.
+            pblock : <bool, por defecto False>
+                Si esta opción es 'True' se inserta la matriz en un pblock tal que
+                el espacio dentro del bloque se excluye para toda lógica que no sea
+                la propia matriz.
 
             data_width : <int>
                 Esta opción especifica la anchura del canal de datos PS<-->PL.
@@ -1565,7 +1520,7 @@ class GaloisMatrix:
                 f.write(f"regenerate_bd_layout\n")
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"add_files -norecurse {self.projdir}/source/vivado\n")
-                if pblock:
+                if self.pblock:
                     f.write(f"add_files {self.projdir}/source/vivado/pblock.xdc\n")                
                 f.write(f"update_compile_order -fileset sources_1\n")
                 f.write(f"create_bd_cell -type module -reference TOP TOP_0\n")
@@ -1806,13 +1761,22 @@ class GaloisMatrix:
                 f.write(f"endmodule\n")
                 
             if self.pblock:
-                PBLOCK_CORNERS=self.pblock.split()
-                PBLOCK_CORNER_0=PBLOCK_CORNERS[0].split(',')
-                PBLOCK_CORNER_1=PBLOCK_CORNERS[1].split(',')
                 with open(f"{self.projdir}/source/vivado/pblock.xdc", "w") as f:
-                    f.write(f"create_pblock pblock_TOP_0\n")
-                    f.write(f"add_cells_to_pblock [get_pblocks pblock_TOP_0] [get_cells -quiet [list design_1_i/TOP_0]]\n")
-                    f.write(f"resize_pblock [get_pblocks pblock_TOP_0] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n")
+                    pblock_corner_xlist = []
+                    pblock_corner_ylist = []
+                    for osc in self.osc_list:
+                        for osc_loc in osc.loc:
+                            pblock_corner_xlist.append(int(osc_loc.split(',')[0]))
+                            pblock_corner_ylist.append(int(osc_loc.split(',')[1]))
+                            
+                    PBLOCK_CORNER_0=[min(pblock_corner_xlist),min(pblock_corner_ylist)]
+                    
+                    PBLOCK_CORNER_1=[max(pblock_corner_xlist),max(pblock_corner_ylist)]
+                    
+                    f.write(f"create_pblock pblock_garomatrix\n")
+                    f.write(f"add_cells_to_pblock [get_pblocks pblock_garomatrix] [get_cells -quiet [list design_1_i/TOP_0/inst/romatrix]]\n")
+                    f.write(f"resize_pblock [get_pblocks pblock_garomatrix] -add {{SLICE_X{PBLOCK_CORNER_0[0]}Y{PBLOCK_CORNER_0[1]}:SLICE_X{PBLOCK_CORNER_1[0]}Y{PBLOCK_CORNER_1[1]}}}\n\n")
+                    f.write("set_property EXCLUDE_PLACEMENT TRUE [get_pblocks pblock_garomatrix]")            
 
             ### sdk
             os.mkdir(f"{self.projdir}/source/sdk")
