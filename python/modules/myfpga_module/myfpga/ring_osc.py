@@ -1849,7 +1849,7 @@ class GaloisMatrix:
             if self.qspi == 1:
                 print(f"q-spi part: {self.memory_part}")
             
-    def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=17, poly=0, fdiv=3, 
+    def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=14, poly=0, fdiv=9, 
               bias=False, log=False, verbose=True, baudrate=9600):
         """
         Esta función mide la frecuencia de una matriz de osciladores de Galois 
@@ -1873,14 +1873,16 @@ class GaloisMatrix:
                 
             resol : <int>
                 log_2 del número de ciclos de referencia a completar para dar 
-                por terminada la medida (por defecto 17, i.e., 2^17 = 131072 
+                por terminada la medida (por defecto 14, i.e., 2^14 = 16384 
                 ciclos).
                 
             poly : <int>
                 Esta variable indica el índice del polinomio a medir.
                 
             fdiv : <int>
-                log_2 del factor de división para el reloj de muestreo.
+                log_2 del factor de división menos uno, para el reloj de muestreo
+                (por defecto 9, i.e., 2^(9+1)=1024; cin f_ref=100 MHz esto supone
+                una frecuencia de muestre f_s=97.65 kHz).
                 
             bias : <bool>
                 Si se pasa esta opción como "True" el resultado se dará en 
@@ -1966,12 +1968,12 @@ class GaloisMatrix:
         if log:
             print(f"INFO LOG:\n\n")
             if not self.trng:
-                print(f"Resolución             = {resol}\n")
+                print(f"Resolución             = {2**resol}\n")
             if self.poly<0:
                 print(f"Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}\n")
             else:
                 print(f"Polinomio (hardcoded)  = {self.poly} --> {poly_nomenclature(resize_array(int_to_bitstr(self.poly), self.N_inv-1))}\n")
-            print(f"Factor divisor clk.    = {2**fdiv}\n")
+            print(f"Frecuencia de muestreo     = {round(100000/2**(1+fdiv),2)} kHz\n")
             print(f"Número de osciladores  = {N_osc}\n")
             print(f"Número de repeticiones = {N_rep}\n")
             print(f"Número de pdl_list     = {N_pdl}\n")
