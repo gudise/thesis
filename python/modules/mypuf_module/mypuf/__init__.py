@@ -329,29 +329,30 @@ class PufExp:
         ## Sesgo de cada bit
         self.sesgo_bit = [[sesgo_data_bin(self.pufexp[i_reto][i_inst]) for i_inst in range(len(self.instancias))] for i_reto in range(len(self.retos))]
         
-        ## Intra-distancia
-        self.intradist_set=[]
-        for i_reto in range(self.N_retos):
-            
-            for i_inst in range(self.N_inst):
+        ## Intra-distancia´: solo si N_rep > 1:
+        if self.N_rep>1:
+            self.intradist_set=[]
+            for i_reto in range(self.N_retos):
                 
-                for i_rep in range(self.N_rep):
+                for i_inst in range(self.N_inst):
                     
-                    for j_rep in range(i_rep+1,self.N_rep,1):
-                        self.intradist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][i_inst][j_rep]))
-        
-        self.intradist_media = np_mean(self.intradist_set)
-        self.intradist_std = np_std(self.intradist_set)
-        self.intradist_error_media = self.intradist_std/np_sqrt(len(self.intradist_set)) # desviación estándar de la media (teorema del límite central)
-        self.intradist_p = self.intradist_media/self.N_bits
-        self.intradist = [0 for x in self.x]
-        for x,y in zip(*np_unique(self.intradist_set, return_counts=True)):
-            self.intradist[x]=y
-        intradist_sum = sum(self.intradist)
-        for x in self.x:
-            self.intradist[x]/=intradist_sum
-        self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
-        #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
+                    for i_rep in range(self.N_rep):
+                        
+                        for j_rep in range(i_rep+1,self.N_rep,1):
+                            self.intradist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][i_inst][j_rep]))
+            
+            self.intradist_media = np_mean(self.intradist_set)
+            self.intradist_std = np_std(self.intradist_set)
+            self.intradist_error_media = self.intradist_std/np_sqrt(len(self.intradist_set)) # desviación estándar de la media (teorema del límite central)
+            self.intradist_p = self.intradist_media/self.N_bits
+            self.intradist = [0 for x in self.x]
+            for x,y in zip(*np_unique(self.intradist_set, return_counts=True)):
+                self.intradist[x]=y
+            intradist_sum = sum(self.intradist)
+            for x in self.x:
+                self.intradist[x]/=intradist_sum
+            self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
+            #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
         ## Inter-distancia: solo si N_inst > 1:
         if self.N_inst>1:
@@ -486,9 +487,12 @@ class PufExpAmpliado:
                 
                 for i_rep in range(self.N_rep):
                 
-                    for i_amb,amb in enumerate(experimentos):
-                        self.intradist_amb_set.append(hamming(amb.pufexp[i_reto][i_inst][i_rep],experimentos[cond_ref].pufexp[i_reto][i_inst][i_rep]))
-        self.intradist_amb_set = np_reshape(self.intradist_amb_set, (self.N_retos,self.N_inst,self.N_rep,self.N_amb))
+                    for j_rep in range(self.N_rep): # Repeticiones de la condición de referencia.
+                
+                        for i_amb,amb in enumerate(experimentos):
+                            self.intradist_amb_set.append(hamming(amb.pufexp[i_reto][i_inst][i_rep],experimentos[cond_ref].pufexp[i_reto][i_inst][j_rep]))
+        
+        self.intradist_amb_set = np_reshape(self.intradist_amb_set, (self.N_retos,self.N_inst,self.N_rep**2,self.N_amb))
         
         self.curva_v = np_mean(self.intradist_amb_set, axis=(0,1,2)) # Promedio sobre N_retos, N_inst y N_rep.
         self.curva_v_error = np_std(self.intradist_amb_set, axis=(0,1,2))/np_sqrt(self.N_retos*self.N_inst*self.N_rep) # Desviación estándar de cada promedio.
