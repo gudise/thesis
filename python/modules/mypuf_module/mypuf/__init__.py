@@ -379,7 +379,8 @@ class PufExp:
             self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
             #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
             
-            # Identificabilidad: solo si N_inst > 1:
+        ## Identificabilidad: solo si N_rep > 1 y N_inst > 1:
+        if self.N_rep>1 and self.N_inst>1:
             self.far = sp_binomial.cdf(self.x, n=self.N_bits, p=self.interdist_p)
             self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
             self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
