@@ -10,7 +10,8 @@ from numpy              import pi as np_pi,\
                                std as np_std,\
                                argmin as np_argmin,\
                                argsort as np_argsort,\
-                               flip as np_flip
+                               flip as np_flip,\
+                               cumsum as np_cumsum
 from scipy.stats        import binom as sp_binomial
                                #norm as sp_normal,\
                                #fit as sp_fit
@@ -143,7 +144,7 @@ class PufTopol:
         else:
             plt_show()
             
-    def __call__(self, random=True):
+    def __call__(self, random=False):
         """
         Método de llamada; devuelve una lista de parejas que
         conforman una iteración de la topología (i.e., después de
@@ -151,7 +152,7 @@ class PufTopol:
         
         Parámetros:
         -----------
-        random : <bool, opcional, por defecto True>
+        random : <bool, opcional, por defecto False>
             Si 'True' devuelve una iteración aleatoria de la topología,
             si 'False' devuelve el grafo original.
         """
@@ -171,11 +172,11 @@ class PufExp:
     
     Parámetros:
     -----------        
-    instancias : <objeto Tensor o lista de objetos Tensor>
+    instancias : <objeto Tensor o lista de estos>
         Tensor tal y como es devuelto por la función
         myfpga.StdMatrix.medir(), i.e., con tres ejes 'rep', 'pdl', 'osc'.
         
-    retos : <lista de lista de parejas de int>
+    retos : <Lista de parejas de int o lista de estas>
         Lista que contiene una lista de parejas (i.e., listas de dos elementos),
         tal y como son devueltas por la llamada a un objeto PufTopol. El
         número de parejas que contenga este parámetro será el número de bits
@@ -231,6 +232,7 @@ class PufExp:
     interdist_p
     interdist_ajuste_binom
     interdist_ajuste_normal
+    Dks : estadístico de Kolmogorov-Smirnov (bondad del ajuste binomial frente a la suma acumulada de interdistancias).
     far
     frr
     t_eer
@@ -269,17 +271,22 @@ class PufExp:
             self.instancias = instancias[:] # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
         else:
             self.instancias=[instancias]
+        
+        try: # Si podemos hacer esto es que la entrada es una lista de lista de parejas.
+            retos[0][0][0]
+            self.retos = retos[:]
+        except:
+            self.retos = [retos[:]]
             
         self.N_inst = len(self.instancias)
         self.N_pdl = self.instancias[0].size('pdl')
         self.N_rep = self.instancias[0].size('rep')//n_rep_code # N. total de repticiones.
         self.N_osc = self.instancias[0].size('osc')
-        self.N_bits_partial = len(retos[0]) # Número de bits sin tener en cuenta el "boost" PDL.
+        self.N_bits_partial = len(self.retos[0]) # Número de bits sin tener en cuenta el "boost" PDL.
         self.N_bits = self.N_bits_partial*self.N_pdl*len(multibit)-len(del_bits) # Número de bits real de cada respuesta.
         self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
         self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
         
-        self.retos = retos[:]
         self.N_retos = len(self.retos)
         self.multibit = multibit[:]
         
@@ -378,6 +385,7 @@ class PufExp:
                 self.interdist[x]/=interdist_sum
             self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
             #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
+            self.Dks = max([abs(np_cumsum(self.interdist)[i]-np_cumsum(self.interdist_ajuste_binom)[i]) for i,x in enumerate(self.x)])
             
         ## Identificabilidad: solo si N_rep > 1 y N_inst > 1:
         if self.N_rep>1 and self.N_inst>1:

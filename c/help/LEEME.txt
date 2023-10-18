@@ -1,1 +1,0 @@
-En esta carpeta guardo los textos de ayuda de cada comando (escrito en C), de manera que al lanzar la opción de ayuda simplemente los vuelco por pantalla.
