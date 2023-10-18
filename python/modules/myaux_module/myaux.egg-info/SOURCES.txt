@@ -1,7 +1,0 @@
-setup.py
-myaux/__init__.py
-myaux.egg-info/PKG-INFO
-myaux.egg-info/SOURCES.txt
-myaux.egg-info/dependency_links.txt
-myaux.egg-info/not-zip-safe
-myaux.egg-info/top_level.txt

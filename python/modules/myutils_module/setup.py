@@ -1,8 +1,8 @@
 from setuptools import setup
 
-setup(name='myaux',
-      version='1.1',
+setup(name='myutils',
+      version='1.2',
       description='Módulo de Python auxiliar.',
       author='gds',
-      packages=['myaux'],
+      packages=['myutils'],
       zip_safe=False)

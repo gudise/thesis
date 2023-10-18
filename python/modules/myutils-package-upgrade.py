@@ -1,7 +1,7 @@
 import os
 from subprocess import run
 
-os.chdir("myaux_module") # Cambiamos a la carpeta del módulo
+os.chdir("myutils_module") # Cambiamos a la carpeta del módulo
 
 try: # Recuperamos el contenido de 'dist', si existe, y lo borramos
     old_content = os.listdir('dist') 
