@@ -236,7 +236,7 @@ class GaloisRing():
         . Inversor de salida.
         . flip-flop de muestreo.
     """
-    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False, poly=-1):
+    def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False, poly=-1, inverted_end=True):
         """
         Inicialización del objeto 'GaloisRing'.
         
@@ -280,9 +280,12 @@ class GaloisRing():
                 introducidos sean todos distintos entre sí en grupos de cuatro. En 
                 otro caso, el diseño fallará. Además de una lista de caracteres, 
                 esta opción admite un único caracter, pero entonces solo se 
-                restringirá la primera LUT. Notar que el número de  elementos total
-                de un anillo  "GaloisRing" es igual a N_inv+2, siendo el penúltimo 
-                siempre una LUT1 (inversor), y el último un flip-flop.
+                restringirá la primera LUT. Notar que el último elemento en un anillo
+                'GaloisRing' siempre será un flip-flop, y el penúltimo elemento depende
+                de la opción 'inverted_end': si 'True', el número de  elementos total
+                del anillo será igual a N_inv+2, siendo el penúltimo elemento siempre una
+                LUT1 (inversor final). Si por el contrario esta opción es 'False' entonces
+                el número de elementos del anillo será N_inv+1.
                 
             pin : <cadena de caracteres o lista de cadenas> 
                 Lista de parámetros 'pin' de cada LUT que forma parte del anillo 
@@ -293,9 +296,10 @@ class GaloisRing():
                 quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con 
                 el tipo de LUT que se está fijando, y en particular los inversores 
                 inicial y final siempre son de tipo LUT1 (i.e., solo se puede fijar
-                el pin 'I0'). Notar que, aunque el número de elementos en un objeto 
-                'GaloisRing' sea N_inv+2, a efectos de la opción "pin" el último se 
-                ignora (esta restringe solo los pines de las LUT, no del flip-flop).
+                el pin 'I0'). Notar que, dado que el último elemento (N_inv+2 o N_inv+1,
+                dependiendo de la opción 'inverted_end') de un anillo 'GaloisRing' es
+                un flip-flop, a efectos de la opción "pin" este se ignora (esta opción
+                restringe solo los pines de las LUT, no del flip-flop).
             
             pdl : <bool, opcional, por defecto False>
                 Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
@@ -307,7 +311,13 @@ class GaloisRing():
                 (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo
                 de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
                 utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
-                cantidad de recursos hardware, a costa de perder flexibilidad.                
+                cantidad de recursos hardware, a costa de perder flexibilidad.
+                
+            inverted_end : <bool, por defecto 'True'>
+                Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual
+                según parece evita acoplos entre anillos cercanos. Notar que la presencia o no
+                de este inversor cambia el número de elementos a efectos de las opciones 'bel'
+                y 'pin'. 
         """
         self.name = name
         self.N_inv = N_inv
@@ -379,9 +389,12 @@ class GaloisRing():
                             w_in = f"w_{name}[{i-1}]"
                             self.elements.append(Lut1(f"inv_{name}_{i}", "2'h1", self.loc[i], w_out, w_in, self.bel[i], self.pin[i]))
                         poly=poly//2
-                    
-        self.elements.append(Lut1(f"invout_{name}", "2'h1", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
-        self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
+        
+        if inverted_end:            
+            self.elements.append(Lut1(f"invout_{name}", "2'h1", self.loc[N_inv], f"out_ro[{name}]", w_out, self.bel[N_inv], self.pin[N_inv]))    
+            self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"out_ro[{name}]", self.bel[N_inv+1]))
+        else:
+            self.elements.append(FlipFlop(f"ff_{name}", self.loc[N_inv], f"out_sampled[{name}]", 'clock_s', f"w_{name}[{N_inv-1}]", self.bel[N_inv]))        
         
     def help(self):
         """
@@ -1127,15 +1140,15 @@ class StdMatrix:
                 Tasa de transferencia del protocolo serie UART PC<-->PS. Debe 
                 concordar con el programa compilador en PS.
         """
-        if type(osc)==type([]):
-            osc_list = osc[:]
-        else:
+        if type(osc)==type(1):
             osc_list = [osc]
-            
-        if type(pdl)==type([]):
-            pdl_list = pdl[:]
         else:
+            osc_list = list(osc)
+            
+        if type(pdl)==type(1):
             pdl_list = [pdl]
+        else:
+            pdl_list = list(pdl)
             
         N_osc = len(osc_list) # Número de osciladores a medir
         N_pdl = len(pdl_list) # Número de pdl a medir
@@ -1188,7 +1201,7 @@ class GaloisMatrix:
     """
     Objeto que contiene una matriz de osciladores de anillo de Galois.
     """
-    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0, poly=-1):
+    def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0, poly=-1, inverted_end=True):
         """    
         Inicialización del objeto 'StdMatrix'.
 
@@ -1231,6 +1244,12 @@ class GaloisMatrix:
                 de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
                 utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
                 cantidad de recursos hardware, a costa de perder flexibilidad.
+                
+            inverted_end : <bool, por defecto 'True'>
+                Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual
+                según parece evita acoplos entre anillos cercanos. Notar que la presencia o no
+                de este inversor cambia el número de elementos a efectos de las opciones 'bel'
+                y 'pin'.                
         """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
@@ -1262,7 +1281,7 @@ class GaloisMatrix:
         self.N_osc=0
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
-                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl, self.poly))
+                self.osc_list.append(GaloisRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl, self.poly, inverted_end))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
@@ -1320,7 +1339,6 @@ class GaloisMatrix:
             f.write("    output out\n")
             f.write("    );\n\n")
             
-            f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")
             f.write(f"    wire[{self.N_osc-1}:0] out_sampled;\n\n")
             
             for i in range(self.N_osc):
@@ -1594,11 +1612,8 @@ class GaloisMatrix:
                     
                     for i in range(self.N_osc):
                         for j in range(self.N_inv):
-                            f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/ring{i}_w{j}]\n")
-                            f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/ring{i}_w{j} }}]\n\n")
-                            
-                        f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/ring{i}_out]\n")
-                        f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/ring{i}_out }}]\n\n")
+                            f.write(f"route_design -nets [get_nets design_1_i/TOP_0/inst/garomatrix/w_{i}[{j}] ]\n")
+                            f.write(f"set_property is_route_fixed 1 [get_nets {{design_1_i/TOP_0/inst/garomatrix/w_{i}[{j}] }}]\n\n")
                         
                     f.write(f"file mkdir {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new\n")
                     f.write(f"close [ open {self.projdir}/project_vivado/project_vivado.srcs/constrs_1/new/routing.xdc w ]\n")
@@ -1905,15 +1920,15 @@ class GaloisMatrix:
                 result+=f"+x{print_unicode_exp(N)}"
             return result
 
-        if type(osc)==type([]):
-            osc_list = osc[:]
-        else:
+        if type(osc)==type(1):
             osc_list = [osc]
-            
-        if type(pdl)==type([]):
-            pdl_list = pdl[:]
         else:
+            osc_list = list(osc)
+            
+        if type(pdl)==type(1):
             pdl_list = [pdl]
+        else:
+            pdl_list = list(pdl)
                 
         N_osc = len(osc_list) # Número de osciladores
         N_pdl = len(pdl_list) # Número de pdl_list
@@ -1941,7 +1956,7 @@ class GaloisMatrix:
                 print(f"Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}\n")
             else:
                 print(f"Polinomio (hardcoded)  = {self.poly} --> {poly_nomenclature(resize_array(int_to_bitstr(self.poly), self.N_inv-1))}\n")
-            print(f"Frecuencia de muestreo     = {round(100000/2**(1+fdiv),2)} kHz\n")
+            print(f"Frecuencia de muestreo = {round(100000/2**(1+fdiv),2)} kHz\n")
             print(f"Número de osciladores  = {N_osc}\n")
             print(f"Número de repeticiones = {N_rep}\n")
             print(f"Número de pdl_list     = {N_pdl}\n")
