@@ -5,13 +5,13 @@ from numpy              import pi as np_pi,\
                                sin as np_sin,\
                                log as np_log,\
                                sqrt as np_sqrt,\
-                               unique as np_unique,\
+                               histogram as np_histogram,\
                                mean as np_mean,\
                                std as np_std,\
                                argmin as np_argmin,\
                                argsort as np_argsort,\
                                flip as np_flip,\
-                               cumsum as np_cumsum
+                               array
 from scipy.stats        import binom as sp_binomial
                                #norm as sp_normal,\
                                #fit as sp_fit
@@ -54,6 +54,21 @@ def hamming(array1, array2, porciento=False):
         return result/len(array1)*100
     else:
         return result
+        
+        
+def sesgo_data_bin(data):
+    """Esta función extrae el sesgo de cada bit a partir de una lista (data) de vectores binarios"""
+    N_data = len(data)
+    N_bits = len(data[0])
+    
+    result = [0 for i in range(N_bits)]
+    for i in range(N_bits):
+        for j in range(N_data):
+            if data[j][i]=='1':
+                result[i]+=1
+        result[i]/=N_data
+        
+    return result        
 
 
 class PufTopol:
@@ -253,20 +268,6 @@ class PufExp:
         """
         Función de inicialización.
         """
-        def sesgo_data_bin(data):
-            """Esta función extrae el sesgo de cada bit a partir de una lista (data) de vectores binarios"""
-            N_data = len(data)
-            N_bits = len(data[0])
-            
-            result = [0 for i in range(N_bits)]
-            for i in range(N_bits):
-                for j in range(N_data):
-                    if data[j][i]=='1':
-                        result[i]+=1
-                result[i]/=N_data
-                
-            return result
-        
         if type(instancias)==type([]):
             self.instancias = instancias[:] # lista de objetos TENSOR, cada uno de los cuales contiene la "medida" (quizá simulación) de una instancia PUF.
         else:
@@ -336,9 +337,9 @@ class PufExp:
         ## Sesgo de cada bit
         self.sesgo_bit = [[sesgo_data_bin(self.pufexp[i_reto][i_inst]) for i_inst in range(len(self.instancias))] for i_reto in range(len(self.retos))]
         
-        ## Intra-distancia´: solo si N_rep > 1:
+        ## Intra-distancia: solo si N_rep > 1:
         if self.N_rep>1:
-            self.intradist_set=[]
+            intradist_set=[]
             for i_reto in range(self.N_retos):
                 
                 for i_inst in range(self.N_inst):
@@ -346,46 +347,39 @@ class PufExp:
                     for i_rep in range(self.N_rep):
                         
                         for j_rep in range(i_rep+1,self.N_rep,1):
-                            self.intradist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][i_inst][j_rep]))
+                            intradist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][i_inst][j_rep]))
+            self.intradist_set = array(intradist_set).reshape(self.N_retos,self.N_inst,(self.N_rep*(self.N_rep-1))//2)
             
             self.intradist_media = np_mean(self.intradist_set)
             self.intradist_std = np_std(self.intradist_set)
-            self.intradist_error_media = self.intradist_std/np_sqrt(len(self.intradist_set)) # desviación estándar de la media (teorema del límite central)
+            self.intradist_error_media = self.intradist_std/np_sqrt(self.intradist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.intradist_p = self.intradist_media/self.N_bits
-            self.intradist = [0 for x in self.x]
-            for x,y in zip(*np_unique(self.intradist_set, return_counts=True)):
-                self.intradist[x]=y
-            intradist_sum = sum(self.intradist)
-            for x in self.x:
-                self.intradist[x]/=intradist_sum
+            self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits))[0]
+            self.intradist = self.intradist/self.intradist.sum()            
             self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
             #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
         ## Inter-distancia: solo si N_inst > 1:
         if self.N_inst>1:
-            self.interdist_set=[]
+            interdist_set=[]
             for i_reto in range(self.N_retos):
-                
-                for i_inst in range(self.N_inst):
-                    
-                    for j_inst in range(i_inst+1,self.N_inst,1): 
-                        
-                        for i_rep in range(self.N_rep):
-                            self.interdist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][j_inst][i_rep]))
             
-            self.interdist_media = np_mean(self.interdist_set)
-            self.interdist_std = np_std(self.interdist_set)
-            self.interdist_error_media = self.interdist_std/np_sqrt(len(self.interdist_set)) # desviación estándar de la media (teorema del límite central)
+                for i_rep in range(self.N_rep):
+                
+                    for i_inst in range(self.N_inst):
+                    
+                        for j_inst in range(i_inst+1,self.N_inst,1): 
+                            interdist_set.append(hamming(self.pufexp[i_reto][i_inst][i_rep],self.pufexp[i_reto][j_inst][i_rep]))
+            self.interdist_set = array(interdist_set).reshape(self.N_retos,self.N_rep,(self.N_inst*(self.N_inst-1))//2)
+                            
+            self.interdist_media = self.interdist_set.mean()
+            self.interdist_std = self.interdist_set.std()
+            self.interdist_error_media = self.interdist_std/np_sqrt(self.interdist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.interdist_p = self.interdist_media/self.N_bits
-            self.interdist = [0 for x in self.x]
-            for x,y in zip(*np_unique(self.interdist_set, return_counts=True)):
-                self.interdist[x]=y
-            interdist_sum = sum(self.interdist)
-            for x in self.x:
-                self.interdist[x]/=interdist_sum
+            self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits))[0]
+            self.interdist = self.interdist/self.interdist.sum()
             self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
             #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
-            self.Dks = max([abs(np_cumsum(self.interdist)[i]-np_cumsum(self.interdist_ajuste_binom)[i]) for i,x in enumerate(self.x)])
             
         ## Identificabilidad: solo si N_rep > 1 y N_inst > 1:
         if self.N_rep>1 and self.N_inst>1:
@@ -396,6 +390,28 @@ class PufExp:
             self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
             
             
+    def Dks(self):
+        """
+        Esta función calcula el estadístico de Kolmogorov-Smirnov; devuelve una dupla con dos cantidades:
+        la primera es un 'ndarray' 'Dks_set' con el conjunto de todos los N_retos*N_rep valores de Kolmogorov-Smirnov
+        correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
+        calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
+        cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
+        ejemplo el valor máximo 'Dks_set.max()', o algo así.
+        """
+        Dks_set=[]
+        for i in range(self.N_retos):
+            for j in range(self.N_rep):
+                hist = np_histogram(self.interdist_set[i][j], bins=self.N_bits+1, range=(0,self.N_bits))[0]
+                hist = hist/hist.sum()
+                p = self.interdist_set[i][j].mean()/self.N_bits
+                Dks_set.append( max( [abs( hist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=p) ) for k in range(self.N_bits+1)] ) )
+        
+        Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
+        
+        return array(Dks_set),Dks
+
+                        
     def noisy_bits(self, metodo_calc='flip'):
         """
         Esta función devuelve una lista de canales bit ordenada en orden decreciente de variabilidad. Utilizar para decidir qué canales
