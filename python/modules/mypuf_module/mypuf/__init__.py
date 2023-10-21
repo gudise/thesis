@@ -408,7 +408,7 @@ class PufExp:
                 Dks_set.append( max( [abs( hist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=p) ) for k in range(self.N_bits+1)] ) )
         
         Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
-        
+     
         return array(Dks_set),Dks
 
                         
