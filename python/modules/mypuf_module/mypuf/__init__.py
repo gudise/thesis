@@ -24,7 +24,7 @@ from matplotlib.pyplot  import plot as plt_plot,\
                                show as plt_show,\
                                savefig as plt_savefig,\
                                yscale as plt_yscale
-from mytensor           import *
+from myutils.mytensor   import *
 
 
 def hamming(array1, array2, porciento=False):
@@ -397,7 +397,9 @@ class PufExp:
         correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
         calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
         cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
-        ejemplo el valor máximo 'Dks_set.max()', o algo así.
+        ejemplo el valor máximo 'Dks_set.max()', o algo así. Notar que aunque utilizamos la función 'histogram',
+        en realidad el binneado no importa, ya que utilizamos todo el rango posible de valores y el tamaño de
+        cada bin es '1'; esto es equivalente a utilizar la función 'numpy.unique()' paddeada con 0's.
         """
         Dks_set=[]
         for i in range(self.N_retos):
