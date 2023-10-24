@@ -11,7 +11,8 @@ from numpy              import pi as np_pi,\
                                argmin as np_argmin,\
                                argsort as np_argsort,\
                                flip as np_flip,\
-                               array
+                               array,\
+                               unique
 from scipy.stats        import binom as sp_binomial
                                #norm as sp_normal,\
                                #fit as sp_fit
@@ -354,8 +355,7 @@ class PufExp:
             self.intradist_std = np_std(self.intradist_set)
             self.intradist_error_media = self.intradist_std/np_sqrt(self.intradist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.intradist_p = self.intradist_media/self.N_bits
-            self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits))[0]
-            self.intradist = self.intradist/self.intradist.sum()            
+            self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
             self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
             #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
@@ -376,8 +376,7 @@ class PufExp:
             self.interdist_std = self.interdist_set.std()
             self.interdist_error_media = self.interdist_std/np_sqrt(self.interdist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.interdist_p = self.interdist_media/self.N_bits
-            self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits))[0]
-            self.interdist = self.interdist/self.interdist.sum()
+            self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
             self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
             #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
             
@@ -397,17 +396,16 @@ class PufExp:
         correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
         calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
         cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
-        ejemplo el valor máximo 'Dks_set.max()', o algo así. Notar que aunque utilizamos la función 'histogram',
-        en realidad el binneado no importa, ya que utilizamos todo el rango posible de valores y el tamaño de
-        cada bin es '1'; esto es equivalente a utilizar la función 'numpy.unique()' paddeada con 0's.
+        ejemplo el valor máximo 'Dks_set.max()', o algo así.
         """
         Dks_set=[]
         for i in range(self.N_retos):
             for j in range(self.N_rep):
-                hist = np_histogram(self.interdist_set[i][j], bins=self.N_bits+1, range=(0,self.N_bits))[0]
-                hist = hist/hist.sum()
+                data_u,data_c = unique(self.interdist_set[i][j],return_counts=True)
+                data_c = data_c/data_c.sum()
+                
                 p = self.interdist_set[i][j].mean()/self.N_bits
-                Dks_set.append( max( [abs( hist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=p) ) for k in range(self.N_bits+1)] ) )
+                Dks_set.append(max([abs(data_c.cumsum()[l]-sp_binomial.cdf(k=u,n=self.N_bits,p=p)) for l,u in enumerate(data_u)] ))
         
         Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
      
