@@ -17,14 +17,7 @@ from scipy.stats        import binom as sp_binomial
                                #norm as sp_normal,\
                                #fit as sp_fit
 from scipy.interpolate  import interp1d as sp_interp1d
-from matplotlib.pyplot  import plot as plt_plot,\
-                               bar as plt_bar,\
-                               tick_params as plt_tick_params,\
-                               gca as plt_gca,\
-                               axis as plt_axis,\
-                               show as plt_show,\
-                               savefig as plt_savefig,\
-                               yscale as plt_yscale
+from matplotlib.pyplot  import subplots
 from myutils.mytensor   import *
 
 
@@ -119,9 +112,13 @@ class PufTopol:
         elif topol=='custom':
             self.grafo = custom[:]
             
-    def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, export_pdf=False):
+    def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, ax=None):
         """
-        Dibuja un grafo con la topología.
+        Esta función toma un objeto 'Axes' (creado externamente a esta función), y lo edita para dibujar la topología.
+        Esto permite crear varios objetos Axes y dibujar varios simultáneamente. Alternativamente, si no se pasa
+        ningún objeto 'Axes', la función genera la dupla (fig,ax), que puede ser dibujada automáticamente mediante
+        'plt.plot()'. La función devuelve dos números reales (width,height) que contienen respectivamente la anchura
+        y altura del plot.
         
         Parámetros:
         -----------
@@ -136,29 +133,39 @@ class PufTopol:
         
         size_link : <float, opcional, por defecto 1.5>
             Tamaño de los link del grafo.
+            
+        ax : <plt.Axes>
+            Objetos 'plt.Axes' sobre el cual se dibujará la topología.
         
-        export_pdf : <str o bool, opcional, por defecto False>
-            Nombre del fichero .pdf en el cual volcará el dibujo.
-        """
+        """           
         angulos=[2*np_pi/self.N_osc*i for i in range(self.N_osc)]
         x_coords=[np_cos(angulo) for angulo in angulos]
         y_coords=[np_sin(angulo) for angulo in angulos]
+        width = max(x_coords)-min(x_coords)+72/size_vert
+        height = max(y_coords)-min(y_coords)+72/size_vert ## El último término hace hueco para alojar los vértices.
+        
+        if ax==None:
+            fig,ax = subplots(1,1,figsize=[width,height])        
+        
         for arista in self.grafo:
-            plt_plot([x_coords[arista[0]], x_coords[arista[1]]],[y_coords[arista[0]], y_coords[arista[1]]], color=color_link, linewidth=size_link)
-        plt_plot(x_coords,y_coords,'o', color=color_vert, markersize=size_vert) # el parámetro 'ms' da cuenta del tamaño de los círculos.
+            ax.plot([x_coords[arista[0]], x_coords[arista[1]]],[y_coords[arista[0]], y_coords[arista[1]]], color=color_link, linewidth=size_link)
+        ax.plot(x_coords,y_coords,'o', color=color_vert, markersize=size_vert) # el parámetro 'ms' da cuenta del tamaño de los círculos.
+        
         # Selecting the axis-X making the bottom and top axes False.
-        plt_tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        
         # Selecting the axis-Y making the right and left axes False
-        plt_tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
+        ax.tick_params(axis='y', which='both', right=False, left=False, labelleft=False)
+        
         # Iterating over all the axes in the figure
         # and make the Spines Visibility as False
         for pos in ['right', 'top', 'bottom', 'left']:
-            plt_gca().spines[pos].set_visible(False)
-        plt_axis('square')
-        if export_pdf:
-            plt_savefig(export_pdf, transparent=True)
-        else:
-            plt_show()
+            ax.spines[pos].set_visible(False)
+        
+        ax.axis('square')
+        
+        return width,height
+            
             
     def __call__(self, random=False):
         """
