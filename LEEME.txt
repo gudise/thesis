@@ -1,1 +1,10 @@
 Este proyecto contiene funciones auxiliares para diversos entornos.
+
+El módulo 'mystats' contiene código relacionado con el modelado estadístico, en especial 'notebooks' de Jupyter que pueden interpretarse como
+"documentación" interactiva. La razón de crear un repositorio y no una carpeta de 'notebooks' es facilitar el crear módulos de python
+reutilizables, así como un proyecto GIT.
+
+El módulo 'mytensor' contiene una reinterpretación del objeto 'nparray', diseñado para poder acceder a cada eje
+a través de un diccionario con nombres significativos.
+
+El módulo mybool contiene álgebra en el cuerpo binario GF(2).

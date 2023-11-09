@@ -1,4 +1,6 @@
 from matplotlib.pyplot import figure as plt_figure
+from numpy             import histogram as np_histogram,\
+                              isnan as np_isnan
 
 
 
