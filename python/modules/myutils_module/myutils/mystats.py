@@ -162,4 +162,4 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
         data_exp += [rv_continuous.cdf(x=bins[i+1],**kwargs)-rv_continuous.cdf(x=bins[i],**kwargs)]
     data_exp += [1-rv_continuous.cdf(x=bins[-2],**kwargs)]
     
-    return data_exp    
+    return data_exp
