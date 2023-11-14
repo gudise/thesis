@@ -1,8 +1,15 @@
-from numpy import unique as np_unique
-from scipy.stats import chisquare as st_chisquare
-from matplotlib.pyplot import bar as plt_bar,\
-                              plot as plt_plot,\
-                              show as plt_show
+from numpy              import  unique as _unique,\
+                                histogram as _histogram,\
+                                array as _array,\
+                                linspace as _linspace
+from scipy.stats        import  chisquare as _chisquare,\
+                                skewnorm as _skewnorm
+from scipy.optimize     import  curve_fit as _curve_fit,\
+                                root_scalar as _root_scalar
+from matplotlib.pyplot  import  bar as _bar,\
+                                plot as _plot,\
+                                show as _show,\
+                                annotate as _annotate
 
 
 def intervalo_int(inf, sup):
@@ -33,12 +40,12 @@ def chisq_gof_discrete(obs_data, model, alpha=0.05, plothist=False, **kwargs): #
     """
 
     # Histograma de los valores observados
-    obs_unique,obs = np_unique(obs_data, return_counts=True)
+    obs_unique,obs = _unique(obs_data, return_counts=True)
     obs_edges = [0]+[i+0.1 for i in obs_unique] # sumamos 0.1 para que el histograma se construya
                                                 # tomando ambos extremos del intervalo.
     sum_obs = sum(obs)
     if plothist:
-        plt_bar(obs_unique,obs, edgecolor="white")
+        _bar(obs_unique,obs, edgecolor="white")
 
     # Generamos un modelo esperado: Bin(n=10,p=0.5), normalizado a la suma de los valores observados
     esp_hist = []
@@ -48,10 +55,10 @@ def chisq_gof_discrete(obs_data, model, alpha=0.05, plothist=False, **kwargs): #
     sum_esp_hist = sum(esp_hist)
     esp=[sum_obs*i/sum_esp_hist for i in esp_hist]
     if plothist:
-        plt_plot(obs_unique,esp, '-ob')
-        plt_show()
+        _plot(obs_unique,esp, '-ob')
+        _show()
     
-    chisq,pvalue = st_chisquare(obs,esp)
+    chisq,pvalue = _chisquare(obs,esp)
     if pvalue<alpha: # Se puede descartar la hipótesis con significancia 'alpha'
         testpass=True
     else:
@@ -163,3 +170,81 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
     data_exp += [1-rv_continuous.cdf(x=bins[-2],**kwargs)]
     
     return data_exp
+    
+    
+def Dks_monte_carlo_discrete(model, fit, T, N, verbose=True, **kwargs):
+    """Esta función calcula la distribución del estadístico KS de un modelo `model`que produce N valores aleatorios frente a
+    una curve teórica `fit`, que se da como una lista de valores. La función devuelve una lista de `T` de estos índices KS.
+    El método `model` admite una cantidad arbitraria de parámetros pasados mediante `kwargs`.
+    
+    :param model: Función aleatoria a contrastar. El primer parámetro que debe aceptar es `N`, seguido de un número arbitrario de parámetros que son pasados mediante `kwargs`. Devuelve un array de valores aleatorios.
+    :type model: Método
+    
+    :param fit: Lista de valores que representa la distribución de probabilidad contra la cual se calcula la distribución de KS.
+    :type fit: Lista de float
+
+    :param T: Número de veces que se repite el cálculo de Dks
+    :type T: int
+
+    :param N: Número de valores aleatorios extraídos de `gen_data`.
+    :type N: int
+
+    :param verbose: Si `True`pinta el progreso.
+    :type verbose: bool, opcional.
+    
+    *kwargs : lista de parámetros que pasar a `model`.
+
+    :return: Lista de valores Dks,
+    :rtype: Lista de float.
+    """
+    fit = _array(fit)
+    Dks=[]
+    for t in range(T):
+        data = model(N,**kwargs)
+        hist_data,_ = _histogram(data, bins=fit.size, range=(0,fit.size-1), density=True)
+        
+        Dks.append(max([abs(i-j) for i,j in zip(hist_data.cumsum(),fit.cumsum())]))
+        if verbose:
+            if (t+1)%100==0:
+                print(f"{(t+1)/100:.0f} %",end='\r') # Número formateado a entero.
+    return Dks
+    
+    
+def fit_skewnorm(data, bins=10, alpha=False, plot=False):
+    """Esta función ajusta una entrada de datos experimentales a una curva 'skew norm', que sirve de comodín para
+    representar una densidad de probabilidad. Además, la función devuelve el 'valor p' para una cierta significancia
+    'alpha' (típicamente utiizado en test de hipótesis alpha=0.05), y puede representar el plot correspondiente.
+    
+    :param data: Vector con los datos a ajustar.
+    :type data: Lista de float.
+
+    :param bins: Número de cajas para el histograma de `data`.
+    :type bins: int, opcional.
+
+    :param alpha: Valor de significancia 'alpha' para el cual se calcula el valor p, i.e., el valor tal que de p a infinito la proporción de área bajo la densidad es `alpha`.
+    :type alpha: float, opcional.
+
+    :param plot: Si `True` pinta el histograma y superpone la curva encontrada.
+    :type plot: bool, opcional.
+
+    :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
+    """
+    def _func(x,a,loc,scale,alpha):
+        return _skewnorm.cdf(x=x,a=a,loc=loc,scale=scale)-(1-alpha)
+    hist,edges = _histogram(data, density=True, bins=bins, range=(min(0,min(data)),max(data)))
+    a,loc,scale = _curve_fit(_skewnorm.pdf, xdata=edges[:-1], ydata=hist, p0=[1,1,1])[0]
+   
+    if alpha:
+        p_val = _root_scalar(_func, args=(a,loc,scale,alpha), bracket=(edges[0],edges[-1]))['root']
+        print(f"alpha: {alpha} --> p val: {p_val}")
+
+    if plot:
+        _plot(_linspace(edges[0],edges[-1],100),_skewnorm.pdf(x=_linspace(edges[0],edges[-1],100),a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
+        _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
+        if alpha:
+            _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
+                         arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
+        _show()
+
+    return a,loc,scale,hist,edges    
+    
