@@ -248,6 +248,7 @@ class PufExp:
     intradist_p
     intradist_ajuste_binom
     intradist_ajuste_normal
+    intradist_dks
     interdist
     interdist_media
     interdist_std
@@ -255,6 +256,7 @@ class PufExp:
     interdist_p
     interdist_ajuste_binom
     interdist_ajuste_normal
+    interdist_dks
     Dks : estadístico de Kolmogorov-Smirnov (bondad del ajuste binomial frente a la suma acumulada de interdistancias).
     far
     frr
@@ -364,6 +366,7 @@ class PufExp:
             self.intradist_p = self.intradist_media/self.N_bits
             self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
             self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
+            self.intradist_dks = abs(self.intradist.cumsum()-self.intradist_ajuste_binom.cumsum()).max()
             #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
         ## Inter-distancia: solo si N_inst > 1:
@@ -385,6 +388,7 @@ class PufExp:
             self.interdist_p = self.interdist_media/self.N_bits
             self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
             self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
+            self.interdist_dks = abs(self.interdist.cumsum()-self.interdist_ajuste_binom.cumsum()).max()
             #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
             
         ## Identificabilidad: solo si N_rep > 1 y N_inst > 1:
@@ -396,27 +400,28 @@ class PufExp:
             self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
             
             
-    def Dks(self):
-        """
-        Esta función calcula el estadístico de Kolmogorov-Smirnov; devuelve una dupla con dos cantidades:
-        la primera es un 'ndarray' 'Dks_set' con el conjunto de todos los N_retos*N_rep valores de Kolmogorov-Smirnov
-        correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
-        calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
-        cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
-        ejemplo el valor máximo 'Dks_set.max()', o algo así.
-        """
-        Dks_set=[]
-        for i in range(self.N_retos):
-            for j in range(self.N_rep):
-                data_u,data_c = unique(self.interdist_set[i][j],return_counts=True)
-                data_c = data_c/data_c.sum()
+    # def Dks(self):
+        # """
+        # Esta función calcula el estadístico de Kolmogorov-Smirnov; devuelve una dupla con dos cantidades:
+        # la primera es un 'ndarray' 'Dks_set' con el conjunto de todos los N_retos*N_rep valores de Kolmogorov-Smirnov
+        # correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
+        # calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
+        # cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
+        # ejemplo el valor máximo 'Dks_set.max()', o algo así.
+        # """
+        # Dks_set=[]
+        # for i in range(self.N_retos):
+            # for j in range(self.N_rep):
+                # data_u,data_c = unique(self.interdist_set[i][j],return_counts=True)
+                # data_c = data_c/data_c.sum()
                 
-                p = self.interdist_set[i][j].mean()/self.N_bits
-                Dks_set.append(max([abs(data_c.cumsum()[l]-sp_binomial.cdf(k=u,n=self.N_bits,p=p)) for l,u in enumerate(data_u)] ))
+                # p = self.interdist_set[i][j].mean()/self.N_bits
+                # Dks_set.append(max([abs(data_c.cumsum()[l]-sp_binomial.cdf(k=u,n=self.N_bits,p=p)) for l,u in enumerate(data_u)] ))
         
-        Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
+        # Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
      
-        return array(Dks_set),Dks
+        # return array(Dks_set),Dks
+        
 
                         
     def noisy_bits(self, metodo_calc='flip'):
