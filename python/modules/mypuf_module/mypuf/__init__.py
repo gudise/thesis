@@ -14,8 +14,6 @@ from numpy              import pi as np_pi,\
                                array,\
                                unique
 from scipy.stats        import binom as sp_binomial
-                               #norm as sp_normal,\
-                               #fit as sp_fit
 from scipy.interpolate  import interp1d as sp_interp1d
 from matplotlib.pyplot  import subplots
 from myutils.mytensor   import *
@@ -295,8 +293,8 @@ class PufExp:
         self.N_osc = self.instancias[0].size('osc')
         self.N_bits_partial = len(self.retos[0]) # Número de bits sin tener en cuenta el "boost" PDL.
         self.N_bits = self.N_bits_partial*self.N_pdl*len(multibit)-len(del_bits) # Número de bits real de cada respuesta.
-        self.x = list(range(self.N_bits+1)) # Eje de abscisas para las gráficas.
-        self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual para las gráficas.
+        self.x = list(range(self.N_bits+1)) # Eje de abscisas.
+        self.x_pc = list(x*100/self.N_bits for x in self.x) # Eje de abscisas porcentual.
         
         self.N_retos = len(self.retos)
         self.multibit = multibit[:]
@@ -364,10 +362,9 @@ class PufExp:
             self.intradist_std = np_std(self.intradist_set)
             self.intradist_error_media = self.intradist_std/np_sqrt(self.intradist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.intradist_p = self.intradist_media/self.N_bits
-            self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
-            self.intradist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.intradist_p)
+            self.intradist = np_histogram(self.intradist_set, bins=self.N_bits+1, range=(0,self.N_bits+1), density=True)[0]
+            self.intradist_ajuste_binom = sp_binomial.pmf(k=range(self.N_bits+1), n=self.N_bits, p=self.intradist_p)
             self.intradist_dks = abs(self.intradist.cumsum()-self.intradist_ajuste_binom.cumsum()).max()
-            #self.intradist_ajuste_normal = sp_normal.pdf(self.x, loc=self.intradist_media, scale=self.intradist_std)
         
         ## Inter-distancia: solo si N_inst > 1:
         if self.N_inst>1:
@@ -386,44 +383,19 @@ class PufExp:
             self.interdist_std = self.interdist_set.std()
             self.interdist_error_media = self.interdist_std/np_sqrt(self.interdist_set.flatten().size) # desviación estándar de la media (teorema del límite central)
             self.interdist_p = self.interdist_media/self.N_bits
-            self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits), density=True)[0]
-            self.interdist_ajuste_binom = sp_binomial.pmf(self.x, n=self.N_bits, p=self.interdist_p)
+            self.interdist = np_histogram(self.interdist_set, bins=self.N_bits+1, range=(0,self.N_bits+1), density=True)[0]
+            self.interdist_ajuste_binom = sp_binomial.pmf(k=range(self.N_bits+1), n=self.N_bits, p=self.interdist_p)
             self.interdist_dks = abs(self.interdist.cumsum()-self.interdist_ajuste_binom.cumsum()).max()
-            #self.interdist_ajuste_normal = sp_normal.pdf(self.x, loc=self.interdist_media, scale=self.interdist_std)
             
         ## Identificabilidad: solo si N_rep > 1 y N_inst > 1:
         if self.N_rep>1 and self.N_inst>1:
-            self.far = sp_binomial.cdf(self.x, n=self.N_bits, p=self.interdist_p)
-            self.frr = sp_binomial.sf(self.x, n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
+            self.far = sp_binomial.cdf(k=range(self.N_bits+1), n=self.N_bits, p=self.interdist_p)
+            self.frr = sp_binomial.sf(k=range(self.N_bits+1), n=self.N_bits, p=self.intradist_p) # 1-binomial.cdf
             self.t_eer = np_argmin([max(far,frr) for far,frr in zip(self.far,self.frr)])
             self.eer = max(self.far[self.t_eer],self.frr[self.t_eer])
-            self.roc = (sp_binomial.logcdf(self.x, n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(self.x, n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
-            
-            
-    # def Dks(self):
-        # """
-        # Esta función calcula el estadístico de Kolmogorov-Smirnov; devuelve una dupla con dos cantidades:
-        # la primera es un 'ndarray' 'Dks_set' con el conjunto de todos los N_retos*N_rep valores de Kolmogorov-Smirnov
-        # correspondientes a cada histograma de interdistancias; la segunda es un 'float' con el estadístico Dks
-        # calculado para el conjunto histograma de interdistancia completo. Es tentador utilizar esta última 
-        # cantidad como estadístico de KS, sin embargo no tengo claro que no sea más correcto utilizar por
-        # ejemplo el valor máximo 'Dks_set.max()', o algo así.
-        # """
-        # Dks_set=[]
-        # for i in range(self.N_retos):
-            # for j in range(self.N_rep):
-                # data_u,data_c = unique(self.interdist_set[i][j],return_counts=True)
-                # data_c = data_c/data_c.sum()
-                
-                # p = self.interdist_set[i][j].mean()/self.N_bits
-                # Dks_set.append(max([abs(data_c.cumsum()[l]-sp_binomial.cdf(k=u,n=self.N_bits,p=p)) for l,u in enumerate(data_u)] ))
-        
-        # Dks = max([abs(self.interdist.cumsum()[k]-sp_binomial.cdf(k=k,n=self.N_bits,p=self.interdist_p)) for k in range(self.N_bits+1)])
+            self.roc = (sp_binomial.logcdf(k=range(self.N_bits+1), n=self.N_bits, p=self.interdist_p)/np_log(10), sp_binomial.logsf(k=range(self.N_bits+1), n=self.N_bits, p=self.intradist_p)/np_log(10)) # dupla con los ejex x,y de la curva ROC.
      
-        # return array(Dks_set),Dks
-        
-
-                        
+     
     def noisy_bits(self, metodo_calc='flip'):
         """
         Esta función devuelve una lista de canales bit ordenada en orden decreciente de variabilidad. Utilizar para decidir qué canales
