@@ -198,7 +198,7 @@ def Dks_monte_carlo_discrete(model, fit, N, verbose=True, **kwargs):
     Dks=[]
     for i in range(N):
         data = model(**kwargs)
-        hist_data,_ = _histogram(data, bins=fit.size, range=(0,fit.size-1), density=True)
+        hist_data,_ = _histogram(data, bins=fit.size, range=(0,fit.size), density=True)
         Dks.append(abs(hist_data.cumsum()-fit.cumsum()).max())
         
         if verbose:
