@@ -172,7 +172,7 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
     return data_exp
     
     
-def Dks_monte_carlo_discrete(model, fit, T, N, verbose=True, **kwargs):
+def Dks_monte_carlo_discrete(model, fit, N, verbose=True, **kwargs):
     """Esta función calcula la distribución del estadístico KS de un modelo `model`que produce N valores aleatorios frente a
     una curve teórica `fit`, que se da como una lista de valores. La función devuelve una lista de `T` de estos índices KS.
     El método `model` admite una cantidad arbitraria de parámetros pasados mediante `kwargs`.
@@ -183,10 +183,7 @@ def Dks_monte_carlo_discrete(model, fit, T, N, verbose=True, **kwargs):
     :param fit: Lista de valores que representa la distribución de probabilidad contra la cual se calcula la distribución de KS.
     :type fit: Lista de float
 
-    :param T: Número de veces que se repite el cálculo de Dks
-    :type T: int
-
-    :param N: Número de valores aleatorios extraídos de `gen_data`.
+    :param N: Número de veces que se repite el cálculo de Dks
     :type N: int
 
     :param verbose: Si `True`pinta el progreso.
@@ -199,14 +196,14 @@ def Dks_monte_carlo_discrete(model, fit, T, N, verbose=True, **kwargs):
     """
     fit = _array(fit)
     Dks=[]
-    for t in range(T):
-        data = model(N,**kwargs)
+    for i in range(N):
+        data = model(**kwargs)
         hist_data,_ = _histogram(data, bins=fit.size, range=(0,fit.size-1), density=True)
+        Dks.append(abs(hist_data.cumsum()-fit.cumsum()).max())
         
-        Dks.append(max([abs(i-j) for i,j in zip(hist_data.cumsum(),fit.cumsum())]))
         if verbose:
-            if (t+1)%100==0:
-                print(f"{(t+1)/100:.0f} %",end='\r') # Número formateado a entero.
+            if (i+1)%100==0:
+                print(f"{(i+1)/100:.0f} %",end='\r')
     return Dks
     
     
