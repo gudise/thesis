@@ -3,9 +3,8 @@ from numpy              import  unique as _unique,\
                                 array as _array,\
                                 linspace as _linspace
 from scipy.stats        import  chisquare as _chisquare,\
-                                skewnorm as _skewnorm
-from scipy.optimize     import  curve_fit as _curve_fit,\
-                                root_scalar as _root_scalar
+                                skewnorm as _skewnorm,\
+                                gamma as _gamma
 from matplotlib.pyplot  import  bar as _bar,\
                                 plot as _plot,\
                                 annotate as _annotate
@@ -205,8 +204,8 @@ def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
     return Dks
     
     
-def fit_skewnorm(data, bins=10, alpha=False, plot=False):
-    """Esta función toma una distribución `data`, ajusta una curva 'skew norm' al histograma, y calcula el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
+def fit_skewnorm(data, bins=10, alpha=0.05, plot=False):
+    """Esta función es un wrapper para encontrar la distribución 'skewnorm' que mejor ajusta (máx. verosimilitud) un conjunto de valores `data` y calcular el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
     
     :param data: Vector con los datos a ajustar.
     :type data: Lista de float.
@@ -222,14 +221,11 @@ def fit_skewnorm(data, bins=10, alpha=False, plot=False):
 
     :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
     """
-    def _func(x,a,loc,scale,alpha):
-        return _skewnorm.cdf(x=x,a=a,loc=loc,scale=scale)-(1-alpha)
     hist,edges = _histogram(data, density=True, bins=bins, range=(min(0,min(data)),max(data)))
-    a,loc,scale = _curve_fit(_skewnorm.pdf, xdata=edges[:-1], ydata=hist, p0=[1,1,1])[0]
+    a,loc,scale = _skewnorm.fit(data)
    
-    if alpha:
-        p_val = _root_scalar(_func, args=(a,loc,scale,alpha), bracket=(edges[0],edges[-1]))['root']
-        print(f"alpha: {alpha} --> p val: {p_val}")
+    p_val = _skewnorm.ppf(q=1-alpha,a=a,loc=loc,scale=scale)
+    print(f"alpha: {alpha} --> p val: {p_val}")
 
     if plot:
         _plot(_linspace(edges[0],edges[-1],100),_skewnorm.pdf(x=_linspace(edges[0],edges[-1],100),a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
@@ -238,4 +234,37 @@ def fit_skewnorm(data, bins=10, alpha=False, plot=False):
             _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
                          arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
 
-    return a,loc,scale,hist,edges  
+    return a,loc,scale,hist,edges
+    
+    
+def fit_gamma(data, bins=10, alpha=0.05, plot=False):
+    """Esta función es un wrapper para encontrar la distribución 'gamma' que mejor ajusta (máx. verosimilitud) un conjunto de valores `data` y calcular el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
+    
+    :param data: Vector con los datos a ajustar.
+    :type data: Lista de float.
+
+    :param bins: Número de cajas para el histograma de `data`.
+    :type bins: int, opcional.
+
+    :param alpha: Valor de significancia 'alpha' para el cual se calcula el valor p, i.e., el valor tal que de p a infinito la proporción de área bajo la densidad es `alpha`.
+    :type alpha: float, opcional.
+
+    :param plot: Si `True` pinta el histograma y superpone la curva encontrada. La función no ejecuta 'show()', de forma que el usuario puede recabar la figura externamente con 'gca()' y 'gcf()', y editarla antes de representarla.
+    :type plot: bool, opcional.
+
+    :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
+    """
+    hist,edges = _histogram(data, density=True, bins=bins, range=(min(0,min(data)),max(data)))
+    a,loc,scale = _gamma.fit(data)
+   
+    p_val = _gamma.ppf(q=1-alpha,a=a,loc=loc,scale=scale)
+    print(f"alpha: {alpha} --> p val: {p_val}")
+
+    if plot:
+        _plot(_linspace(edges[0],edges[-1],100),_gamma.pdf(x=_linspace(edges[0],edges[-1],100),a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
+        _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
+        if alpha:
+            _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
+                         arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
+
+    return a,loc,scale,hist,edges    
