@@ -200,7 +200,7 @@ def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
         
         if verbose:
             if (i+1)%100==0:
-                print(f"{(i+1)/100:.0f} %",end='\r')
+                print(f"{(i+1)}/{N}",end='\r')
     return Dks
     
     
