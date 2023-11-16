@@ -8,7 +8,6 @@ from scipy.optimize     import  curve_fit as _curve_fit,\
                                 root_scalar as _root_scalar
 from matplotlib.pyplot  import  bar as _bar,\
                                 plot as _plot,\
-                                show as _show,\
                                 annotate as _annotate
 
 
@@ -56,7 +55,6 @@ def chisq_gof_discrete(obs_data, model, alpha=0.05, plothist=False, **kwargs): #
     esp=[sum_obs*i/sum_esp_hist for i in esp_hist]
     if plothist:
         _plot(obs_unique,esp, '-ob')
-        _show()
     
     chisq,pvalue = _chisquare(obs,esp)
     if pvalue<alpha: # Se puede descartar la hipótesis con significancia 'alpha'
@@ -172,7 +170,7 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
     return data_exp
     
     
-def Dks_monte_carlo_discrete(model, fit, N, verbose=True, **kwargs):
+def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
     """Esta función calcula la distribución del estadístico KS de un modelo `model`que produce N valores aleatorios frente a
     una curve teórica `fit`, que se da como una lista de valores. La función devuelve una lista de `T` de estos índices KS.
     El método `model` admite una cantidad arbitraria de parámetros pasados mediante `kwargs`.
@@ -208,9 +206,7 @@ def Dks_monte_carlo_discrete(model, fit, N, verbose=True, **kwargs):
     
     
 def fit_skewnorm(data, bins=10, alpha=False, plot=False):
-    """Esta función ajusta una entrada de datos experimentales a una curva 'skew norm', que sirve de comodín para
-    representar una densidad de probabilidad. Además, la función devuelve el 'valor p' para una cierta significancia
-    'alpha' (típicamente utiizado en test de hipótesis alpha=0.05), y puede representar el plot correspondiente.
+    """Esta función toma una distribución `data`, ajusta una curva 'skew norm' al histograma, y calcula el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
     
     :param data: Vector con los datos a ajustar.
     :type data: Lista de float.
@@ -221,7 +217,7 @@ def fit_skewnorm(data, bins=10, alpha=False, plot=False):
     :param alpha: Valor de significancia 'alpha' para el cual se calcula el valor p, i.e., el valor tal que de p a infinito la proporción de área bajo la densidad es `alpha`.
     :type alpha: float, opcional.
 
-    :param plot: Si `True` pinta el histograma y superpone la curva encontrada.
+    :param plot: Si `True` pinta el histograma y superpone la curva encontrada. La función no ejecuta 'show()', de forma que el usuario puede recabar la figura externamente con 'gca()' y 'gcf()', y editarla antes de representarla.
     :type plot: bool, opcional.
 
     :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
@@ -241,7 +237,5 @@ def fit_skewnorm(data, bins=10, alpha=False, plot=False):
         if alpha:
             _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
                          arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
-        _show()
 
-    return a,loc,scale,hist,edges    
-    
+    return a,loc,scale,hist,edges  
