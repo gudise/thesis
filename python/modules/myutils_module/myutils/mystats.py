@@ -1,9 +1,7 @@
 from numpy              import  unique as _unique,\
                                 histogram as _histogram,\
                                 array as _array
-from scipy.stats        import  chisquare as _chisquare,\
-                                skewnorm as _skewnorm,\
-                                gamma as _gamma
+from scipy.stats        import  chisquare as _chisquare
 from matplotlib.pyplot  import  bar as _bar,\
                                 plot as _plot,\
                                 annotate as _annotate
@@ -128,42 +126,42 @@ def get_hist_smooth(data, p=0.9, x0=float('nan'), x1=float('nan')):
     return hist,bins
     
     
-def bin_rv_discrete(rv_discrete, bins_in, **kwargs):
+def bin_rv_discrete(rv_discrete, bins_in, *args):
     """
     Esta función toma un objeto 'rv_discrete' de scip y lista 'bins' conteniendo un bineado del eje de abscisas
     (i.e., una lista de 'bins' tal y como es devuelta por la función 'numpy.histogram',
     es decir una lista de N_bins+1 elementos, conteniendo los ectremos de cada bin),
     y devuelve un nparray de tamaño 'N_bin' elementos conteniendo la probabilidad
-    acumulada en los extremos dados por 'bins'. El argumento '**kwargs' se utiliza
-    para pasar parámetros extra a 'rv_discrete'. El arreglo de salida está normalizado respecto de la suma
+    acumulada en los extremos dados por 'bins'. El argumento '*args' se utiliza
+    para pasar parámetros extra distintos del primero ('k') a 'rv_discrete'. El arreglo de salida está normalizado respecto de la suma
     de sus elementos.
     """
     bins = [i-1e-6 if i.is_integer() else i for i in bins_in] # Así nos aseguramos de que el binneado sea cerrado por la izda. y abierto por la dcha.
     
-    data_exp = [rv_discrete.cdf(k=int(bins[1]),**kwargs)]
+    data_exp = [rv_discrete.cdf(int(bins[1]),*args)]
     for i in range(1,len(bins)-2,1):
-        data_exp += [rv_discrete.cdf(k=int(bins[i+1]),**kwargs)-rv_discrete.cdf(k=int(bins[i]),**kwargs)]
-    data_exp += [1-rv_discrete.cdf(k=int(bins[-2]),**kwargs)]
+        data_exp += [rv_discrete.cdf(int(bins[i+1]),*args)-rv_discrete.cdf(int(bins[i]),*args)]
+    data_exp += [1-rv_discrete.cdf(int(bins[-2]),*args)]
 
     return _array(data_exp)
     
     
-def bin_rv_cont(rv_continuous, bins_in, **kwargs):
+def bin_rv_cont(rv_continuous, bins_in, *args):
     """
     Esta función toma un objeto 'rv_continuous' de scipy y una lista 'bins' conteniendo un bineado del eje de abscisas
     (i.e., una lista de 'bins' tal y como es devuelta por la función 'numpy.histogram',
     es decir una lista de N_bins+1 elementos, conteniendo los ectremos de cada bin),
     y devuelve un nparray de tamaño 'N_bin' elementos conteniendo la probabilidad
-    acumulada en los extremos dados por 'bins'. El argumento '**kwargs' se utiliza
-    para pasar parámetros extra a 'rv_continuous'. El arreglo de salida está normalizado respecto de la suma
-    de sus elementos.
+    acumulada en los extremos dados por 'bins'. El argumento '*args' se utiliza
+    para pasar parámetros extra distintos al primero ('x') a 'rv_continuous.cdf'. El arreglo de salida está normalizado respecto
+    de la suma de sus elementos.
     """
     bins = bins_in[:]
     
-    data_exp = [rv_continuous.cdf(x=bins[1],**kwargs)]
+    data_exp = [rv_continuous.cdf(bins[1],*args)]
     for i in range(1,len(bins)-2,1):
-        data_exp += [rv_continuous.cdf(x=bins[i+1],**kwargs)-rv_continuous.cdf(x=bins[i],**kwargs)]
-    data_exp += [1-rv_continuous.cdf(x=bins[-2],**kwargs)]
+        data_exp += [rv_continuous.cdf(bins[i+1],*args)-rv_continuous.cdf(bins[i],*args)]
+    data_exp += [1-rv_continuous.cdf(bins[-2],*args)]
     
     return _array(data_exp)
     
@@ -203,11 +201,17 @@ def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
     return Dks
     
     
-def fit_skewnorm(data, bins=10, alpha=0.05, plot=False):
-    """Esta función es un wrapper para encontrar la distribución 'skewnorm' que mejor ajusta (máx. verosimilitud) un conjunto de valores `data` y calcular el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
+def fit_rv_cont(data, rv_cont, bins=10, alpha=0.05, plot=False):
+    """Esta función es un wrapper para encontrar la distribución  'rv_continuous' (una distribución arbitraria del módulo
+    scipy.stats') que mejor ajusta (máx. verosimilitud) un conjunto de valores `data` y calcular el 'valor p' correspondiente
+    a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad
+    teórica.
     
     :param data: Vector con los datos a ajustar.
     :type data: Lista de float.
+    
+    :param rv_cont: Un objeto 'scipy.stats.rv_continuous' que define una distribución de probabilidad continua que se ajustará a los datos `data`. Por defecto `skewnorm`
+    :type rv_cont: Objeto 'scipy.stats.rv_continuous'.
 
     :param bins: Número de cajas para el histograma de `data`.
     :type bins: int, opcional.
@@ -218,52 +222,21 @@ def fit_skewnorm(data, bins=10, alpha=0.05, plot=False):
     :param plot: Si `True` pinta el histograma y superpone la curva encontrada. La función no ejecuta 'show()', de forma que el usuario puede recabar la figura externamente con 'gca()' y 'gcf()', y editarla antes de representarla.
     :type plot: bool, opcional.
 
-    :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
+    :return: La función devuelve una lista que contiene tres elementos: el primero es la lista de los parámetros que mejor ajustan la distribución (en el mismo orden en que se definen en la función `rv_cont.pdf`), el segundo un nparray con el histograma y el tercero un nparray con el bineado de los datos de entrada.
+    :rtype: Lista de tamaño variable. Los últimos dos elementos son nparray's.
     """
     hist,edges = _histogram(data, density=True, bins=bins, range=(min(0,min(data)),max(data)))
-    a,loc,scale = _skewnorm.fit(data)
+    params = rv_cont.fit(data)
    
-    p_val = _skewnorm.ppf(q=1-alpha,a=a,loc=loc,scale=scale)
+    p_val = rv_cont.ppf(1-alpha, *params)
     print(f"alpha: {alpha} --> p val: {p_val}")
 
     if plot:
-        _plot(edges[:-1],hist.sum()*bin_rv_cont(_skewnorm, edges, a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
+        _plot(edges[:-1],hist.sum()*bin_rv_cont(rv_cont, edges, *params),color='C1', label="Interpolación",lw=3)
         _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
         if alpha:
             _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
                          arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
 
-    return a,loc,scale,hist,edges
-    
-    
-def fit_gamma(data, bins=10, alpha=0.05, plot=False):
-    """Esta función es un wrapper para encontrar la distribución 'gamma' que mejor ajusta (máx. verosimilitud) un conjunto de valores `data` y calcular el 'valor p' correspondiente a una significancia `alpha`. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función densidad teórica.
-    
-    :param data: Vector con los datos a ajustar.
-    :type data: Lista de float.
-
-    :param bins: Número de cajas para el histograma de `data`.
-    :type bins: int, opcional.
-
-    :param alpha: Valor de significancia 'alpha' para el cual se calcula el valor p, i.e., el valor tal que de p a infinito la proporción de área bajo la densidad es `alpha`.
-    :type alpha: float, opcional.
-
-    :param plot: Si `True` pinta el histograma y superpone la curva encontrada. La función no ejecuta 'show()', de forma que el usuario puede recabar la figura externamente con 'gca()' y 'gcf()', y editarla antes de representarla.
-    :type plot: bool, opcional.
-
-    :return: La función devuelve una lista que contiene los tres parámetros que ajustan la curva (a, loc, scale), y el histograma y bineado de los datos de entrada.
-    """
-    hist,edges = _histogram(data, density=True, bins=bins, range=(min(0,min(data)),max(data)))
-    a,loc,scale = _gamma.fit(data)
+    return params,hist,edges
    
-    p_val = _gamma.ppf(q=1-alpha,a=a,loc=loc,scale=scale)
-    print(f"alpha: {alpha} --> p val: {p_val}")
-
-    if plot:
-        _plot(edges[:-1],hist.sum()*bin_rv_cont(_gamma, edges, a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
-        _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
-        if alpha:
-            _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
-                         arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
-
-    return a,loc,scale,hist,edges    
