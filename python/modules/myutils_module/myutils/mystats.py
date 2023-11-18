@@ -1,7 +1,6 @@
 from numpy              import  unique as _unique,\
                                 histogram as _histogram,\
-                                array as _array,\
-                                linspace as _linspace
+                                array as _array
 from scipy.stats        import  chisquare as _chisquare,\
                                 skewnorm as _skewnorm,\
                                 gamma as _gamma
@@ -134,7 +133,7 @@ def bin_rv_discrete(rv_discrete, bins_in, **kwargs):
     Esta función toma un objeto 'rv_discrete' de scip y lista 'bins' conteniendo un bineado del eje de abscisas
     (i.e., una lista de 'bins' tal y como es devuelta por la función 'numpy.histogram',
     es decir una lista de N_bins+1 elementos, conteniendo los ectremos de cada bin),
-    y devuelve una lista de tamaño 'N_bin' elementos conteniendo la probabilidad
+    y devuelve un nparray de tamaño 'N_bin' elementos conteniendo la probabilidad
     acumulada en los extremos dados por 'bins'. El argumento '**kwargs' se utiliza
     para pasar parámetros extra a 'rv_discrete'. El arreglo de salida está normalizado respecto de la suma
     de sus elementos.
@@ -146,7 +145,7 @@ def bin_rv_discrete(rv_discrete, bins_in, **kwargs):
         data_exp += [rv_discrete.cdf(k=int(bins[i+1]),**kwargs)-rv_discrete.cdf(k=int(bins[i]),**kwargs)]
     data_exp += [1-rv_discrete.cdf(k=int(bins[-2]),**kwargs)]
 
-    return data_exp
+    return _array(data_exp)
     
     
 def bin_rv_cont(rv_continuous, bins_in, **kwargs):
@@ -154,7 +153,7 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
     Esta función toma un objeto 'rv_continuous' de scipy y una lista 'bins' conteniendo un bineado del eje de abscisas
     (i.e., una lista de 'bins' tal y como es devuelta por la función 'numpy.histogram',
     es decir una lista de N_bins+1 elementos, conteniendo los ectremos de cada bin),
-    y devuelve una lista de tamaño 'N_bin' elementos conteniendo la probabilidad
+    y devuelve un nparray de tamaño 'N_bin' elementos conteniendo la probabilidad
     acumulada en los extremos dados por 'bins'. El argumento '**kwargs' se utiliza
     para pasar parámetros extra a 'rv_continuous'. El arreglo de salida está normalizado respecto de la suma
     de sus elementos.
@@ -166,7 +165,7 @@ def bin_rv_cont(rv_continuous, bins_in, **kwargs):
         data_exp += [rv_continuous.cdf(x=bins[i+1],**kwargs)-rv_continuous.cdf(x=bins[i],**kwargs)]
     data_exp += [1-rv_continuous.cdf(x=bins[-2],**kwargs)]
     
-    return data_exp
+    return _array(data_exp)
     
     
 def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
@@ -200,7 +199,7 @@ def Dks_montecarlo_discrete(model, fit, N, verbose=True, **kwargs):
         
         if verbose:
             if (i+1)%100==0:
-                print(f"{(i+1)}/{N}",end='\r')
+                print(f"{(i+1)/100:.0f}/{N/100:.0f}",end='\r')
     return Dks
     
     
@@ -228,7 +227,7 @@ def fit_skewnorm(data, bins=10, alpha=0.05, plot=False):
     print(f"alpha: {alpha} --> p val: {p_val}")
 
     if plot:
-        _plot(_linspace(edges[0],edges[-1],100),_skewnorm.pdf(x=_linspace(edges[0],edges[-1],100),a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
+        _plot(edges[:-1],hist.sum()*bin_rv_cont(_skewnorm, edges, a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
         _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
         if alpha:
             _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
@@ -261,7 +260,7 @@ def fit_gamma(data, bins=10, alpha=0.05, plot=False):
     print(f"alpha: {alpha} --> p val: {p_val}")
 
     if plot:
-        _plot(_linspace(edges[0],edges[-1],100),_gamma.pdf(x=_linspace(edges[0],edges[-1],100),a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
+        _plot(edges[:-1],hist.sum()*bin_rv_cont(_gamma, edges, a=a,loc=loc,scale=scale),color='C1', label="Interpolación",lw=3)
         _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
         if alpha:
             _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),

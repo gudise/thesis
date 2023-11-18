@@ -50,6 +50,8 @@ class Tensor:
     
     item()
     
+    take()
+    
     slice()
     
     swap()
@@ -103,13 +105,29 @@ class Tensor:
         índice, y devuelve el valor guardado en esa coordenada.
         """
         return self.array.item(*[int(axes[ax_name]) for ax_name in self.axis])
+        
+    def take(self, **kwargs):
+        """
+        Esta función toma una serie de ejes (por nombre), igualados a una lista de índices, y devuelve un Tensor
+        reducido a los índices seleccionado.
+        """
+        axe=[]
+        slicing_position=[]
+        for key, value in kwargs.items():
+            axe.append(key)
+            slicing_position.append(value)
+        aux = self.array[:]
+        for i,a in enumerate(axe):
+            aux = aux.take(slicing_position[i], axis=self.axis.index(a))
+        return Tensor(aux, self.axis)
     
     def slice(self, **kwargs):
         """
         Esta función toma una serie de ejes (por nombre), igualados a una porción 'slice'. Esta porción puede ser
         un entero, una lista de dos enteros, o una lista de tres enteros, y devuelve un Tensor reducido al 'slice'
         indicado (usando la misma notación que un slice estándar en Python: [x] es la x-ésima entrada, [x,y] son
-        todas entradas en [x,y), y [x,y,z] son todas las entradas en [x,y) tomadas en saltos de z).
+        todas entradas en [x,y), y [x,y,z] son todas las entradas en [x,y) tomadas en saltos de z). Esta función
+        es en realidad un wrapper a 'take', usando la nomenclatura de Python para hacer slicing.
         """
         axe=[]
         slicing_position=[]
