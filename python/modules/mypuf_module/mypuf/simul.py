@@ -1,33 +1,90 @@
 from numpy                  import array as _array,\
-                                   sqrt as _sqrt
+                                   sqrt as _sqrt,\
+                                   histogram as _histogram
 from numpy.random           import choice as _choice
+from scipy.stats            import binom as _binom
 
 """Este módulo contiene rutinas para smular el comportamiento de una PUF desde un punto de vista 'behavioural' (no físico).
 """
 
-def sim_hamming_distrib(N_iter=1, N_resp=10, N_bits=100, p=0.5):
-    """Esta función recibe un valor `p` promedio (e.g., resultado de un experimento PUF) y `N_bits` número de bits, y simula una serie de `N_resp` respuestas PUF (técnicamente, diferencias con respecto a una 'clave dorada') siguiendo un modelo binomial ideal, i.e., cada respuesta PUF se construye como una palabra binomial de parámetros `N_bits`, `p_resp`, donde `p_resp` es el valor tal que, si el modelo es ideal y produce respuestas binomiales de parámetros `N_bits`, `p_resp`, entonces la distribución de distancias Hamming correspondiente se distribuye como una binomial de parámetros `N_bits`, `p` (introducidos en la función); esta cantidad `p_resp` se calcula teniendo en cuenta que la prob. de que el i-ésimo bit de un par de respuestas contribuya a la distancia Hamming es la probabilidad de que el primero sea '1' y el segundo '0', más la prob. de que el primero sea '0' y el segundo '1', y es igual a p_resp=1/2-sqrt(1-2*p)/2. La función simula `N` respuestas y devuelve un array con todas las distancias posibles, i.e., un array de tamaño N*(N-1)/2.
+def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, verbose=False):
+    """Esta función simula el resultado de intra/inter-distancia de Hamming para un experimento PUF, utilizando un modelo cuasi-ideal. El modelo recibe las cantidades `p_intra` y `p_inter` observadas experimentalmente, y calcula los parámetros `p_inst` que determina la probabilidad de que un bit sea '1' en una instancia, y `p_rep` que determina la probabilidad de que un bit sea '1' en una repetición (técnicamente, que la diferencia con respecto de una 'clave dorada' sea '1'), tales que las distribuciones de intra/inter-distancias Hamming se distribuyan como binomiales de parámetros `p_intra` y `p_inter` respectivamente.
     
-    :param N_iter: Número de veces (iteraciones) que se repite la simulación.
-    :type N_iter: int.
+    :param N_inst: Número de instancias del experimento.
+    :type N_inst: int.
     
-    :param N_resp: Número de respuestas a simular.
-    :type N_resp: int
+    :param N_rep: Número de repeticiones del experimento.
+    :type N_rep: int.
     
-    :param N_bits: Número de bits de las respuestas.
-    :type N_bits: int
+    :param N_bits: Número de bits de las respuestas PUF.
+    :type N_bits: int.
     
-    :param p: Parámetro `p` promedio de la distribución de distancias Hamming a simular.
-    :type p: float
+    :param p_intra: Parámetro `p` del histograma de intra-distancias a simular.
+    :type p_intra: float positivo menor que 1.
     
-    :return: Lista de todas las N_iter*N_resp*(N_resp-1)/2 distancias Hamming (medidas en número de bits) realizadas en el pool de `N` respuestas PUF simuladas.
-    :rtype: Lista de int.
+    :param p_inter: Parámetro `p` del histograma de inter-distancias a simular.
+    :type p_inter: float positivo menor que 1.
+    
+    :param verbose: Si `True` pinta los valores de `p_rep`, `p_inst` calculados.
+    :type verbose: bool.
+    
+    :return: Devuelve una dupla de listas `intra_set`,`inter_set`.
+    :rtype: Dupla de lista de float.
     """
-    p_resp = 1/2-_sqrt(1-2*p)/2
-    set_prim = _choice([1,0],size=(N_iter,N_resp,N_bits),p=[p_resp,1-p_resp])
-    result=[]
-    for i in range(N_iter):
-        for j in range(N_resp):
-            for k in range(j+1,N_resp,1):
-                result.append((set_prim[i][j]^set_prim[i][k]).sum())
-    return _array(result)
+    p_rep = 1/2-_sqrt(1-2*p_intra)/2
+    p_inst = (1/2-_sqrt(1-2*p_inter)/2 - p_rep)/(1-2*p_rep)
+    
+    if verbose:
+        print(f'p_rep: {p_rep}\np_inst: {p_inst}')
+    
+    ## Generamos los datos:
+    key=[]
+    data=[]
+    for i in range(N_inst):
+        key.append(_choice([1,0],p=[p_inst,1-p_inst],size=N_bits))
+        for j in range(N_rep):
+            data.append(key[i]^_choice([1,0],p=[p_rep,1-p_rep],size=N_bits))
+    data = _array(data).reshape(N_inst,N_rep,N_bits)
+    
+    ## Cálculo de intra-distancia:
+    intra_set=[]
+    for i in range(N_inst):
+        for j in range(N_rep):
+            for k in range(j+1,N_rep,1):
+                intra_set.append((data[i][j]^data[i][k]).sum())
+    intra_set = _array(intra_set)    
+
+    ## Cálculo de inter-distancia:
+    inter_set=[]
+    for i in range(N_rep):
+        for j in range(N_inst):
+            for k in range(j+1,N_inst,1):
+                inter_set.append((data[j][i]^data[k][i]).sum())
+    inter_set = _array(inter_set)
+
+    return intra_set,inter_set
+    
+    
+def Dks_montecarlo_cideal(N, N_inst, N_rep, N_bits, p_intra, p_inter, verbose=True):
+    """Esta función calcula las distribuciones del estadístico KS de un modelo cuasi-ideal frente a las dsitribuciones binomiales de parámetros n=N_bits, p=p_intra, p=p_inter. La función devuelve una dupla de listas de tamaño `N` de estos índices KS.
+    """
+    N_bins = N_bits+1
+    fit_intra = _binom.pmf(k=range(N_bins),n=N_bits,p=p_intra)
+    fit_inter = _binom.pmf(k=range(N_bins),n=N_bits,p=p_inter)
+    
+    Dks_intra=[]
+    Dks_inter=[]
+    for i in range(N):
+        data_intra,data_inter = sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter)
+        
+        hist_intra,_ = _histogram(data_intra, bins=N_bins, range=(0,N_bins), density=True)
+        Dks_intra.append(abs(hist_intra.cumsum()-fit_intra.cumsum()).max())
+        
+        hist_inter,_ = _histogram(data_inter, bins=N_bins, range=(0,N_bins), density=True)
+        Dks_inter.append(abs(hist_inter.cumsum()-fit_inter.cumsum()).max())        
+        
+        if verbose:
+            if (i+1)%100==0:
+                print(f"{(i+1)/100:.0f}/{N/100:.0f}",end='\r')
+                
+    return Dks_intra,Dks_inter
