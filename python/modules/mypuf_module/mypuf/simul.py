@@ -7,7 +7,7 @@ from scipy.stats            import binom as _binom
 """Este módulo contiene rutinas para smular el comportamiento de una PUF desde un punto de vista 'behavioural' (no físico).
 """
 
-def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, verbose=False):
+def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, return_intra=True, return_inter=True, verbose=False):
     """Esta función simula el resultado de intra/inter-distancia de Hamming para un experimento PUF, utilizando un modelo cuasi-ideal. El modelo recibe las cantidades `p_intra` y `p_inter` observadas experimentalmente, y calcula los parámetros `p_inst` que determina la probabilidad de que un bit sea '1' en una instancia, y `p_rep` que determina la probabilidad de que un bit sea '1' en una repetición (técnicamente, que la diferencia con respecto de una 'clave dorada' sea '1'), tales que las distribuciones de intra/inter-distancias Hamming se distribuyan como binomiales de parámetros `p_intra` y `p_inter` respectivamente.
     
     :param N_inst: Número de instancias del experimento.
@@ -24,6 +24,12 @@ def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, verbose=False):
     
     :param p_inter: Parámetro `p` del histograma de inter-distancias a simular.
     :type p_inter: float positivo menor que 1.
+    
+    :param return_intra: Si `True` devuelve el conjunto de intra-distancias.
+    :type return_intra: bool.
+    
+    :param return_inter: Si `True` devuelve el conjunto de inter-distancias.
+    :type return_inter: bool.
     
     :param verbose: Si `True` pinta los valores de `p_rep`, `p_inst` calculados.
     :type verbose: bool.
@@ -46,23 +52,26 @@ def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, verbose=False):
             data.append(key[i]^_choice([1,0],p=[p_rep,1-p_rep],size=N_bits))
     data = _array(data).reshape(N_inst,N_rep,N_bits)
     
+    result=[]
+    if return_intra:
     ## Cálculo de intra-distancia:
-    intra_set=[]
-    for i in range(N_inst):
-        for j in range(N_rep):
-            for k in range(j+1,N_rep,1):
-                intra_set.append((data[i][j]^data[i][k]).sum())
-    intra_set = _array(intra_set)    
+        intra_set=[]
+        for i in range(N_inst):
+            for j in range(N_rep):
+                for k in range(j+1,N_rep,1):
+                    intra_set.append((data[i][j]^data[i][k]).sum())
+        result.append(_array(intra_set))    
+    
+    if return_inter:
+        ## Cálculo de inter-distancia:
+        inter_set=[]
+        for i in range(N_rep):
+            for j in range(N_inst):
+                for k in range(j+1,N_inst,1):
+                    inter_set.append((data[j][i]^data[k][i]).sum())
+        result.append(_array(inter_set))
 
-    ## Cálculo de inter-distancia:
-    inter_set=[]
-    for i in range(N_rep):
-        for j in range(N_inst):
-            for k in range(j+1,N_inst,1):
-                inter_set.append((data[j][i]^data[k][i]).sum())
-    inter_set = _array(inter_set)
-
-    return intra_set,inter_set
+    return tuple(result)
     
     
 def Dks_montecarlo_cideal(N, N_inst, N_rep, N_bits, p_intra, p_inter, verbose=True):
