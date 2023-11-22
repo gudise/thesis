@@ -110,7 +110,7 @@ class PufTopol:
         elif topol=='custom':
             self.grafo = custom[:]
             
-    def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, ax=None):
+    def dibujar(self, color_vert='black', size_vert=20, color_link='tab:gray', size_link=1.5, beta=1, ax=None):
         """
         Esta función toma un objeto 'Axes' (creado externamente a esta función), y lo edita para dibujar la topología.
         Esto permite crear varios objetos Axes y dibujar varios simultáneamente. Alternativamente, si no se pasa
@@ -132,6 +132,8 @@ class PufTopol:
         size_link : <float, opcional, por defecto 1.5>
             Tamaño de los link del grafo.
             
+        beta: Parámetro que ajusta el tamaño de la flecha. Puede hacerse lo bastante grande como para ocultar la flecha en cada vértice y así dibujar un grafo no dirigido.
+            
         ax : <plt.Axes>
             Objetos 'plt.Axes' sobre el cual se dibujará la topología.
         
@@ -146,7 +148,11 @@ class PufTopol:
             fig,ax = subplots(1,1,figsize=[width,height])        
         
         for arista in self.grafo:
-            ax.plot([x_coords[arista[0]], x_coords[arista[1]]],[y_coords[arista[0]], y_coords[arista[1]]], color=color_link, linewidth=size_link)
+            dx=x_coords[arista[1]]-x_coords[arista[0]]
+            dy=y_coords[arista[1]]-y_coords[arista[0]]
+            alpha=1-size_vert/(72*2*np_sqrt(dx**2+dy**2))
+            ax.arrow(x=x_coords[arista[0]],y=y_coords[arista[0]],dx=alpha*beta*dx,dy=alpha*beta*dy,length_includes_head=True,head_starts_at_zero=True, color=color_link, width=size_link/100)
+
         ax.plot(x_coords,y_coords,'o', color=color_vert, markersize=size_vert) # el parámetro 'ms' da cuenta del tamaño de los círculos.
         
         # Selecting the axis-X making the bottom and top axes False.
