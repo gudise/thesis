@@ -83,6 +83,8 @@ class PufTopol:
                 comparaciones sin repetir osciladores
             'n-1'
                 comparaciones repitiendo un oscilador cada vez
+            'kn'
+                comparaciones (k=n)-modular; n debe ser un número entero divisor de 'N_osc'.
             'custom'
                 comparaciones 'custom' tal y como se dan en el parámetro
                 "custom"
@@ -107,6 +109,12 @@ class PufTopol:
         elif topol=='n-1':
             for i in range(0, self.N_osc-1, 1):
                 self.grafo.append([i,i+1])
+        elif topol[0]=='k':
+            K=int(topol[1])
+            for i in range(self.N_osc//K):
+                for j in range(K):
+                    for k in range(j+1,K,1):
+                        self.grafo.append([i*K+j,i*K+k])
         elif topol=='custom':
             self.grafo = custom[:]
             

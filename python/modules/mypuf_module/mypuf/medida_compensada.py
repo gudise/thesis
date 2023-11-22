@@ -1,7 +1,11 @@
 from numpy import array, unique, log2
 from numpy.random import permutation
 from scipy.stats import entropy
-from sympy import Symbol, symbols, integrate, factor, simplify
+from sympy import Symbol as _Symbol,\
+                  symbols,\
+                  integrate,\
+                  factor,\
+                  simplify
 
 
 """
@@ -120,9 +124,9 @@ def k_4(entrada):
     return result
     
     
-class Binary(Symbol):
+class _Binary(_Symbol):
     """
-    clase 'Binary' que extiende (i.e., hereda) la clase 'Symbol',
+    clase '_Binary' que extiende (i.e., hereda) la clase 'Symbol',
     sobreescribiendo la función '_eval_power' de 'Symbol' por una
     apropiada para variables binarias.
     """
@@ -142,7 +146,7 @@ class TeoN1:
         """
         self.N = N
         self.x = symbols(f'x:{N}')
-        self.b = [Binary(f'b{i+1}') for i in range(N-1)]
+        self.b = [_Binary(f'b{i+1}') for i in range(N-1)]
 
         self.int_iterativas = [integrate(1,(self.x[0],self.b[0]*self.x[1],self.x[1]+self.b[0]*(1-self.x[1])))]
         for i in range(1,N-1,1):
@@ -184,7 +188,7 @@ def TeoN1max(N):
     de prob.
     """
     x = symbols(f'x:{N}')
-    b = [Binary(f'b{i+1}') for i in range(N-1)]
+    b = [_Binary(f'b{i+1}') for i in range(N-1)]
 
     resp = []
     maxprob = []
