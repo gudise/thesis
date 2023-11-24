@@ -940,7 +940,7 @@ class StdMatrix:
             os.mkdir(f"{self.projdir}/flow/program")
             sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/flow/program/program_fpga.cp.tcl")
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/FPGA_device_tool.py",f"{self.projdir}/FPGA_device_tool.cp.py")
                     
             
             ## Source
@@ -1659,7 +1659,7 @@ class GaloisMatrix:
             os.mkdir(f"{self.projdir}/flow/program")
             sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/flow/program/program_fpga.cp.tcl")
             sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_all_fpga.py",f"{self.projdir}/program_all_fpga.cp.py")
+            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/FPGA_device_tool.py",f"{self.projdir}/FPGA_device_tool.cp.py")
                 
                 
             ## Source
