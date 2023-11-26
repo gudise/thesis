@@ -161,7 +161,9 @@ class StdRing():
                 el tipo de LUT que se está fijando, y en particular el AND inicial 
                 siempre es de tipo LUT2 (i.e., solo se pueden fijar los pines 'I0' y
                 'I1'). Notar que el número de elementos total de un anillo "StdRing"
-                es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).
+                es igual a N_inv+1, siendo el primero siempre una LUT2 (AND). Por definición,
+                el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente
+                en el bucle.
                 
             pdl : <bool, opcional, por defecto False>
                 Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
@@ -198,7 +200,7 @@ class StdRing():
             self.pin[0] = pin
             
         if pdl:
-            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"out_romatrix[{name}]", f"enable_romatrix[{name}]"], self.bel[0], self.pin[0])]
             for i in range(N_inv):
                 w_in = [f"w_{name}[{i}]", f"sel_pdl[0]", f"sel_pdl[1]", f"sel_pdl[2]", f"sel_pdl[3]", f"sel_pdl[4]"]
                 if i==N_inv-1:
@@ -208,7 +210,7 @@ class StdRing():
                 self.elements.append(Lut6(f"inv_{name}_{i}", "64'h5555555555555555", self.loc[i+1], w_out, w_in, self.bel[i+1], self.pin[i+1]))
             
         else:
-            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"enable_romatrix[{name}]", f"out_romatrix[{name}]"], self.bel[0], self.pin[0])]
+            self.elements = [Lut2(f"AND_{name}", "4'h8", self.loc[0], f"w_{name}[0]", [f"out_romatrix[{name}]", f"enable_romatrix[{name}]"], self.bel[0], self.pin[0])]
             for i in range(N_inv):
                 w_in = f"w_{name}[{i}]"
                 if i==N_inv-1:
@@ -299,7 +301,9 @@ class GaloisRing():
                 el pin 'I0'). Notar que, dado que el último elemento (N_inv+2 o N_inv+1,
                 dependiendo de la opción 'inverted_end') de un anillo 'GaloisRing' es
                 un flip-flop, a efectos de la opción "pin" este se ignora (esta opción
-                restringe solo los pines de las LUT, no del flip-flop).
+                restringe solo los pines de las LUT, no del flip-flop). Por definición,
+                el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente
+                en el bucle.
             
             pdl : <bool, opcional, por defecto False>
                 Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
