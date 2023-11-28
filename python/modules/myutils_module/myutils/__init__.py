@@ -76,6 +76,18 @@ def export_legend_plt(ax, name='legend.pdf', pad_inches=0.1, **kwargs):
     fig_legend.savefig(name, bbox_inches='tight', pad_inches=pad_inches)
     
     
+def set_size_plt(ax, x, y):
+    """Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores 'x', 'y' que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.
+    """
+    l = ax.figure.subplotpars.left
+    r = ax.figure.subplotpars.right
+    t = ax.figure.subplotpars.top
+    b = ax.figure.subplotpars.bottom
+    figw = float(x)/(r-l)
+    figh = float(y)/(t-b)
+    ax.figure.set_size_inches(figw, figh)
+    
+    
 def run_in_parallel(func, args):
     """Esta función toma un método 'func' y una lista argumentos de 'args', y repite la ejecución de la función en paralelo.
     El método 'func' puede reibir argumentos arbitrarios, pero serán pasados en orden según aparezcan en 'args'.
