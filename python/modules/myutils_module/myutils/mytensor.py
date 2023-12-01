@@ -26,7 +26,8 @@ from numpy import array as np_array,\
                   savetxt as np_savetxt,\
                   loadtxt as np_loadtxt,\
                   mean as np_mean,\
-                  std as np_std
+                  std as np_std,\
+                  append as _append
 
 
 class Tensor:
@@ -222,4 +223,10 @@ def load_tensor(file_name):
     for i in range(len(shape)):
         shape[i]=int(shape[i])
     return Tensor(np_reshape(np_ravel(array), shape), axis)
+    
+    
+def append(in0,in1, axe):
+    """Esta función es un 'wrapper' a numpy.append', pero permite especificar el eje por el que se concatenan dos objetos `Tensor` por el nombre. Ambos argumentos deben tener un parámetro `Tensor.axis` idéntico, así como las mismas dimensiones en todos los ejes excepto quizá en `axe`. El resultado es un nuevo `Tensor` que consiste en la concatenación de los argumentos en orden: `in0,in1`.
+    """
+    return Tensor(array=_append(in0.array,in1.array,in0.axis.index(axe)), axis=in0.axis)
     
