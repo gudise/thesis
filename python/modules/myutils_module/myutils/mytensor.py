@@ -225,8 +225,17 @@ def load_tensor(file_name):
     return Tensor(np_reshape(np_ravel(array), shape), axis)
     
     
-def append(in0,in1, axe):
-    """Esta función es un 'wrapper' a numpy.append', pero permite especificar el eje por el que se concatenan dos objetos `Tensor` por el nombre. Ambos argumentos deben tener un parámetro `Tensor.axis` idéntico, así como las mismas dimensiones en todos los ejes excepto quizá en `axe`. El resultado es un nuevo `Tensor` que consiste en la concatenación de los argumentos en orden: `in0,in1`.
+def append(axe, *args):
+    """Esta función es un 'wrapper' a numpy.append', pero permite especificar el eje por el que se concatenan dos objetos `Tensor` por el nombre. Todos los argumentos de entrada deben tener un parámetro `Tensor.axis` idéntico, así como las mismas dimensiones en todos los ejes excepto quizá en `axe`. El resultado es un nuevo `Tensor` que consiste en la concatenación de los argumentos en orden según se proporcionaron. Es obligatorio proporcionar al menos dos tensores de entrada.
     """
-    return Tensor(array=_append(in0.array,in1.array,in0.axis.index(axe)), axis=in0.axis)
+    try:
+        result =  Tensor(array=_append(args[0].array,args[1].array,args[0].axis.index(axe)), axis=args[0].axis)
+    except:
+        print("ERROR: asegurarse de que se cumplen los requisitos de entrada (al menos dos tensores y 'axe' ")
+        return -1
+        
+    for i in range(2,len(args),1):
+        result = Tensor(array=_append(result.array, args[i].array, result.axis.index(axe)), axis=result.axis)
+        
+    return result
     
