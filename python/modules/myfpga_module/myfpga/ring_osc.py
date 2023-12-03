@@ -1280,6 +1280,7 @@ class GaloisMatrix:
         self.pdl = pdl
         self.trng = trng
         self.poly = poly
+        self.inverted_end = inverted_end
         
         self.osc_list = []
         self.N_osc=0
@@ -1343,6 +1344,8 @@ class GaloisMatrix:
             f.write("    output out\n")
             f.write("    );\n\n")
             
+            if self.inverted_end:
+                f.write(f"    wire[{self.N_osc-1}:0] out_ro;\n")
             f.write(f"    wire[{self.N_osc-1}:0] out_sampled;\n\n")
             
             for i in range(self.N_osc):
