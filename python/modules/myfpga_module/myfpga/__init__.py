@@ -1,52 +1,35 @@
 class Lut1:
-    """
-    Modelo de FPGA-LUT de 1 entrada.
+    """Modelo de FPGA-LUT de 1 entrada.
+    
+    :param name: Nombre de la instancia LUT.
+    :type name: string
+    
+    :param init: Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:
+        I0 | Out
+        ----------
+        0  | init[0]
+        1  | init[1]
+        
+    donde init[i] es el i-ésimo bit del número 'init' en representación binaria LSB (i.e., init[0] es el bit menos significativo -"más a la izda."- de init).
+    :type init: string
+    
+    :param loc: Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.
+    :type loc: string
+    
+    :param w_out: Nombre del cable que contiene la señal de salida de la LUT.
+    :type w_out: string
+    
+    :param w_in: Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombres de la entrada correspondientes al pin I0.
+    :type w_in: string
+    
+    :param bel: Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda. Puede ser 'A', 'B', 'C' o 'D'.
+    :type bel: char
+    
+    :param pin: Restricción de los pines lógicos ("I") a los pines físicos ("A") de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos 'I<puerto lógico>:A<puerto físico>' separados por comas, donde el puertos lógico es 'I0', y los puertos físicos varían de 'A1' a 'A6'.
+    :type pin: string
     """
     def __init__(self, name, init, loc, w_out, w_in, bel='', pin=''):
-        """
-        Inicialización del objeto 'Lut'.
-
-        Parámetros:
-        ---------
-            name : <string>
-                Nombre de la instancia LUT.
-                
-            init : <string>
-                Valor numérico que representa la función realizada por la LUT. 
-                La relación entrada/salida se asigna de la forma:
-                    I0 Out
-                    0  init[0]
-                    1  init[1]
-                    
-                donde init[i] es el i-ésimo bit del número 'init' en
-                representación binaria LSB (i.e., init[0] es el bit menos 
-                significativo -"más a la izda."- de init).
-                
-            loc : <string>
-                Posición de la celda a la que pertenece la LUT en la FPGA. El 
-                formato de esta opción es un string formado por dos números 
-                enteros (coordenadas X, Y) separados por una coma.
-                
-            w_out : <string>
-                Nombre del cable que contiene la señal de salida de la LUT. 
-                
-            w_in : <string>
-                Nombre del cable que contiene la señal de entrada a la 
-                LUT. Se trata de una string con el nombres de la entrada 
-                correspondientes al pin I0.
-                
-            bel : <caracter>
-                Restricción BEL que indica qué LUT concreta es ocupada dentro de 
-                la celda. Puede ser 'A', 'B', 'C' o 'D'.
-                
-            pin : <string> 
-                Restricción de los pines lógicos ("I") a los pines físicos ("A")
-                de la LUT. El formato es el mismo que el de la restricción 
-                LOCK_PINS de XDC, i.e., un string de elementos 
-                'I<puerto lógico>:A<puerto físico>' separados por comas, donde 
-                el puertos lógico es 'I0', y los puertos físicos varían de 'A1'
-                a 'A6'.
-        """
+        """Constructor"""
         self.name = name
         self.init = init
         self.loc = f"LOC=\"SLICE_X{loc.replace(' ','').split(',')[0]}Y{loc.replace(' ','').split(',')[1]}\""
@@ -62,16 +45,13 @@ class Lut1:
             self.pin = f", LOCK_PINS=\"{pin}\""
             
     def impl(self):
-        """
-        Esta función devuelve un 'string' que contiene el código en lenguaje 
-        Verilog necesario para implementar la LUT inicializada.
+        """Esta función devuelve un 'string' que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.
         """
         return f"(* {self.bel}{self.loc}{self.pin}, DONT_TOUCH=\"true\" *) LUT1 #({self.init}) {self.name}(.O({self.w_out}), .I0({self.w_in}));"
         
         
 class Lut2:
-    """
-    Modelo de FPGA-LUT de 2 entradas.
+    """Modelo de FPGA-LUT de 2 entradas.
     """
     def __init__(self, name, init, loc, w_out, w_in, bel='', pin=''):
         """
