@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>myutils package &#8212; myutils 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to myutils’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-myutils">
+<span id="myutils-package"></span><h1>myutils package<a class="headerlink" href="#module-myutils" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="myutils.BarraProgreso">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">myutils.</span></span><span class="sig-name descname"><span class="pre">BarraProgreso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_barra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caracter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils.html#BarraProgreso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.BarraProgreso" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Esta clase instancia un objeto BarraProgreso.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total</strong> (<em>int</em>) – Número de iteraciones que hacen el 100% de la barra.</p></li>
+<li><p><strong>long_barra</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de caracteres que componen la barra, por defecto 40.</p></li>
+<li><p><strong>caracter</strong> (<em>char</em><em>, </em><em>opcional</em>) – Caracter que se utiliza para decorar la barra, por defecto ‘#’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.export_legend_plt">
+<span class="sig-prename descclassname"><span class="pre">myutils.</span></span><span class="sig-name descname"><span class="pre">export_legend_plt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'legend.pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_inches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils.html#export_legend_plt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.export_legend_plt" title="Link to this definition">¶</a></dt>
+<dd><p>Exporta la leyenda de la figura actualmente activa.</p>
+<p>Esta función es útil para exportar la leyenda de un gráfico cuando se tienen
+múltiples gráficos que comparten la misma leyenda. Es importante tener en cuenta
+que se requiere haber creado una figura con ‘plt.plot’, la cual debe incluir una
+leyenda, y NO se debe haber ejecutado ‘plt.show()’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<cite>matplotlib.axes.Axes</cite>) – Los ejes de la figura de los cuales se quiere extraer la leyenda. Si se utilizan
+comandos como ‘plot’, etc., se puede obtener los ejes activos del gráfico con
+ax=plt.gca().</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre de la imagen. Por defecto es “legend.pdf”.</p></li>
+<li><p><strong>pad_inches</strong> (<em>float</em><em>, </em><em>opcional</em>) – Esta opción se pasa directamente a la función “savefig”. Por defecto es 0.1.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Las opciones introducidas aquí se pasan directamente a la función <cite>ax.legend</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.run_in_parallel">
+<span class="sig-prename descclassname"><span class="pre">myutils.</span></span><span class="sig-name descname"><span class="pre">run_in_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils.html#run_in_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.run_in_parallel" title="Link to this definition">¶</a></dt>
+<dd><p>Ejecuta la función en paralelo utilizando argumentos proporcionados.</p>
+<p>Esta función toma un método ‘func’ y una lista de argumentos ‘args’, y repite la ejecución
+de la función en paralelo. El método ‘func’ puede recibir un número arbitrario y tipos de argumentos,
+pero serán pasados en orden según aparezcan en ‘args’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – Procedimiento que puede tomar un número arbitrario y tipos de argumentos, pero son específicos
+en su posición.</p></li>
+<li><p><strong>args</strong> (<em>list</em>) – Lista que contiene una lista con los argumentos a pasar a ‘func’ en cada proceso.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista con los resultados de cada proceso.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Esta función siempre debe ser ejecutada dentro de <cite>if __name__==’__main__’:</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.set_size_plt">
+<span class="sig-prename descclassname"><span class="pre">myutils.</span></span><span class="sig-name descname"><span class="pre">set_size_plt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils.html#set_size_plt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.set_size_plt" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores <cite>x</cite>, <cite>y</cite> que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<cite>matplotlib.axes.Axes</cite>) – Objeto que contiene la figura a redimensionar.</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – Nueva anchura.</p></li>
+<li><p><strong>y</strong> (<em>float</em>) – Nueva altura.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-myutils.bool">
+<span id="myutils-bool-module"></span><h2>myutils.bool module<a class="headerlink" href="#module-myutils.bool" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="myutils.bool.LinearSystECC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">myutils.bool.</span></span><span class="sig-name descname"><span class="pre">LinearSystECC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#LinearSystECC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.LinearSystECC" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Clase para manipular sistemas de códigos de corrección de errores lineales.</p>
+<p>Esta clase proporciona funcionalidades para la generación de matrices G y H, codificación y decodificación de vectores para códigos de corrección de errores lineales en un cuerpo finito.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> (<em>int</em><em>, </em><em>opcional</em>) – Dimensión de la matriz. Por defecto 4.</p></li>
+<li><p><strong>length</strong> (<em>int</em><em>, </em><em>opcional</em>) – Longitud de la matriz. Por defecto 7.</p></li>
+<li><p><strong>G</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em><em>, </em><em>opcional</em>) – Matriz booleana G para operaciones de generación de código. Por defecto False.</p></li>
+<li><p><strong>H</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em><em>, </em><em>opcional</em>) – Matriz booleana H para operaciones de generación de código. Por defecto False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la matriz generadora y la matriz de paridad no cumplen GH^=0.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta clase permite realizar operaciones en un cuerpo finito para códigos de corrección de errores lineales.
+Los métodos ‘encode’ y ‘decode’ permiten la codificación y decodificación de vectores respectivamente,
+usando las matrices generadora y de paridad.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.bool.LinearSystECC.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#LinearSystECC.decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.LinearSystECC.decode" title="Link to this definition">¶</a></dt>
+<dd><p>Decodifica un código de entrada de ‘length’ bits en un mensaje de ‘dim’ bits
+utilizando un método de mínima distancia de Hamming.</p>
+<p>Este método es absolutamente ineficiente y no debería usarse con dimensiones
+mayores que 9.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>list</em><em> of </em><em>bool</em>) – Código booleano de entrada a decodificar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mensaje decodificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of bool</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la longitud del vector de entrada no coincide con ‘length’.
+    Si hay demasiados errores para decodificar el vector de manera fiable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.bool.LinearSystECC.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#LinearSystECC.encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.LinearSystECC.encode" title="Link to this definition">¶</a></dt>
+<dd><p>Codifica un mensaje de entrada de ‘dim’ bits en un código de ‘length’ bits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>list</em><em> of </em><em>bool</em>) – Mensaje booleano de entrada a codificar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mensaje booleano codificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la longitud del vector de entrada no coincide con ‘dim’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.bool.gauss_elimination_gf2">
+<span class="sig-prename descclassname"><span class="pre">myutils.bool.</span></span><span class="sig-name descname"><span class="pre">gauss_elimination_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff_matrix_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_vector_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#gauss_elimination_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.gauss_elimination_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Resuelve un sistema de ecuaciones booleanas en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coeff_matrix_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Matriz booleana que representa los coeficientes del sistema de ecuaciones.</p></li>
+<li><p><strong>const_vector_in</strong> (<em>list</em><em> of </em><em>bool</em>) – Vector booleano que representa el término independiente de cada ecuación.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matriz booleana triangular.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.bool.hamming">
+<span class="sig-prename descclassname"><span class="pre">myutils.bool.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#hamming"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.hamming" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la distancia de Hamming (medida en bits) entre dos entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in1</strong> (<em>list</em><em> of </em><em>bool</em>) – Primer vector booleano de entrada.</p></li>
+<li><p><strong>in2</strong> (<em>list</em><em> of </em><em>bool</em>) – Segundo vector booleano de entrada.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Distancia de Hamming entre las dos entradas (medida en bits).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.bool.invert_matrix_gf2">
+<span class="sig-prename descclassname"><span class="pre">myutils.bool.</span></span><span class="sig-name descname"><span class="pre">invert_matrix_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#invert_matrix_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.invert_matrix_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve la inversa de una matriz booleana en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>matrix_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Matriz booleana a invertir.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matriz booleana inversa.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.bool.matrix_multiply_gf2">
+<span class="sig-prename descclassname"><span class="pre">myutils.bool.</span></span><span class="sig-name descname"><span class="pre">matrix_multiply_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix1_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix2_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/bool.html#matrix_multiply_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.bool.matrix_multiply_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Multiplica un par de matrices booleanas en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<p>Esta función puede utilizarse también para multiplicar vectores por matrices, gestionando automáticamente
+la disposición del vector: fila si va delante de la matriz, columna si va detrás. Así, si ‘matrix1_in’ y
+‘matrix2_in’ son dos vectores, el resultado será el producto vectorial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix1_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Primera matriz booleana.</p></li>
+<li><p><strong>matrix2_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Segunda matriz booleana.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Producto de las matrices o el producto vectorial en gf(2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-myutils.stats">
+<span id="myutils-stats-module"></span><h2>myutils.stats module<a class="headerlink" href="#module-myutils.stats" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.Dks_montecarlo_discrete">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">Dks_montecarlo_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#Dks_montecarlo_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.Dks_montecarlo_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la distribución del estadístico KS de un modelo discreto en comparación con una distribución teórica.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>callable</em>) – Función aleatoria a contrastar. El primer parámetro que debe aceptar es ‘N’, seguido de un número arbitrario de
+parámetros que son pasados mediante ‘kwargs’. Devuelve un array de valores aleatorios.</p></li>
+<li><p><strong>fit</strong> (<em>list</em><em> of </em><em>float</em>) – Lista de valores que representa la distribución de probabilidad contra la cual se calcula la distribución de KS.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – Número de veces que se repite el cálculo de Dks.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Si es True, imprime el progreso. Por defecto es True.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parámetros a pasar a ‘model’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de valores Dks.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función calcula la distribución del estadístico KS de un modelo ‘model’ que produce ‘N’ valores aleatorios frente a
+una curva teórica ‘fit’, representada como una lista de valores. Devuelve una lista de estos índices KS.</p>
+<p>El método ‘model’ admite una cantidad arbitraria de parámetros pasados mediante ‘kwargs’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.bin_rv_cont">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">bin_rv_cont</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rv_continuous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_in</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#bin_rv_cont"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.bin_rv_cont" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la probabilidad acumulada de un objeto ‘rv_continuous’ de scipy en los extremos dados por ‘bins’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rv_continuous</strong> (<em>scipy.stats.rv_continuous</em>) – Objeto ‘rv_continuous’ de scipy.</p></li>
+<li><p><strong>bins_in</strong> (<em>array_like</em>) – Bineado del eje de abscisas. Debe ser una lista de ‘N_bins+1’ elementos, conteniendo los extremos de cada bin.</p></li>
+<li><p><strong>args</strong> (<em>list</em><em>, </em><em>optional</em>) – Parámetros extra para pasar a ‘rv_continuous.cdf’, distintos del primer argumento (‘x’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arreglo de tamaño ‘N_bin’ elementos que contiene la probabilidad acumulada en los extremos dados por ‘bins’.
+El arreglo de salida está normalizado respecto a la suma de sus elementos.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función toma un objeto ‘rv_continuous’ de scipy y una lista ‘bins_in’ que contiene el bineado del eje de abscisas.
+Calcula la probabilidad acumulada en los extremos dados por ‘bins’ utilizando ‘rv_continuous.cdf’ y devuelve un numpy array
+normalizado con las probabilidades acumuladas.</p>
+<p>El argumento ‘args’ se utiliza para pasar parámetros extra distintos al primero (‘x’) a ‘rv_continuous.cdf’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.bin_rv_discrete">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">bin_rv_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rv_discrete</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_in</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#bin_rv_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.bin_rv_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la probabilidad acumulada de un objeto ‘rv_discrete’ de scipy en los extremos dados por ‘bins’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rv_discrete</strong> (<em>scipy.stats.rv_discrete</em>) – Objeto ‘rv_discrete’ de scipy.</p></li>
+<li><p><strong>bins_in</strong> (<em>array_like</em>) – Bineado del eje de abscisas. Debe ser una lista de ‘N_bins+1’ elementos, conteniendo los extremos de cada bin.</p></li>
+<li><p><strong>args</strong> (<em>list</em><em>, </em><em>optional</em>) – Parámetros extra para pasar a ‘rv_discrete’, distintos del primer argumento (‘k’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arreglo de tamaño ‘N_bin’ elementos que contiene la probabilidad acumulada en los extremos dados por ‘bins’.
+El arreglo de salida está normalizado respecto a la suma de sus elementos.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función toma un objeto ‘rv_discrete’ de scipy y una lista ‘bins_in’ que contiene el bineado del eje de abscisas.
+Calcula la probabilidad acumulada en los extremos dados por ‘bins’ y devuelve un numpy array normalizado con las probabilidades acumuladas.</p>
+<p>El argumento ‘args’ se utiliza para pasar parámetros extra distintos del primero (‘k’) a ‘rv_discrete’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.chisq_gof_discrete">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">chisq_gof_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plothist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#chisq_gof_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.chisq_gof_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Realiza un test chi^2 de bondad del ajuste entre los datos observados y un modelo
+estocástico discreto (una función pmf -probability mass function-) que hipotéticamente
+genera dichos datos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs_data</strong> (<em>array_like</em>) – Vector de datos observados.</p></li>
+<li><p><strong>model</strong> (<em>callable</em>) – Función pmf (probability mass function) que representa el modelo estocástico discreto.
+El primer argumento siempre debe ser la variable independiente (aleatoria).</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Nivel de significancia para el test chi^2. Por defecto es 0.05.</p></li>
+<li><p><strong>plothist</strong> (<em>bool</em><em>, </em><em>optional</em>) – Indica si se debe graficar el histograma de los datos. Por defecto es False.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Opciones adicionales para pasar parámetros a la función pmf introducida como modelo.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Un diccionario con los campos:
+- ‘chisq’: Valor del estadístico chi^2.
+- ‘pvalue’: Valor tal que la probabilidad de obtener ‘chisq’ es al menos pvalue.
+- ‘dof’: Número de grados de libertad de la distribución chi^2.
+- ‘testpass’: Booleano que indica si el test ha sido superado en función de ‘alpha’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función calcula un test chi^2 de bondad del ajuste entre los datos observados y un modelo
+estocástico discreto proporcionado como una función pmf. Se genera un histograma de los datos
+y se calculan los valores esperados de probabilidad para cada bin. Luego se aplica la función
+‘chisquare’ de scipy para realizar el test chi^2.</p>
+<p>El parámetro ‘kwargs’ se puede utilizar para pasar parámetros adicionales a la función pmf del modelo.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.fit_rv_cont">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">fit_rv_cont</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv_cont</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#fit_rv_cont"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.fit_rv_cont" title="Link to this definition">¶</a></dt>
+<dd><p>Encuentra la distribución ‘rv_continuous’ que mejor ajusta un conjunto de datos ‘data’ y calcula el ‘valor p’ correspondiente a una significancia ‘alpha’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em><em> of </em><em>float</em>) – Vector con los datos a ajustar.</p></li>
+<li><p><strong>rv_cont</strong> (<em>scipy.stats.rv_continuous</em>) – Objeto ‘scipy.stats.rv_continuous’ que define una distribución de probabilidad continua que se ajustará a los datos ‘data’.</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Número de cajas para el histograma de ‘data’. Por defecto es 10.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Valor de significancia ‘alpha’ para el cual se calcula el valor p. Por defecto es 0.05.</p></li>
+<li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Si es True, pinta el histograma y superpone la curva encontrada. La función no ejecuta ‘show()’, de forma que el usuario puede recabar la figura externamente
+con ‘gca()’ y ‘gcf()’, y editarla antes de representarla. Por defecto es False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Una lista que contiene tres elementos:
+- El primero es una lista de los parámetros que mejor ajustan la distribución (en el mismo orden en que se definen en la función ‘rv_cont.pdf’).
+- El segundo es un nparray con el histograma.
+- El tercero es un nparray con el bineado de los datos de entrada.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función es un wrapper para encontrar la distribución ‘rv_continuous’ que mejor ajusta un conjunto de valores ‘data’ utilizando la máxima verosimilitud.
+Calcula el ‘valor p’ correspondiente a una significancia ‘alpha’. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función
+densidad teórica.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.get_area_fraction">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">get_area_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#get_area_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.get_area_fraction" title="Link to this definition">¶</a></dt>
+<dd><p>Encuentra los extremos ‘xmin’ y ‘xmax’ de una lista ‘hist’ de números (no necesariamente normalizada)
+de tal manera que el intervalo ‘hist[xmin:xmax]’ contenga al menos una fracción ‘p’ de la suma acumulada
+de los elementos de la lista.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hist</strong> (<em>list</em><em> or </em><em>array_like</em>) – Lista de números.</p></li>
+<li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – Fracción mínima deseada. Por defecto es 0.9.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>xmin</strong> (<em>int</em>) – Índice del extremo izquierdo del intervalo.</p></li>
+<li><p><strong>xmax</strong> (<em>int</em>) – Índice del extremo derecho del intervalo.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función busca los extremos ‘xmin’ y ‘xmax’ en la lista ‘hist’ de números, de tal manera que el intervalo
+‘hist[xmin:xmax]’ contenga al menos una fracción ‘p’ de la suma acumulada de los elementos de la lista. La búsqueda
+comienza desde el índice correspondiente al valor máximo de la lista y se desplaza simétricamente hacia ambos extremos.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.get_hist_smooth">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">get_hist_smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#get_hist_smooth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.get_hist_smooth" title="Link to this definition">¶</a></dt>
+<dd><p>Genera un histograma suavizado a partir de un conjunto de datos ‘data’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array_like</em>) – Conjunto de datos para representar en forma de histograma.</p></li>
+<li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – Fracción (tanto por uno) de área bajo la cual se busca que el histograma no presente máximos relativos.
+Por defecto es 0.9.</p></li>
+<li><p><strong>x0</strong> (<em>float</em><em>, </em><em>optional</em>) – Extremo inferior del rango del histograma. Por defecto es NaN (se calcula automáticamente a partir de ‘data’).</p></li>
+<li><p><strong>x1</strong> (<em>float</em><em>, </em><em>optional</em>) – Extremo superior del rango del histograma. Por defecto es NaN (se calcula automáticamente a partir de ‘data’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Histograma suavizado generado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función devuelve un histograma con el número de bins adecuado para que no presente máximos locales,
+lo cual resulta en un aspecto más suave. El parámetro ‘p’ representa la fracción de área bajo la cual
+se busca que el histograma no presente máximos relativos, medido simétricamente desde el punto máximo
+del histograma.</p>
+<p>Los parámetros ‘x0’ y ‘x1’ son opcionales y se utilizan para definir el rango del histograma; si no se
+proporcionan, se calculan automáticamente a partir de los valores mínimo y máximo de ‘data’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.stats.intervalo_int">
+<span class="sig-prename descclassname"><span class="pre">myutils.stats.</span></span><span class="sig-name descname"><span class="pre">intervalo_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sup</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/stats.html#intervalo_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.stats.intervalo_int" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función auxiliar devuelve los extremos de números enteros dado un intervalo real.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inf</strong> (<em>float</em>) – Extremo inferior del intervalo.</p></li>
+<li><p><strong>sup</strong> (<em>float</em>) – Extremo superior del intervalo.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rango de enteros entre los extremos <cite>inf</cite> y <cite>sup</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-myutils.tensor">
+<span id="myutils-tensor-module"></span><h2>myutils.tensor module<a class="headerlink" href="#module-myutils.tensor" title="Link to this heading">¶</a></h2>
+<p>Este módulo permite definir nombres para los ejes
+de un numpyarray.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">myutils.tensor.</span></span><span class="sig-name descname"><span class="pre">Tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Un objeto que es esencialmente un nparray junto con una variable ‘self.axis’ que permite indexar los ejes del array mediante un nombre natural, en lugar de un índice entero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – Arreglo que contiene los datos y la forma del tensor.</p></li>
+<li><p><strong>axis</strong> (<em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Nombres de los ejes. El orden en que se proporcionan los nombres se correlaciona
+con el correspondiente eje del parámetro ‘array’. Si no se introduce una lista de nombres en esta variable,
+se asignarán por defecto como nombres el índice de cada eje (empezando en ‘0’).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.array">
+<span class="sig-name descname"><span class="pre">array</span></span><a class="headerlink" href="#myutils.tensor.Tensor.array" title="Link to this definition">¶</a></dt>
+<dd><p>Arreglo que contiene los datos y la forma del tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.shape">
+<span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#myutils.tensor.Tensor.shape" title="Link to this definition">¶</a></dt>
+<dd><p>Forma del tensor (igual que en un nparray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><a class="headerlink" href="#myutils.tensor.Tensor.axis" title="Link to this definition">¶</a></dt>
+<dd><p>Nombres de los ejes. El i-ésimo elemento contiene el nombre del i-ésimo eje.
+Si no se proporciona, se asignan nombres predeterminados en forma de índices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.item">
+<span class="sig-name descname"><span class="pre">item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.item" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función toma por argumento el nombre de cada eje igualado a un
+índice, y devuelve el valor guardado en esa coordenada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y
+los valores son los índices para esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Valor almacenado en las coordenadas especificadas.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.mean">
+<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.mean" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor comprimido en el eje ‘axe’, suprimiéndolo y calculando el promedio a lo largo de dicho eje.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axe</strong> (<em>int</em>) – Índice del eje a comprimir y calcular el promedio.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con el eje ‘axe’ suprimido y cada punto contiene el promedio a lo largo de ese eje.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%.18e'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.save" title="Link to this definition">¶</a></dt>
+<dd><p>Guarda el Tensor en un archivo de texto.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo donde se guardará el Tensor.</p></li>
+<li><p><strong>fmt</strong> (<em>str</em><em>, </em><em>optional</em>) – Formato numérico de los datos. Sigue el mismo formato que el parámetro ‘fmt’
+de numpy.savetxt.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.size" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función toma el nombre de un eje y devuelve su dimensión.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>str</em>) – Nombre del eje del que se desea obtener la dimensión.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dimensión del eje especificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.slice" title="Link to this definition">¶</a></dt>
+<dd><p>Toma una serie de ejes (por nombre), igualados a una porción ‘slice’. Esta porción puede ser
+un entero, una lista de dos enteros, o una lista de tres enteros, y devuelve un Tensor reducido al ‘slice’
+indicado (usando la misma notación que un slice estándar en Python: [x] es la x-ésima entrada, [x,y] son
+todas entradas en [x,y), y [x,y,z] son todas las entradas en [x,y) tomadas en saltos de z). Esta función
+es en realidad un wrapper a ‘take’, usando la nomenclatura de Python para hacer slicing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y los valores
+son objetos ‘slice’ o listas de enteros para realizar la porción en esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor reducido al ‘slice’ indicado a lo largo de los ejes especificados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.squeeze">
+<span class="sig-name descname"><span class="pre">squeeze</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.squeeze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.squeeze" title="Link to this definition">¶</a></dt>
+<dd><p>Elimina todos los ejes del tensor cuya dimensión sea igual a ‘1’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor resultante después de eliminar los ejes con dimensión ‘1’.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.std">
+<span class="sig-name descname"><span class="pre">std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.std" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor comprimido en el eje ‘axe’, suprimiéndolo y calculando la desviación estándar a lo largo de dicho eje.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axe</strong> (<em>int</em>) – Índice del eje a comprimir y calcular la desviación estándar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con el eje ‘axe’ suprimido y cada punto contiene la desviación estándar a lo largo de ese eje.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.swap">
+<span class="sig-name descname"><span class="pre">swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.swap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.swap" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor con el mismo “array” pero los ejes “axe1” y “axe2” intercambiados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axe1</strong> (<em>int</em>) – Índice del primer eje a intercambiar.</p></li>
+<li><p><strong>axe2</strong> (<em>int</em>) – Índice del segundo eje a intercambiar.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con los ejes “axe1” y “axe2” intercambiados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="myutils.tensor.Tensor.take">
+<span class="sig-name descname"><span class="pre">take</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#Tensor.take"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.Tensor.take" title="Link to this definition">¶</a></dt>
+<dd><p>Toma una serie de ejes (por nombre), igualados a una lista de índices, y devuelve un Tensor
+reducido a los índices seleccionados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y los valores
+son listas de índices a lo largo de esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor reducido a los índices seleccionados a lo largo de los ejes especificados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.tensor.append">
+<span class="sig-prename descclassname"><span class="pre">myutils.tensor.</span></span><span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#append"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.append" title="Link to this definition">¶</a></dt>
+<dd><p>Concatena dos objetos ‘Tensor’ a lo largo de un eje especificado por su nombre.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axe</strong> (<em>str</em>) – Nombre del eje a lo largo del cual se realizará la concatenación.</p></li>
+<li><p><strong>args</strong> (<a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor"><em>Tensor</em></a>) – Tensores que se concatenarán. Se deben proporcionar al menos dos tensores de entrada.
+Todos los tensores deben tener un parámetro ‘Tensor.axis’ idéntico y las mismas
+dimensiones en todos los ejes excepto posiblemente en ‘axe’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nuevo Tensor que consiste en la concatenación de los argumentos en el orden proporcionado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si no se cumplen los requisitos de entrada (al menos dos tensores y ‘axe’).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="myutils.tensor.load_tensor">
+<span class="sig-prename descclassname"><span class="pre">myutils.tensor.</span></span><span class="sig-name descname"><span class="pre">load_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/myutils/tensor.html#load_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#myutils.tensor.load_tensor" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor almacenado en un archivo de texto.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo que contiene el Tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor cargado desde el archivo de texto.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#myutils.tensor.Tensor" title="myutils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">myutils</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">myutils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#myutils.BarraProgreso"><code class="docutils literal notranslate"><span class="pre">BarraProgreso</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#myutils.export_legend_plt"><code class="docutils literal notranslate"><span class="pre">export_legend_plt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#myutils.run_in_parallel"><code class="docutils literal notranslate"><span class="pre">run_in_parallel()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#myutils.set_size_plt"><code class="docutils literal notranslate"><span class="pre">set_size_plt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-myutils.bool">myutils.bool module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.bool.LinearSystECC"><code class="docutils literal notranslate"><span class="pre">LinearSystECC</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.bool.LinearSystECC.decode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.decode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.bool.LinearSystECC.encode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.encode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.bool.gauss_elimination_gf2"><code class="docutils literal notranslate"><span class="pre">gauss_elimination_gf2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.bool.hamming"><code class="docutils literal notranslate"><span class="pre">hamming()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.bool.invert_matrix_gf2"><code class="docutils literal notranslate"><span class="pre">invert_matrix_gf2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.bool.matrix_multiply_gf2"><code class="docutils literal notranslate"><span class="pre">matrix_multiply_gf2()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-myutils.stats">myutils.stats module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.Dks_montecarlo_discrete"><code class="docutils literal notranslate"><span class="pre">Dks_montecarlo_discrete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.bin_rv_cont"><code class="docutils literal notranslate"><span class="pre">bin_rv_cont()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.bin_rv_discrete"><code class="docutils literal notranslate"><span class="pre">bin_rv_discrete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.chisq_gof_discrete"><code class="docutils literal notranslate"><span class="pre">chisq_gof_discrete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.fit_rv_cont"><code class="docutils literal notranslate"><span class="pre">fit_rv_cont()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.get_area_fraction"><code class="docutils literal notranslate"><span class="pre">get_area_fraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.get_hist_smooth"><code class="docutils literal notranslate"><span class="pre">get_hist_smooth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.stats.intervalo_int"><code class="docutils literal notranslate"><span class="pre">intervalo_int()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-myutils.tensor">myutils.tensor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.tensor.Tensor"><code class="docutils literal notranslate"><span class="pre">Tensor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.array"><code class="docutils literal notranslate"><span class="pre">Tensor.array</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.shape"><code class="docutils literal notranslate"><span class="pre">Tensor.shape</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.axis"><code class="docutils literal notranslate"><span class="pre">Tensor.axis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.item"><code class="docutils literal notranslate"><span class="pre">Tensor.item()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.mean"><code class="docutils literal notranslate"><span class="pre">Tensor.mean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.save"><code class="docutils literal notranslate"><span class="pre">Tensor.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.size"><code class="docutils literal notranslate"><span class="pre">Tensor.size()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.slice"><code class="docutils literal notranslate"><span class="pre">Tensor.slice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.squeeze"><code class="docutils literal notranslate"><span class="pre">Tensor.squeeze()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.std"><code class="docutils literal notranslate"><span class="pre">Tensor.std()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.swap"><code class="docutils literal notranslate"><span class="pre">Tensor.swap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#myutils.tensor.Tensor.take"><code class="docutils literal notranslate"><span class="pre">Tensor.take()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.tensor.append"><code class="docutils literal notranslate"><span class="pre">append()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#myutils.tensor.load_tensor"><code class="docutils literal notranslate"><span class="pre">load_tensor()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to myutils’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Guillermo Díez-Señorans.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+      |
+      <a href="_sources/myutils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

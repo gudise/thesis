@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>myutils &#8212; myutils 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=039e1c02" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for myutils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">import</span> <span class="n">figure</span> <span class="k">as</span> <span class="n">plt_figure</span>
+<span class="kn">from</span> <span class="nn">numpy</span>             <span class="kn">import</span> <span class="n">histogram</span> <span class="k">as</span> <span class="n">np_histogram</span><span class="p">,</span>\
+                              <span class="n">isnan</span> <span class="k">as</span> <span class="n">np_isnan</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span>   <span class="kn">import</span> <span class="n">Pool</span> <span class="k">as</span> <span class="n">_Pool</span>
+
+
+
+<div class="viewcode-block" id="BarraProgreso">
+<a class="viewcode-back" href="../myutils.html#myutils.BarraProgreso">[docs]</a>
+<span class="k">class</span> <span class="nc">BarraProgreso</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Esta clase instancia un objeto BarraProgreso.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    total : int</span>
+<span class="sd">        Número de iteraciones que hacen el 100% de la barra.</span>
+<span class="sd">    long_barra : int, opcional</span>
+<span class="sd">        Número de caracteres que componen la barra, por defecto 40.</span>
+<span class="sd">    caracter : char, opcional</span>
+<span class="sd">        Caracter que se utiliza para decorar la barra, por defecto &#39;#&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">long_barra</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">caracter</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span> <span class="o">=</span> <span class="n">long_barra</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">caracter</span> <span class="o">=</span> <span class="n">caracter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indice</span> <span class="o">=</span> <span class="mi">0</span>
+                    
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; |</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span><span class="p">)])</span><span class="si">}</span><span class="s2">| </span><span class="si">{</span><span class="mf">0.00</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incr</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Actualiza la barra. En función de las variables `total` y `long_barra`, esta actualización puede reflejarse o no en el dibujo.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------        </span>
+<span class="sd">        incr : int, opcional</span>
+<span class="sd">            Este valor indica en cuantas unidades debe incrementarse el contador de iteraciones `indice`, por defecto `1`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indice</span><span class="o">+=</span><span class="n">incr</span>
+        
+        <span class="n">perone</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indice</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span>
+        <span class="n">n_puntos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span><span class="o">*</span><span class="n">perone</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">n_puntos</span><span class="o">==</span><span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; |</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">caracter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span><span class="p">)])</span><span class="si">}</span><span class="s2">| </span><span class="si">{</span><span class="mf">100.00</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; |</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">caracter</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">range</span><span class="p">(</span><span class="n">n_puntos</span><span class="p">)])</span><span class="o">+</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">long_barra</span><span class="o">-</span><span class="n">n_puntos</span><span class="p">)])</span><span class="si">}</span><span class="s2">| </span><span class="si">{</span><span class="mi">100</span><span class="o">*</span><span class="n">perone</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+            
+            
+<div class="viewcode-block" id="export_legend_plt">
+<a class="viewcode-back" href="../myutils.html#myutils.export_legend_plt">[docs]</a>
+<span class="k">def</span> <span class="nf">export_legend_plt</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;legend.pdf&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Exporta la leyenda de la figura actualmente activa.</span>
+
+<span class="sd">    Esta función es útil para exportar la leyenda de un gráfico cuando se tienen</span>
+<span class="sd">    múltiples gráficos que comparten la misma leyenda. Es importante tener en cuenta</span>
+<span class="sd">    que se requiere haber creado una figura con &#39;plt.plot&#39;, la cual debe incluir una</span>
+<span class="sd">    leyenda, y NO se debe haber ejecutado &#39;plt.show()&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : `matplotlib.axes.Axes`</span>
+<span class="sd">        Los ejes de la figura de los cuales se quiere extraer la leyenda. Si se utilizan</span>
+<span class="sd">        comandos como &#39;plot&#39;, etc., se puede obtener los ejes activos del gráfico con</span>
+<span class="sd">        ax=plt.gca().</span>
+
+<span class="sd">    name : str, opcional</span>
+<span class="sd">        Nombre de la imagen. Por defecto es &quot;legend.pdf&quot;.</span>
+
+<span class="sd">    pad_inches : float, opcional</span>
+<span class="sd">        Esta opción se pasa directamente a la función &quot;savefig&quot;. Por defecto es 0.1.</span>
+
+<span class="sd">    kwargs : dict</span>
+<span class="sd">        Las opciones introducidas aquí se pasan directamente a la función `ax.legend`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create a legend without the plot lines in a new empty figure</span>
+    <span class="n">fig_legend</span> <span class="o">=</span> <span class="n">plt_figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1"># Adjust the size as needed</span>
+    <span class="n">legend</span> <span class="o">=</span> <span class="n">fig_legend</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">(),</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Save the legend as a standalone image (in this case, PNG format)</span>
+    <span class="n">fig_legend</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="n">pad_inches</span><span class="p">)</span></div>
+
+    
+    
+<div class="viewcode-block" id="set_size_plt">
+<a class="viewcode-back" href="../myutils.html#myutils.set_size_plt">[docs]</a>
+<span class="k">def</span> <span class="nf">set_size_plt</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores `x`, `y` que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ax : `matplotlib.axes.Axes`</span>
+<span class="sd">        Objeto que contiene la figura a redimensionar.</span>
+<span class="sd">    x : float</span>
+<span class="sd">        Nueva anchura.</span>
+<span class="sd">    y : float</span>
+<span class="sd">        Nueva altura.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">subplotpars</span><span class="o">.</span><span class="n">left</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">subplotpars</span><span class="o">.</span><span class="n">right</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">subplotpars</span><span class="o">.</span><span class="n">top</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">subplotpars</span><span class="o">.</span><span class="n">bottom</span>
+    <span class="n">figw</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">-</span><span class="n">l</span><span class="p">)</span>
+    <span class="n">figh</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">b</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="n">figw</span><span class="p">,</span> <span class="n">figh</span><span class="p">)</span></div>
+
+    
+    
+<div class="viewcode-block" id="run_in_parallel">
+<a class="viewcode-back" href="../myutils.html#myutils.run_in_parallel">[docs]</a>
+<span class="k">def</span> <span class="nf">run_in_parallel</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ejecuta la función en paralelo utilizando argumentos proporcionados.</span>
+
+<span class="sd">    Esta función toma un método &#39;func&#39; y una lista de argumentos &#39;args&#39;, y repite la ejecución</span>
+<span class="sd">    de la función en paralelo. El método &#39;func&#39; puede recibir un número arbitrario y tipos de argumentos,</span>
+<span class="sd">    pero serán pasados en orden según aparezcan en &#39;args&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        Procedimiento que puede tomar un número arbitrario y tipos de argumentos, pero son específicos</span>
+<span class="sd">        en su posición.</span>
+
+<span class="sd">    args : list</span>
+<span class="sd">        Lista que contiene una lista con los argumentos a pasar a &#39;func&#39; en cada proceso.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Lista con los resultados de cada proceso.</span>
+
+<span class="sd">    Warnings</span>
+<span class="sd">    --------</span>
+<span class="sd">    Esta función siempre debe ser ejecutada dentro de `if __name__==&#39;__main__&#39;:`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">_Pool</span><span class="p">()</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">myutils</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../myutils.html">myutils package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Guillermo Díez-Señorans.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

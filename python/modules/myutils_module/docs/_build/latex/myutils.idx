@@ -1,0 +1,42 @@
+\indexentry{module@\spxentry{module}!myutils@\spxentry{myutils}|hyperpage}{1}
+\indexentry{myutils@\spxentry{myutils}!module@\spxentry{module}|hyperpage}{1}
+\indexentry{BarraProgreso (class in myutils)@\spxentry{BarraProgreso}\spxextra{class in myutils}|hyperpage}{1}
+\indexentry{export\_legend\_plt() (in module myutils)@\spxentry{export\_legend\_plt()}\spxextra{in module myutils}|hyperpage}{1}
+\indexentry{run\_in\_parallel() (in module myutils)@\spxentry{run\_in\_parallel()}\spxextra{in module myutils}|hyperpage}{1}
+\indexentry{set\_size\_plt() (in module myutils)@\spxentry{set\_size\_plt()}\spxextra{in module myutils}|hyperpage}{2}
+\indexentry{module@\spxentry{module}!myutils.bool@\spxentry{myutils.bool}|hyperpage}{2}
+\indexentry{myutils.bool@\spxentry{myutils.bool}!module@\spxentry{module}|hyperpage}{2}
+\indexentry{LinearSystECC (class in myutils.bool)@\spxentry{LinearSystECC}\spxextra{class in myutils.bool}|hyperpage}{2}
+\indexentry{decode() (myutils.bool.LinearSystECC method)@\spxentry{decode()}\spxextra{myutils.bool.LinearSystECC method}|hyperpage}{3}
+\indexentry{encode() (myutils.bool.LinearSystECC method)@\spxentry{encode()}\spxextra{myutils.bool.LinearSystECC method}|hyperpage}{3}
+\indexentry{gauss\_elimination\_gf2() (in module myutils.bool)@\spxentry{gauss\_elimination\_gf2()}\spxextra{in module myutils.bool}|hyperpage}{3}
+\indexentry{hamming() (in module myutils.bool)@\spxentry{hamming()}\spxextra{in module myutils.bool}|hyperpage}{3}
+\indexentry{invert\_matrix\_gf2() (in module myutils.bool)@\spxentry{invert\_matrix\_gf2()}\spxextra{in module myutils.bool}|hyperpage}{4}
+\indexentry{matrix\_multiply\_gf2() (in module myutils.bool)@\spxentry{matrix\_multiply\_gf2()}\spxextra{in module myutils.bool}|hyperpage}{4}
+\indexentry{module@\spxentry{module}!myutils.stats@\spxentry{myutils.stats}|hyperpage}{4}
+\indexentry{myutils.stats@\spxentry{myutils.stats}!module@\spxentry{module}|hyperpage}{4}
+\indexentry{Dks\_montecarlo\_discrete() (in module myutils.stats)@\spxentry{Dks\_montecarlo\_discrete()}\spxextra{in module myutils.stats}|hyperpage}{4}
+\indexentry{bin\_rv\_cont() (in module myutils.stats)@\spxentry{bin\_rv\_cont()}\spxextra{in module myutils.stats}|hyperpage}{5}
+\indexentry{bin\_rv\_discrete() (in module myutils.stats)@\spxentry{bin\_rv\_discrete()}\spxextra{in module myutils.stats}|hyperpage}{5}
+\indexentry{chisq\_gof\_discrete() (in module myutils.stats)@\spxentry{chisq\_gof\_discrete()}\spxextra{in module myutils.stats}|hyperpage}{6}
+\indexentry{fit\_rv\_cont() (in module myutils.stats)@\spxentry{fit\_rv\_cont()}\spxextra{in module myutils.stats}|hyperpage}{6}
+\indexentry{get\_area\_fraction() (in module myutils.stats)@\spxentry{get\_area\_fraction()}\spxextra{in module myutils.stats}|hyperpage}{7}
+\indexentry{get\_hist\_smooth() (in module myutils.stats)@\spxentry{get\_hist\_smooth()}\spxextra{in module myutils.stats}|hyperpage}{7}
+\indexentry{intervalo\_int() (in module myutils.stats)@\spxentry{intervalo\_int()}\spxextra{in module myutils.stats}|hyperpage}{8}
+\indexentry{module@\spxentry{module}!myutils.tensor@\spxentry{myutils.tensor}|hyperpage}{8}
+\indexentry{myutils.tensor@\spxentry{myutils.tensor}!module@\spxentry{module}|hyperpage}{8}
+\indexentry{Tensor (class in myutils.tensor)@\spxentry{Tensor}\spxextra{class in myutils.tensor}|hyperpage}{8}
+\indexentry{array (myutils.tensor.Tensor attribute)@\spxentry{array}\spxextra{myutils.tensor.Tensor attribute}|hyperpage}{8}
+\indexentry{shape (myutils.tensor.Tensor attribute)@\spxentry{shape}\spxextra{myutils.tensor.Tensor attribute}|hyperpage}{8}
+\indexentry{axis (myutils.tensor.Tensor attribute)@\spxentry{axis}\spxextra{myutils.tensor.Tensor attribute}|hyperpage}{9}
+\indexentry{item() (myutils.tensor.Tensor method)@\spxentry{item()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{9}
+\indexentry{mean() (myutils.tensor.Tensor method)@\spxentry{mean()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{9}
+\indexentry{save() (myutils.tensor.Tensor method)@\spxentry{save()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{9}
+\indexentry{size() (myutils.tensor.Tensor method)@\spxentry{size()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{9}
+\indexentry{slice() (myutils.tensor.Tensor method)@\spxentry{slice()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{9}
+\indexentry{squeeze() (myutils.tensor.Tensor method)@\spxentry{squeeze()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{10}
+\indexentry{std() (myutils.tensor.Tensor method)@\spxentry{std()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{10}
+\indexentry{swap() (myutils.tensor.Tensor method)@\spxentry{swap()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{10}
+\indexentry{take() (myutils.tensor.Tensor method)@\spxentry{take()}\spxextra{myutils.tensor.Tensor method}|hyperpage}{10}
+\indexentry{append() (in module myutils.tensor)@\spxentry{append()}\spxextra{in module myutils.tensor}|hyperpage}{11}
+\indexentry{load\_tensor() (in module myutils.tensor)@\spxentry{load\_tensor()}\spxextra{in module myutils.tensor}|hyperpage}{11}

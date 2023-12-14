@@ -1,8 +1,8 @@
 setup.py
 myutils/__init__.py
-myutils/mybool.py
-myutils/mystats.py
-myutils/mytensor.py
+myutils/bool.py
+myutils/stats.py
+myutils/tensor.py
 myutils.egg-info/PKG-INFO
 myutils.egg-info/SOURCES.txt
 myutils.egg-info/dependency_links.txt

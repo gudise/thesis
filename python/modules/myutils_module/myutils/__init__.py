@@ -6,20 +6,23 @@ from multiprocessing   import Pool as _Pool
 
 
 class BarraProgreso:
-    """Esta clase instancia un objeto :class:`BarraProgreso`
-    
-    :param total: Número de iteraciones que hacen el 100% de la barra.
-    :type total: int
-    
-    :param long_barra: Número de caracteres que componen la barra, por defecto 40
-    :type long_barra: int, opcional
-    
-    :param caracter: Caracter que se utiliza para decorar la barra, por defecto `#`
-    :type caracter: char, opcional
+    """
+    Esta clase instancia un objeto BarraProgreso.
+
+    Parameters
+    ----------
+    total : int
+        Número de iteraciones que hacen el 100% de la barra.
+    long_barra : int, opcional
+        Número de caracteres que componen la barra, por defecto 40.
+    caracter : char, opcional
+        Caracter que se utiliza para decorar la barra, por defecto '#'.
+
+    Returns
+    -------
+    None
     """
     def __init__(self, total, long_barra=40, caracter='#'):
-        """Constructor
-        """
         self.total = total
         self.long_barra = long_barra
         self.caracter = caracter
@@ -28,13 +31,17 @@ class BarraProgreso:
         print(f" |{''.join(['.' for i in range(self.long_barra)])}| {0.00:.2f} %", end='\r')
         
     def __call__(self, incr=1):
-        """Actualiza la barra; en función de las variables `total`
-        y `long_barra`, esta actualización puede reflejarse o
-        no en el dibujo.
+        """
+        Actualiza la barra. En función de las variables `total` y `long_barra`, esta actualización puede reflejarse o no en el dibujo.
         
-        :param incr: Este valor indica en cuantas unidades debe incrementarse el contador
-                de iteraciones `indice`, por defecto `1`
-        :type incr: int, opcional
+        Parameters
+        ----------        
+        incr : int, opcional
+            Este valor indica en cuantas unidades debe incrementarse el contador de iteraciones `indice`, por defecto `1`.
+            
+        Returns
+        -------
+        None
         """
         self.indice+=incr
         
@@ -48,24 +55,33 @@ class BarraProgreso:
             
             
 def export_legend_plt(ax, name='legend.pdf', pad_inches=0.1, **kwargs):
-    """Esta función permite exportar la leyenda la figura actualmente
-    activa; muy útil para hacer múltiples plot en los cuales la
-    leyenda es compartida. Notar que para usarse, debe haberse 
-    creado una figura con 'plt.plot', la cual debe tener una leyenda,
-    y NO debe haberse realizado un 'plt.show()'.
-    
-    :param ax: Ejes de la figura cuya leyenda se quiere extraer. Si usamos
-        los comandos 'plot' etc, podemos obtener el eje del plot
-        activo como ax=plt.gca()
-    :type ax: `pyplot.Axe`
-    
-    :param name: Nombre de la imagen, por defecto "legend.pdf"
-    :type name: str, opcional
-    
-    :param pad_inches: Esta opción se pasa tal cual a la función "savefig", por defecto 0.1
-    :type pad_inches: float, opcional
-    
-    **kwargs: Las opciones introducidas aquí son pasadas tal cual a la función `ax.legend`
+    """
+    Exporta la leyenda de la figura actualmente activa.
+
+    Esta función es útil para exportar la leyenda de un gráfico cuando se tienen
+    múltiples gráficos que comparten la misma leyenda. Es importante tener en cuenta
+    que se requiere haber creado una figura con 'plt.plot', la cual debe incluir una
+    leyenda, y NO se debe haber ejecutado 'plt.show()'.
+
+    Parameters
+    ----------
+    ax : `matplotlib.axes.Axes`
+        Los ejes de la figura de los cuales se quiere extraer la leyenda. Si se utilizan
+        comandos como 'plot', etc., se puede obtener los ejes activos del gráfico con
+        ax=plt.gca().
+
+    name : str, opcional
+        Nombre de la imagen. Por defecto es "legend.pdf".
+
+    pad_inches : float, opcional
+        Esta opción se pasa directamente a la función "savefig". Por defecto es 0.1.
+
+    kwargs : dict
+        Las opciones introducidas aquí se pasan directamente a la función `ax.legend`.
+
+    Returns
+    -------
+    None
     """
 
     # Create a legend without the plot lines in a new empty figure
@@ -77,7 +93,21 @@ def export_legend_plt(ax, name='legend.pdf', pad_inches=0.1, **kwargs):
     
     
 def set_size_plt(ax, x, y):
-    """Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores 'x', 'y' que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.
+    """
+    Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores `x`, `y` que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.
+    
+    Parameters
+    ----------
+    ax : `matplotlib.axes.Axes`
+        Objeto que contiene la figura a redimensionar.
+    x : float
+        Nueva anchura.
+    y : float
+        Nueva altura.
+        
+    Returns
+    -------
+    None
     """
     l = ax.figure.subplotpars.left
     r = ax.figure.subplotpars.right
@@ -89,19 +119,30 @@ def set_size_plt(ax, x, y):
     
     
 def run_in_parallel(func, args):
-    """Esta función toma un método 'func' y una lista argumentos de 'args', y repite la ejecución de la función en paralelo.
-    El método 'func' puede reibir argumentos arbitrarios, pero serán pasados en orden según aparezcan en 'args'.
-    
-    :param func: Procedimiento, el cual puede tomar un número y tipo de argumentos arbitrario, pero posición-específicos.
-    :type func: Función de Python
-    
-    :param args: Lista que contiene una lista con los argumentos a pasar a 'func' en cada proceso.
-    :type args: Lista de lista.
-    
-    :return: Lista con los resultados de cada proceso.
-    :rtype: Lista.
-    
-    .. warnings: Esta función siempre bede ser ejecutada dentro de `if __name__=='__main__':`
+    """
+    Ejecuta la función en paralelo utilizando argumentos proporcionados.
+
+    Esta función toma un método 'func' y una lista de argumentos 'args', y repite la ejecución
+    de la función en paralelo. El método 'func' puede recibir un número arbitrario y tipos de argumentos,
+    pero serán pasados en orden según aparezcan en 'args'.
+
+    Parameters
+    ----------
+    func : function
+        Procedimiento que puede tomar un número arbitrario y tipos de argumentos, pero son específicos
+        en su posición.
+
+    args : list
+        Lista que contiene una lista con los argumentos a pasar a 'func' en cada proceso.
+
+    Returns
+    -------
+    list
+        Lista con los resultados de cada proceso.
+
+    Warnings
+    --------
+    Esta función siempre debe ser ejecutada dentro de `if __name__=='__main__':`.
     """
     with _Pool() as pool:
         return pool.starmap(func, args)
