@@ -92,7 +92,7 @@ def export_legend_plt(ax, name='legend.pdf', pad_inches=0.1, **kwargs):
     fig_legend.savefig(name, bbox_inches='tight', pad_inches=pad_inches)
     
     
-def set_size_plt(ax, x, y):
+def set_size_plt(ax, x=4/3*4, y=4):
     """
     Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores `x`, `y` que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.
     
@@ -100,10 +100,10 @@ def set_size_plt(ax, x, y):
     ----------
     ax : `matplotlib.axes.Axes`
         Objeto que contiene la figura a redimensionar.
-    x : float
-        Nueva anchura.
-    y : float
-        Nueva altura.
+    x : float, opcional
+        Nueva anchura, por defecto 16/3.
+    y : float, opcional
+        Nueva altura, por defecto 4.
         
     Returns
     -------

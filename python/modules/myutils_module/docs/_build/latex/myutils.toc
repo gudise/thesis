@@ -1,8 +1,0 @@
-\babel@toc {english}{}\relax 
-\contentsline {chapter}{\numberline {1}myutils package}{1}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Submodules}{2}{section.1.1}%
-\contentsline {section}{\numberline {1.2}myutils.bool module}{2}{section.1.2}%
-\contentsline {section}{\numberline {1.3}myutils.stats module}{4}{section.1.3}%
-\contentsline {section}{\numberline {1.4}myutils.tensor module}{8}{section.1.4}%
-\contentsline {chapter}{\numberline {2}Indices and tables}{13}{chapter.2}%
-\contentsline {chapter}{Python Module Index}{15}{section*.37}%

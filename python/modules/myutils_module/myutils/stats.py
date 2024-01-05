@@ -349,10 +349,11 @@ def fit_rv_cont(data, rv_cont, bins=10, alpha=0.05, plot=False):
     Returns
     -------
     list
-        Una lista que contiene tres elementos: 
+        Una lista que contiene cuatro elementos: 
         - El primero es una lista de los parámetros que mejor ajustan la distribución (en el mismo orden en que se definen en la función 'rv_cont.pdf').
-        - El segundo es un nparray con el histograma.
-        - El tercero es un nparray con el bineado de los datos de entrada.
+        - El segundo es el valor 'valo p' correspondiente a una significancia 'alpha'. 
+        - El tercero es un nparray con el histograma.
+        - El cuarto es un nparray con el bineado de los datos de entrada.
 
     Notes
     -----
@@ -364,14 +365,13 @@ def fit_rv_cont(data, rv_cont, bins=10, alpha=0.05, plot=False):
     params = rv_cont.fit(data)
    
     p_val = rv_cont.ppf(1-alpha, *params)
-    print(f"alpha: {alpha} --> p val: {p_val}")
 
     if plot:
+        print(f"alpha: {alpha} --> p val: {p_val}")
         _plot(edges[:-1],hist.sum()*bin_rv_cont(rv_cont, edges, *params),color='C1', label="Interpolación",lw=3)
         _bar(edges[:-1],hist, width=0.9*(edges[1]-edges[0]),color='C0', label="Simulación")
-        if alpha:
-            _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
+        _annotate(text=f"${alpha*100:.0f} \%$", xy=(p_val,0), xytext=(p_val,0.95*max(hist)),
                          arrowprops=dict(width=1,headwidth=0,color='grey'),color='grey')
 
-    return params,hist,edges
+    return params,p_val,hist,edges
    
