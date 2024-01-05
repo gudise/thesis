@@ -1,0 +1,3 @@
+En el módulo de python myfpga.ring_osc, cambiar la estrategia de escribir los script TCL usando 'f.write' por el uso de scripts TCL
+con parámetros de entrada (variables argc/argv, ver cómo funciona el script 'program_fpga'). Esto permitirá armonizar la sección
+de 'partial_flows' de las funciones 'implement()'.
