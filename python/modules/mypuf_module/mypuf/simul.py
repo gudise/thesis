@@ -38,7 +38,7 @@ def sim_hamming_cideal(N_inst, N_rep, N_bits, p_intra, p_inter, return_intra=Tru
     :rtype: Dupla de lista de float.
     """
     p_rep = 1/2-_sqrt(1-2*p_intra)/2
-    p_inst = (1/2-_sqrt(1-2*p_inter)/2 - p_rep)/(1-2*p_rep)
+    p_inst = 1/2-1/2*_sqrt((2*p_inter-1)/(2*p_intra-1))
     
     if verbose:
         print(f'p_rep: {p_rep}\np_inst: {p_inst}')

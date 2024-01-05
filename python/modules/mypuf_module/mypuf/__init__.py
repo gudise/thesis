@@ -16,7 +16,7 @@ from numpy              import pi as np_pi,\
 from scipy.stats        import binom as sp_binomial
 from scipy.interpolate  import interp1d as sp_interp1d
 from matplotlib.pyplot  import subplots
-from myutils.mytensor   import *
+from myutils.tensor   import *
 
 
 def hamming(array1, array2, porciento=False):
@@ -515,7 +515,7 @@ class PufExpAmpliado:
                         for i_amb,amb in enumerate(experimentos):
                             self.intradist_amb_set.append(hamming(amb.pufexp[i_reto][i_inst][i_rep],experimentos[cond_ref].pufexp[i_reto][i_inst][j_rep]))
         
-        self.intradist_amb_set = np_reshape(self.intradist_amb_set, (self.N_retos,self.N_inst,self.N_rep**2,self.N_amb))
+        self.intradist_amb_set = array(self.intradist_amb_set).reshape(self.N_retos,self.N_inst,self.N_rep**2,self.N_amb)
         
         self.curva_v = np_mean(self.intradist_amb_set, axis=(0,1,2)) # Promedio sobre N_retos, N_inst y N_rep.
         self.curva_v_error = np_std(self.intradist_amb_set, axis=(0,1,2))/np_sqrt(self.N_retos*self.N_inst*self.N_rep) # Desviación estándar de cada promedio.
