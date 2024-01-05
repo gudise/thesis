@@ -1,1 +1,1 @@
-Programas y scripts escritos para mi tesis doctoral.
+Programas y scripts para mi tesis doctoral.
