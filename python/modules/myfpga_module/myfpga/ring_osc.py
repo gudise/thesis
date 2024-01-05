@@ -20,7 +20,7 @@ from numpy.random           import  normal  as np_normal
 from myutils                import  *
 from myfpga                 import  *
 from myfpga.interfaz_pcps   import  *
-from mytensor               import  *
+from myutils.tensor         import  *
 
 
 def sim_romatrix(N_rep=1, N_pdl=1, N_osc=1, std_rep=1, std_pdl=10, std_osc=100):
