@@ -4,19 +4,17 @@ medir una matriz de osciladores de anillo en FPGA, tanto estándar como
 de Galois.
 """
 
-import os
-import shutil as sh
-from subprocess import  run
-
-from pickle                 import  dump    as pickle_dump,\
-                                    load    as pickle_load
-from serial                 import  Serial  as serial_Serial
-from time                   import  sleep   as time_sleep
-from numpy                  import  reshape as np_reshape,\
-                                    log2    as np_log2,\
-                                    transpose as np_transpose,\
-                                    inf     as np_inf
-from numpy.random           import  normal  as np_normal
+import os as _os
+from shutil                 import  copy        as _copy
+from pickle                 import  dump        as _dump,\
+                                    load        as _load
+from serial                 import  Serial      as _Serial
+from time                   import  sleep       as _sleep
+from numpy                  import  reshape     as _reshape,\
+                                    log2        as _log2,\
+                                    transpose   as _transpose,\
+                                    inf         as _inf
+from numpy.random           import  normal      as _normal
 from myutils                import  *
 from myfpga                 import  *
 from myfpga.interfaz_pcps   import  *
@@ -54,13 +52,13 @@ def sim_romatrix(N_rep=1, N_pdl=1, N_osc=1, std_rep=1, std_pdl=10, std_osc=100):
     std_osc : <float, opcional, por defecto 100.0>
         Desviación estándar entre distintas celdas.
     """
-    sim_osc = [np_normal(scale=std_osc) for i in range(N_osc)] # rep,pdl,osc
+    sim_osc = [_normal(scale=std_osc) for i in range(N_osc)] # rep,pdl,osc
     
-    sim_osc_pdl = [[sim_osc[i]+np_normal(scale=std_pdl) for j in range(N_pdl)] for i in range(N_osc)]
+    sim_osc_pdl = [[sim_osc[i]+_normal(scale=std_pdl) for j in range(N_pdl)] for i in range(N_osc)]
     
-    sim_osc_pdl_rep = [[[sim_osc_pdl[i][j]+np_normal(scale=std_rep) for k in range(N_rep)] for j in range(N_pdl)] for i in range(N_osc)]
+    sim_osc_pdl_rep = [[[sim_osc_pdl[i][j]+_normal(scale=std_rep) for k in range(N_rep)] for j in range(N_pdl)] for i in range(N_osc)]
     
-    sim_rep_pdl_osc = np_transpose(sim_osc_pdl_rep)
+    sim_rep_pdl_osc = _transpose(sim_osc_pdl_rep)
     sim_rep_pdl_osc-=min(sim_rep_pdl_osc.flatten())
     sim_rep_pdl_osc+=0.5*max(sim_rep_pdl_osc.flatten())
     
@@ -74,10 +72,10 @@ def clog2(N):
     if N<=0:
         return 1
     else:
-        if np_log2(N)>int(np_log2(N)):
-            return int(np_log2(N))+1
+        if _log2(N)>int(_log2(N)):
+            return int(_log2(N))+1
         else:
-            return int(np_log2(N))
+            return int(_log2(N))
             
             
 def load(file_name):
@@ -87,7 +85,7 @@ def load(file_name):
     cualquier clase.
     """
     with open(file_name, "rb") as f:
-        result = pickle_load(f)
+        result = _load(f)
     return result
 
 
@@ -420,7 +418,7 @@ class Dominio:
     ----------
     osc_coord : coordenadas de los osciladores.
     """
-    def __init__(self, N_osc=10, x0=0, x1=np_inf, dx=1, y0=0, y1=np_inf, dy=1, directriz='y'):
+    def __init__(self, N_osc=10, x0=0, x1=_inf, dx=1, y0=0, y1=_inf, dy=1, directriz='y'):
         """
         Inicialización del objeto 'Dominio'.
         
@@ -580,7 +578,7 @@ class StdMatrix:
         'Wrapper' para guardar objetos serializados con el módulo 'pickle'.
         """
         with open(file_name, "wb") as f:
-            pickle_dump(self, f)
+            _dump(self, f)
         
     def gen_romatrix(self, out_name="romatrix.v", debug=False):
         """
@@ -697,7 +695,7 @@ class StdMatrix:
                 Frecuencia del reloj del diseño (en MHz).
         """
         self.projname = projname
-        self.projdir = os.path.join(os.path.abspath(projdir), projname).replace("\\","/")
+        self.projdir = _os.path.join(_os.path.abspath(projdir), projname).replace("\\","/")
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -774,39 +772,39 @@ class StdMatrix:
                 
                 
             ## Project directory
-            os.mkdir(self.projdir)
+            _os.mkdir(self.projdir)
                 
                 
             ## Flow
-            os.mkdir(f"{self.projdir}/flow")
+            _os.mkdir(f"{self.projdir}/flow")
             
             ### Design (tcl)
-            os.mkdir(f"{self.projdir}/flow/design")
+            _os.mkdir(f"{self.projdir}/flow/design")
             
             #### block design
             if self.board == "cmoda7_15t":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl", f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_cmoda7_15t.tcl'), f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl", f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_cmoda7_15t.tcl'), f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "cmoda7_35t":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_cmoda7_35t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_cmoda7_35t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "zybo":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_zybo.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_zybo.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "pynqz2":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_pynqz2.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_pynqz2.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
             
             #### build hw
             with open(f"{self.projdir}/flow/design/setupdesign.tcl", "w") as f:
@@ -938,25 +936,24 @@ class StdMatrix:
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/design_flow.py",f"{self.projdir}/design_flow.cp.py")
+            _copy(_os.path.join(_os.path.dirname(__file__),'scripts/design_flow.py'),f"{self.projdir}/design_flow.cp.py")
                 
             #### program FPGA
-            os.mkdir(f"{self.projdir}/flow/program")
-            sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/flow/program/program_fpga.cp.tcl")
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/FPGA_device_tool.py",f"{self.projdir}/FPGA_device_tool.cp.py")
+            _os.mkdir(f"{self.projdir}/flow/program")
+            _copy(_os.path.join(_os.path.dirname(__file__),'tcl/program_fpga.tcl'),f"{self.projdir}/flow/program/program_fpga.cp.tcl")
+            _copy(_os.path.join(_os.path.dirname(__file__),'scripts/program_fpga.py'),f"{self.projdir}/program_fpga.cp.py")
                     
             
             ## Source
-            os.mkdir(f"{self.projdir}/source")
+            _os.mkdir(f"{self.projdir}/source")
             
             ### vivado
-            os.mkdir(f"{self.projdir}/source/vivado")
-            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{self.projdir}/source/vivado/interfaz_pspl.cp.v")
-            sh.copy(f"{os.environ['REPO_fpga']}/verilog/medidor_frec.v",f"{self.projdir}/source/vivado/medidor_frec.cp.v")
-            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_romatrix.v",f"{self.projdir}/source/vivado/interfaz_romatrix.cp.v")
+            _os.mkdir(f"{self.projdir}/source/vivado")
+            _copy(_os.path.join(_os.path.dirname(__file__),'verilog/interfaz_pspl.v'),f"{self.projdir}/source/vivado/interfaz_pspl.cp.v")
+            _copy(_os.path.join(_os.path.dirname(__file__),'verilog/medidor_frec.v'),f"{self.projdir}/source/vivado/medidor_frec.cp.v")
+            _copy(_os.path.join(_os.path.dirname(__file__),'verilog/interfaz_romatrix.v'),f"{self.projdir}/source/vivado/interfaz_romatrix.cp.v")
             if debug:
-                sh.copy(f"{os.environ['REPO_fpga']}/verilog/clock_divider.v",f"{self.projdir}/source/vivado/clock_divider.cp.v")
+                _copy(_os.path.join(_os.path.dirname(__file__),'verilog/clock_divider.v'),f"{self.projdir}/source/vivado/clock_divider.cp.v")
 
             with open(f"{self.projdir}/source/vivado/interfaz_pspl_config.vh", "w") as f:
                 f.write(f"{dw_ge_biw}\n")
@@ -1067,8 +1064,8 @@ class StdMatrix:
                     f.write("set_property EXCLUDE_PLACEMENT TRUE [get_pblocks pblock_romatrix]")
                     
             ### sdk
-            os.mkdir(f"{self.projdir}/source/sdk")
-            sh.copy(f"{os.environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{self.projdir}/source/sdk/interfaz_pcps-pspl.cp.c")
+            _os.mkdir(f"{self.projdir}/source/sdk")
+            _copy(_os.path.join(_os.path.dirname(__file__),'c-xilinx/sdk/interfaz_pcps-pspl.c'),f"{self.projdir}/source/sdk/interfaz_pcps-pspl.cp.c")
 
             with open(f"{self.projdir}/source/sdk/interfaz_pcps-pspl_config.h", "w") as f:
                 if self.board == "cmoda7_15t" or self.board == "cmoda7_35t":
@@ -1177,8 +1174,8 @@ class StdMatrix:
              print(f"Número de PDL          = {N_pdl}\n")
              
                          
-        with serial_Serial(port=puerto, baudrate=baudrate, bytesize=8) as fpga:
-            time_sleep(.1)
+        with _Serial(port=puerto, baudrate=baudrate, bytesize=8) as fpga:
+            _sleep(.1)
             
             if verbose:
                 pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
@@ -1196,7 +1193,7 @@ class StdMatrix:
                     if verbose:
                         pinta_progreso(N_osc)
         
-        tensor_medidas = Tensor(array=np_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+        tensor_medidas = Tensor(array=_reshape(medidas, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
         
         return tensor_medidas
         
@@ -1316,7 +1313,7 @@ class GaloisMatrix:
         'Wrapper' para guardar objetos serializados con el módulo 'pickle'.
         """
         with open(file_name, "wb") as f:
-            pickle_dump(self, f)
+            _dump(self, f)
         
     def gen_garomatrix(self, out_name="garomatrix.v"):
         """
@@ -1424,7 +1421,7 @@ class GaloisMatrix:
                 (i.e., de la medida).
         """
         self.projname = projname
-        self.projdir = os.path.join(os.path.abspath(projdir), projname).replace("\\","/")
+        self.projdir = _os.path.join(_os.path.abspath(projdir), projname).replace("\\","/")
         self.board = board
         self.qspi = qspi
         self.routing = routing
@@ -1502,39 +1499,39 @@ class GaloisMatrix:
                 
                 
             ## Project directory
-            os.mkdir(self.projdir)
+            _os.mkdir(self.projdir)
                 
                 
             ## Flow
-            os.mkdir(f"{self.projdir}/flow")
+            _os.mkdir(f"{self.projdir}/flow")
             
             ### Design (tcl)
-            os.mkdir(f"{self.projdir}/flow/design")
+            _os.mkdir(f"{self.projdir}/flow/design")
             
             #### block design
             if self.board == "cmoda7_15t":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_15t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_cmoda7_15t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_15t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_cmoda7_15t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "cmoda7_35t":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_cmoda7_35t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_cmoda7_35t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_cmoda7_35t.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_cmoda7_35t.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "zybo":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_zybo.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_zybo.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_zybo.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_zybo.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
 
             elif self.board == "pynqz2":
                 if self.qspi:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_qspi_pynqz2.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_qspi_pynqz2.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                 else:
-                    sh.copy(f"{os.environ['REPO_fpga']}/tcl/bd_interfaz_pynqz2.tcl",f"{self.projdir}/flow/design/bd_design_1.tcl")
+                    _copy(_os.path.join(_os.path.dirname(__file__),'tcl/bd_interfaz_pynqz2.tcl'),f"{self.projdir}/flow/design/bd_design_1.tcl")
                     
             #### build hw
             with open(f"{self.projdir}/flow/design/setupdesign.tcl", "w") as f:
@@ -1660,26 +1657,25 @@ class GaloisMatrix:
                 f.write("clean -type all\n")
                 f.write("build -type all\n")
                 
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/design_flow.py",f"{self.projdir}/design_flow.cp.py")
+            _copy(_os.path.join(_os.path.dirname(__file__),'python/scripts/design_flow.py'),f"{self.projdir}/design_flow.cp.py")
                 
             #### program FPGA
-            os.mkdir(f"{self.projdir}/flow/program")
-            sh.copy(f"{os.environ['REPO_fpga']}/tcl/program_fpga.tcl",f"{self.projdir}/flow/program/program_fpga.cp.tcl")
-            sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/program_fpga.py",f"{self.projdir}/program_fpga.cp.py")
-            #sh.copy(f"{os.environ['REPO_fpga']}/python/scripts/FPGA_device_tool.py",f"{self.projdir}/FPGA_device_tool.cp.py")
+            _os.mkdir(f"{self.projdir}/flow/program")
+            _copy(_os.path.join(_os.path.dirname(__file__),'tcl/program_fpga.tcl'),f"{self.projdir}/flow/program/program_fpga.cp.tcl")
+            _copy(_os.path.join(_os.path.dirname(__file__),'python/scripts/program_fpga.py'),f"{self.projdir}/program_fpga.cp.py")
                 
                 
             ## Source
-            os.mkdir(f"{self.projdir}/source")
+            _os.mkdir(f"{self.projdir}/source")
             
             ### vivado
-            os.mkdir(f"{self.projdir}/source/vivado")
-            sh.copy(f"{os.environ['REPO_fpga']}/verilog/interfaz_pspl.v",f"{self.projdir}/source/vivado/interfaz_pspl.cp.v")
-            sh.copy(f"{os.environ['REPO_fpga']}/verilog/clock_divider.v",f"{self.projdir}/source/vivado/clock_divider.cp.v")
+            _os.mkdir(f"{self.projdir}/source/vivado")
+            _copy(_os.path.join(_os.path.dirname(__file__),'verilog/interfaz_pspl.v'),f"{self.projdir}/source/vivado/interfaz_pspl.cp.v")
+            _copy(_os.path.join(_os.path.dirname(__file__),'verilog/clock_divider.v'),f"{self.projdir}/source/vivado/clock_divider.cp.v")
             if self.trng:
-                sh.copy(f"{os.environ['REPO_fpga']}/verilog/bit_pool.v",f"{self.projdir}/source/vivado/bit_pool.cp.v")
+                _copy(_os.path.join(_os.path.dirname(__file__),'verilog/bit_pool.v'),f"{self.projdir}/source/vivado/bit_pool.cp.v")
             else:
-                sh.copy(f"{os.environ['REPO_fpga']}/verilog/medidor_bias.v",f"{self.projdir}/source/vivado/medidor_bias.cp.v")
+                _copy(_os.path.join(_os.path.dirname(__file__),'verilog/medidor_bias.v'),f"{self.projdir}/source/vivado/medidor_bias.cp.v")
 
             with open(f"{self.projdir}/source/vivado/interfaz_pspl_config.vh", "w") as f:
                 f.write(f"{dw_ge_biw}\n")
@@ -1801,8 +1797,8 @@ class GaloisMatrix:
                     f.write("set_property EXCLUDE_PLACEMENT TRUE [get_pblocks pblock_garomatrix]")            
 
             ### sdk
-            os.mkdir(f"{self.projdir}/source/sdk")
-            sh.copy(f"{os.environ['REPO_fpga']}/c-xilinx/sdk/interfaz_pcps-pspl.c",f"{self.projdir}/source/sdk/interfaz_pcps-pspl.cp.c")
+            _os.mkdir(f"{self.projdir}/source/sdk")
+            _copy(_os.path.join(_os.path.dirname(__file__),'c-xilinx/sdk/interfaz_pcps-pspl.c'),f"{self.projdir}/source/sdk/interfaz_pcps-pspl.cp.c")
 
             with open(f"{self.projdir}/source/sdk/interfaz_pcps-pspl_config.h", "w") as f:
                 if self.board == "cmoda7_15t" or self.board == "cmoda7_35t":
@@ -1968,8 +1964,8 @@ class GaloisMatrix:
             print(f"Número de repeticiones = {N_rep}\n")
             print(f"Número de pdl_list     = {N_pdl}\n")
             
-        fpga = serial_Serial(port=puerto, baudrate=baudrate, bytesize=8)
-        time_sleep(.1)
+        fpga = _Serial(port=puerto, baudrate=baudrate, bytesize=8)
+        _sleep(.1)
         
         if verbose:
             pinta_progreso = BarraProgreso(N_osc*N_rep*N_pdl)
@@ -2001,4 +1997,4 @@ class GaloisMatrix:
         if self.trng:
             return medidas_trng
         else:
-            return Tensor(array=np_reshape(medidas_sesgo, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])
+            return Tensor(array=_reshape(medidas_sesgo, (N_rep,N_pdl,N_osc)), axis=['rep','pdl','osc'])

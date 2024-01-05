@@ -417,4 +417,14 @@ class FlipFlop:
         Verilog necesario para implementar el FF inicializado.
         """
         return f"(* {self.bel}{self.loc}, DONT_TOUCH=\"true\" *) FDCE {self.name}(.Q({self.w_out}), .C({self.w_clock}), .CE(1'b1), .CLR(1'b0), .D({self.w_in}));"
+        
+        
+        
+        
+import os
+aux = os.path.join(os.path.dirname(__file__),'tcl/program_fpga.tcl')
+def prueba_lectura():
+    with open(aux, 'r') as archivo:
+        contenido = archivo.read()
+        print(contenido)
 
