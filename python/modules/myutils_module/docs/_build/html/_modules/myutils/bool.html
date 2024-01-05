@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>myutils.bool &#8212; myutils 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">myutils 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../myutils.html" accesskey="U">myutils</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">myutils.bool</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for myutils.bool</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">numpy</span>  <span class="kn">import</span> <span class="n">array</span> <span class="k">as</span> <span class="n">_array</span><span class="p">,</span>\
+                   <span class="n">concatenate</span> <span class="k">as</span> <span class="n">_concatenate</span><span class="p">,</span>\
+                   <span class="n">identity</span> <span class="k">as</span> <span class="n">_identity</span><span class="p">,</span>\
+                   <span class="n">zeros</span> <span class="k">as</span> <span class="n">_zeros</span><span class="p">,</span>\
+                   <span class="nb">all</span> <span class="k">as</span> <span class="n">_all</span><span class="p">,</span>\
+                   <span class="n">sort</span> <span class="k">as</span> <span class="n">_sort</span><span class="p">,</span>\
+                   <span class="n">argsort</span> <span class="k">as</span> <span class="n">_argsort</span><span class="p">,</span>\
+                   <span class="n">invert</span> <span class="k">as</span> <span class="n">_invert</span><span class="p">,</span>\
+                   <span class="n">empty</span> <span class="k">as</span> <span class="n">_empty</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span> <span class="k">as</span> <span class="n">_product</span>
+
+<div class="viewcode-block" id="gauss_elimination_gf2">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.gauss_elimination_gf2">[docs]</a>
+<span class="k">def</span> <span class="nf">gauss_elimination_gf2</span><span class="p">(</span><span class="n">coeff_matrix_in</span><span class="p">,</span> <span class="n">const_vector_in</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resuelve un sistema de ecuaciones booleanas en un cuerpo finito con las operaciones XOR (&quot;+&quot;) y AND (&quot;*&quot;).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coeff_matrix_in : list of list of bool</span>
+<span class="sd">        Matriz booleana que representa los coeficientes del sistema de ecuaciones.</span>
+
+<span class="sd">    const_vector_in : list of bool</span>
+<span class="sd">        Vector booleano que representa el término independiente de cada ecuación.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Matriz booleana triangular.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">coeff_matrix</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">coeff_matrix_in</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="c1">#[[bool(j) for j in i] for i in coeff_matrix_in]</span>
+    <span class="n">const_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">const_vector_in</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span> <span class="c1">#[bool(i) for i in const_vector_in]</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coeff_matrix</span><span class="p">)</span>
+
+    <span class="c1"># Combinar coeficientes y vector constante en una matriz aumentada</span>
+    <span class="n">augmented_matrix</span> <span class="o">=</span> <span class="n">_concatenate</span><span class="p">((</span><span class="n">coeff_matrix</span><span class="p">,</span><span class="n">const_vector</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Aplicar eliminación hacia adelante</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Intercambiar filas si el pivote es cero</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El sistema no tiene solución única.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">^=</span> <span class="n">factor</span> <span class="o">&amp;</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Aplicar sustitución hacia atrás</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">_zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">solution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">n</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+            <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">n</span><span class="p">]</span><span class="o">^=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">solution</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">solution</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="invert_matrix_gf2">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.invert_matrix_gf2">[docs]</a>
+<span class="k">def</span> <span class="nf">invert_matrix_gf2</span><span class="p">(</span><span class="n">matrix_in</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Devuelve la inversa de una matriz booleana en un cuerpo finito con las operaciones XOR (&quot;+&quot;) y AND (&quot;*&quot;).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matrix_in : list of list of bool</span>
+<span class="sd">        Matriz booleana a invertir.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Matriz booleana inversa.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">matrix_in</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+    <span class="c1"># Crear una matriz identidad</span>
+    <span class="n">identity_matrix</span> <span class="o">=</span> <span class="n">_identity</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="c1"># Combinar la matriz original y la matriz identidad en una matriz aumentada</span>
+    <span class="n">augmented_matrix</span> <span class="o">=</span> <span class="n">_concatenate</span><span class="p">((</span><span class="n">matrix</span><span class="p">,</span><span class="n">identity_matrix</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Aplicar eliminación hacia adelante</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;La matriz no es invertible.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">^=</span> <span class="n">factor</span> <span class="o">&amp;</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Aplicar sustitución hacia atrás</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
+                <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">^=</span> <span class="n">factor</span> <span class="o">&amp;</span> <span class="n">augmented_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="c1"># Extraer la matriz inversa de la matriz aumentada</span>
+    <span class="n">inverse_matrix</span> <span class="o">=</span> <span class="n">augmented_matrix</span><span class="p">[:,</span><span class="n">n</span><span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">inverse_matrix</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="matrix_multiply_gf2">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.matrix_multiply_gf2">[docs]</a>
+<span class="k">def</span> <span class="nf">matrix_multiply_gf2</span><span class="p">(</span><span class="n">matrix1_in</span><span class="p">,</span> <span class="n">matrix2_in</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiplica un par de matrices booleanas en un cuerpo finito con las operaciones XOR (&quot;+&quot;) y AND (&quot;*&quot;).</span>
+<span class="sd">    </span>
+<span class="sd">    Esta función puede utilizarse también para multiplicar vectores por matrices, gestionando automáticamente</span>
+<span class="sd">    la disposición del vector: fila si va delante de la matriz, columna si va detrás. Así, si &#39;matrix1_in&#39; y </span>
+<span class="sd">    &#39;matrix2_in&#39; son dos vectores, el resultado será el producto vectorial.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    matrix1_in : list of list of bool</span>
+<span class="sd">        Primera matriz booleana.</span>
+
+<span class="sd">    matrix2_in : list of list of bool</span>
+<span class="sd">        Segunda matriz booleana.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Producto de las matrices o el producto vectorial en gf(2).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matrix1</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">matrix1_in</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">matrix1</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">matrix1</span> <span class="o">=</span> <span class="n">matrix1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">matrix1</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">matrix2</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">matrix2_in</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">matrix2</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">matrix2</span> <span class="o">=</span> <span class="n">matrix2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">matrix2</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">rows1</span><span class="p">,</span><span class="n">cols1</span> <span class="o">=</span> <span class="n">matrix1</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">rows2</span><span class="p">,</span><span class="n">cols2</span> <span class="o">=</span> <span class="n">matrix2</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">cols1</span> <span class="o">!=</span> <span class="n">rows2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El número de columnas de la primera matriz debe ser igual al número de filas de la segunda matriz.&quot;</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">_zeros</span><span class="p">((</span><span class="n">rows1</span><span class="p">,</span><span class="n">cols2</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols2</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols1</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">^=</span> <span class="n">matrix1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">matrix2</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="hamming">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.hamming">[docs]</a>
+<span class="k">def</span> <span class="nf">hamming</span><span class="p">(</span><span class="n">in1</span><span class="p">,</span> <span class="n">in2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula la distancia de Hamming (medida en bits) entre dos entradas.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in1 : list of bool</span>
+<span class="sd">        Primer vector booleano de entrada.</span>
+
+<span class="sd">    in2 : list of bool</span>
+<span class="sd">        Segundo vector booleano de entrada.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Distancia de Hamming entre las dos entradas (medida en bits).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">in1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">in2</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El tamaño de las entradas debe ser igual.&quot;</span><span class="p">)</span>
+    
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">in1</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">result</span><span class="o">+=</span><span class="nb">int</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">in1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">^</span><span class="nb">bool</span><span class="p">(</span><span class="n">in2</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="LinearSystECC">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.LinearSystECC">[docs]</a>
+<span class="k">class</span> <span class="nc">LinearSystECC</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase para manipular sistemas de códigos de corrección de errores lineales.</span>
+
+<span class="sd">    Esta clase proporciona funcionalidades para la generación de matrices G y H, codificación y decodificación de vectores para códigos de corrección de errores lineales en un cuerpo finito.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dim : int, opcional</span>
+<span class="sd">        Dimensión de la matriz. Por defecto 4.</span>
+
+<span class="sd">    length : int, opcional</span>
+<span class="sd">        Longitud de la matriz. Por defecto 7.</span>
+
+<span class="sd">    G : list of list of bool, opcional</span>
+<span class="sd">        Matriz booleana G para operaciones de generación de código. Por defecto False.</span>
+
+<span class="sd">    H : list of list of bool, opcional</span>
+<span class="sd">        Matriz booleana H para operaciones de generación de código. Por defecto False.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Si la matriz generadora y la matriz de paridad no cumplen GH^=0.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Esta clase permite realizar operaciones en un cuerpo finito para códigos de corrección de errores lineales.</span>
+<span class="sd">    Los métodos &#39;encode&#39; y &#39;decode&#39; permiten la codificación y decodificación de vectores respectivamente,</span>
+<span class="sd">    usando las matrices generadora y de paridad.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">H</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    
+        <span class="k">if</span> <span class="n">G</span><span class="o">!=</span><span class="kc">False</span> <span class="ow">and</span> <span class="n">H</span><span class="o">!=</span><span class="kc">False</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="n">matrix_multiply_gf2</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">H</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_all</span><span class="p">(</span><span class="n">zero</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;La matriz generadora y la matriz de paridad no cumplen GH^=0&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span>
+                
+        <span class="k">elif</span> <span class="n">G</span><span class="o">!=</span><span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">_concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">_identity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+        <span class="k">elif</span> <span class="n">H</span><span class="o">!=</span><span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">_array</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="o">.</span><span class="n">shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="n">_</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">_concatenate</span><span class="p">((</span><span class="n">_identity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">H</span><span class="p">[:,:</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">_empty</span><span class="p">((</span><span class="n">dim</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span> <span class="c1"># Generamos la matriz G iterativamente</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="o">//</span><span class="n">dim</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">=</span><span class="n">_concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span><span class="n">_identity</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">=</span><span class="n">_concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span><span class="n">_invert</span><span class="p">(</span><span class="n">_identity</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">))),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[:,:</span><span class="n">length</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="n">_concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">_identity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+            
+<div class="viewcode-block" id="LinearSystECC.encode">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.LinearSystECC.encode">[docs]</a>
+    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Codifica un mensaje de entrada de &#39;dim&#39; bits en un código de &#39;length&#39; bits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vector : list of bool</span>
+<span class="sd">            Mensaje booleano de entrada a codificar.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Mensaje booleano codificado.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Si la longitud del vector de entrada no coincide con &#39;dim&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El vector de entrada debe tener tamaño &#39;dim&#39;.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">matrix_multiply_gf2</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span></div>
+
+    
+    
+<div class="viewcode-block" id="LinearSystECC.decode">
+<a class="viewcode-back" href="../../myutils.html#myutils.bool.LinearSystECC.decode">[docs]</a>
+    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vector</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decodifica un código de entrada de &#39;length&#39; bits en un mensaje de &#39;dim&#39; bits</span>
+<span class="sd">        utilizando un método de mínima distancia de Hamming.</span>
+
+<span class="sd">        Este método es absolutamente ineficiente y no debería usarse con dimensiones</span>
+<span class="sd">        mayores que 9.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vector : list of bool</span>
+<span class="sd">            Código booleano de entrada a decodificar.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of bool</span>
+<span class="sd">            Mensaje decodificado.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Si la longitud del vector de entrada no coincide con &#39;length&#39;.</span>
+<span class="sd">            Si hay demasiados errores para decodificar el vector de manera fiable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span><span class="o">!=</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;El vector de entrada debe tener tamaño &#39;length&#39;.&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Calculamos todos los posibles códigos</span>
+        <span class="n">msg_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_product</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">repeat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+        <span class="n">code_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">matrix_multiply_gf2</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">msg_set</span><span class="p">]</span>
+        
+        <span class="c1"># Calculamos el código con menor distancia al candidato</span>
+        <span class="n">dist_set</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">code_set</span><span class="p">:</span>
+            <span class="n">dist_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hamming</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span><span class="n">code</span><span class="p">))</span>
+        <span class="n">sort_set</span> <span class="o">=</span> <span class="n">_sort</span><span class="p">(</span><span class="n">dist_set</span><span class="p">)</span>
+        <span class="n">sort_argset</span> <span class="o">=</span> <span class="n">_argsort</span><span class="p">(</span><span class="n">dist_set</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sort_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">sort_set</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Demasiados errores para decodificar el vector de manera fiable.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">msg_set</span><span class="p">[</span><span class="n">sort_argset</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">myutils 1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../myutils.html" >myutils</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">myutils.bool</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, Guillermo Díez-Señorans.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
