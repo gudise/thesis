@@ -22,34 +22,22 @@ from myutils.tensor         import  *
 
 
 def sim_romatrix(N_rep=1, N_pdl=1, N_osc=1, std_rep=1, std_pdl=10, std_osc=100):
-    """
-    Esta función proporciona un simulador naíf de una matriz de celdas; reproduce
-    las medidas de una instancia para un número de repeticiones (N_rep), pdl (N_pdl)
-    y celdas (N_osc), así como ajustar las desviaciones estándar de cada proceso.
-    El comportamiento estándar es:
-        std_rep<std_pdl<std_osc
-    La función genera los valores aleatorios como una distribución normal, pero
-    luego los escala para devolver siempre valores enteros positivos.
+    """Esta función proporciona un simulador naíf de una matriz de celdas; reproduce las medidas de una instancia para un número de repeticiones (N_rep), pdl (N_pdl) y celdas (N_osc), así como ajustar las desviaciones estándar de cada proceso. El comportamiento estándar es: std_rep<std_pdl<std_osc La función genera los valores aleatorios como una distribución normal, pero luego los escala para devolver siempre valores enteros positivos.
     
-    Parámetros:
-    -----------
-    N_rep : <int, opcional, por defecto 1>
+    Parameters
+    ----------
+    N_rep : int, opcional
         Número de repeticiones simuladas.
-        
-    N_pdl : <int, opcional, por defecto 1>
+    N_pdl : int, opcional
         Número de PDL simulados.
-        
-    N_osc : <int, opcional, por defecto 1>
+    N_osc : int, opcional
         Número de celdas simuladas.
-        
-    std_rep : <float, opcional, por defecto 1.0>
+    std_rep : float, opcional
         Desviación estándar de una misma celda, para un mismo PDL entre
         medidas sucesivas.
-        
-    std_pdl : <float, opcional, por defecto 10.0>
+    std_pdl : float, opcional
         Desviación estandar de una misma celda entre distintos PDL
-        
-    std_osc : <float, opcional, por defecto 100.0>
+    std_osc : float, opcional
         Desviación estándar entre distintas celdas.
     """
     sim_osc = [_normal(scale=std_osc) for i in range(N_osc)] # rep,pdl,osc
@@ -66,8 +54,17 @@ def sim_romatrix(N_rep=1, N_pdl=1, N_osc=1, std_rep=1, std_pdl=10, std_osc=100):
         
         
 def clog2(N):
-    """
-    Numero de bits necesarios para especificar 'N' estados.
+    """Numero de bits necesarios para especificar 'N' estados.
+    
+    Parameters
+    ----------
+    N : int
+        Número del cual calcular la función 'ceiling log'
+        
+    Returns
+    -------
+    float
+        Número entero más pequeño que es mayor o igual al resultado del logaritmo base 2 de `N`.
     """
     if N<=0:
         return 1
@@ -79,10 +76,12 @@ def clog2(N):
             
             
 def load(file_name):
-    """
-    'Wrapper' para la función 'load' del módulo
-    'pickle', que permite cargar un objeto guardado serializado de
-    cualquier clase.
+    """'Wrapper' para la función 'load' del módulo `pickle`, que permite cargar un objeto guardado serializado de cualquier clase.
+    
+    Parameters
+    ----------
+    file_name : str
+        Nombre del archivo a cargar.
     """
     with open(file_name, "rb") as f:
         result = _load(f)
@@ -91,86 +90,39 @@ def load(file_name):
 
 class StdRing():
     """
-    Lista de elementos (LUT) que constituyen un oscilador de anillo
-    estándar junto con la información necesaria para su implementación
-    en FPGA utilzando el software 'Vivado'.
+    Este objeto contiene una lista de elementos (LUT) que constituyen un oscilador de anillo estándar junto con la información necesaria para su implementación en FPGA utilzando el software 'Vivado'.
     
-    Un anillo 'StdRing' consta de N_inv+1 elementos:
-        . Puerta AND.
-        . N_inv inversores.
+    Parameters
+    ----------
+    name : str
+        Nombre utilizado para identificar el anillo.
+            
+    N_inv : int
+        Número de inversores que forman el anillo.
+        
+    loc : str
+        Parámetro 'loc' de la primera LUT del anillo (ver clase 'Lut'). En un anillo estándar esta LUT siempre corresponde a la puerta AND inicial. Solo se da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos los 'bel' de una celda antes de pasar a la celda inmediatamente superior (de modo que, dadas las coordenadas del primer elemento, las demás están predeterminadas). La "celda inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
+    
+    bel : char o lista de char 
+        Lista de parámetros 'bel' para cada LUT del anillo (ver clase 'Lut'). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción 'bel' de la clase 'Lut'. Notar que el número de elementos total de un anillo "StdRing" es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).
+    
+    pin : str o lista de str
+        Lista de parámetros 'pin' de cada LUT que forma parte del anillo (ver clase 'Lut'). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo LUT2 (i.e., solo se pueden fijar los pines 'I0' y 'I1'). Notar que el número de elementos total de un anillo "StdRing" es igual a N_inv+1, siendo el primero siempre una LUT2 (AND). Por definición, el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente en el bucle.
+    
+    pdl : bool, opcional
+        Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND. Por defecto False.        
     """
     def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False):
-        """
-        Inicialización del objeto 'StdRing'.
-        
-        Parámetros:
-        -----------
-            name : <string>
-                Nombre del anillo. En la práctica este precederá a los nombres
-                de cada instancia LUT que forme parte del anillo, e.g. si
-                name='a', los nombres de todas las instancias LUT que forman
-                parte del anillo serán:
-                    'a_AND' # AND inicial.
-                    'a_0'   # Primer inversor.
-                    'a_1'   # Segundor inversor.
-                      .
-                      .
-                      .
-                    'a_N-1' # "N-1"-ésimo inversor.
-                    
-            N_inv : <int>
-                Número de inversores que forman el anillo.
-                    
-            loc : <string>
-                Parámetro 'loc' de la primera LUT del anillo (ver clase 'Lut'). En 
-                un anillo estándar esta LUT siempre corresponde a la puerta AND
-                inicial. Solo se da la posición de la primera LUT porque los anillos
-                siempre se construyen ocupando todos los 'bel' de una celda antes de
-                pasar a la celda inmediatamente superior (de modo que, dadas las 
-                coordenadas del primer elemento, las demás están predeterminadas). 
-                La "celda inmediatamente superior" es X+1 si X es par, Y+1 si X es 
-                impar.
-                
-            bel : <caracter o lista de caracteres> 
-                Lista de parámetros 'bel' para cada LUT del anillo (ver clase 'Lut').
-                Cada elemento de la lista se aplica en orden correlativo al elemento
-                del anillo (la primera restricción se aplica al AND inicial, la
-                segunda al primer inversor, etc). Pueden darse menos restricciones 
-                que inversores forman el anillo, pero entonces quedarán LUT sin 
-                fijar. Notar además que el valor de esta restricción es excluyente 
-                entre LUT que forman parte de la misma celda: cada celda tiene 
-                cuatro posibles posiciones A, B, C y D, y dos LUT no pueden ocupar 
-                el mismo espacio. Esta función no avisa de esta violación: el 
-                usuario es responsable de que los valores 'bel' introducidos sean 
-                todos distintos entre sí en grupos de cuatro. En otro caso, el 
-                diseño fallará. Además de una lista de caracteres, esta opción 
-                admite un único caracter, pero entonces solo se restringirá la AND 
-                inicial. Ver opción 'bel' de la clase 'Lut'. Notar que el número de 
-                elementos total de un anillo "StdRing" es igual a N_inv+1, siendo el
-                primero siempre una LUT2 (AND).
-                
-            pin : <string o lista de string> 
-                Lista de parámetros 'pin' de cada LUT que forma parte del anillo 
-                (ver clase 'Lut'). Cada elemento de la lista se aplica en orden 
-                correlativo al elemento del anillo (la primera restricción se aplica
-                al AND inicial, la segunda al primer inversor, etc). Pueden darse 
-                menos restricciones que inversores forman el anillo, pero entonces 
-                quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con 
-                el tipo de LUT que se está fijando, y en particular el AND inicial 
-                siempre es de tipo LUT2 (i.e., solo se pueden fijar los pines 'I0' y
-                'I1'). Notar que el número de elementos total de un anillo "StdRing"
-                es igual a N_inv+1, siendo el primero siempre una LUT2 (AND). Por definición,
-                el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente
-                en el bucle.
-                
-            pdl : <bool, opcional, por defecto False>
-                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
-                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
-                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
-        """
+    
         self.name = name
+        """Nombre del anillo instanciado."""
         self.N_inv = N_inv
+        """Número de inversores del anillo."""
         self.loc = [loc]
+        """Parámetro LOC de la primera puerta del anillo."""
+        self.elements = None
+        """Lista de objetos Lut que conforman el anillo. El primer elemento será Lut2, y los restantes `N_inv` elementos serán Lut1 o Lut6 en función de si la opción `pdl` es 'True'."""
+        
         x = int(self.loc[-1].replace(' ','').split(',')[0])
         x0 = x # Coord. x inicial
         y = int(self.loc[-1].replace(' ','').split(',')[1])
@@ -184,6 +136,7 @@ class StdRing():
             self.loc.append(f"{x},{y}")
             
         self.bel = ['' for i in range(N_inv+1)]
+        """Lista de restricciones BEL para cada elemento del anillo."""
         if type(bel) == type([]):
             for i in range(len(bel)):
                 self.bel[i] = bel[i]
@@ -191,6 +144,7 @@ class StdRing():
             self.bel[0] = bel
             
         self.pin = ['' for i in range(N_inv+1)]
+        """Lista de restricciones PIN para cada elemento del anillo."""
         if type(pin) == type([]):
             for i in range(len(pin)):
                 self.pin[i] = pin[i]
@@ -226,104 +180,42 @@ class StdRing():
             
 class GaloisRing():
     """
-    Lista de elementos (LUT) que constituyen un oscilador de anillo
-    de Galois junto con la información necesaria para su implementación
-    en FPGA utilzando el software 'Vivado'.
+    Lista de elementos (LUT) que constituyen un oscilador de anillo de Galois junto con la información necesaria para su implementación en FPGA utilzando el software 'Vivado'.
     
-    Un anillo 'GaloisRing' consta de N_inv+2 elementos:
-        . Inversor inicial.
-        . N_inv-1 elementos inversores/XNOR.
-        . Inversor de salida.
-        . flip-flop de muestreo.
+    Parameters
+    ----------
+    name : str
+        Nombre utilizado para identificar el anillo.
+            
+    N_inv : int
+        Número de inversores que forman el anillo.
+            
+    loc : str
+        Parámetro 'loc' de la primera LUT del anillo (ver clase 'Lut'). Solo se da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos los 'bel' de una celda antes de pasar a la celda inmediatamente superior (de modo que, dadas las coordenadas del primer elemento, las demás están predeterminadas). La "celda inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
+        
+    bel : char o lista de char
+        Lista de parámetros 'bel' para cada elemento del anillo (ver clase 'Lut'). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al primer elemento, la segunda al segundo, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el usuario es responsable de que los valores 'bel' introducidos sean todos distintos entre sí en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta opción admite un único caracter, pero entonces solo se restringirá la primera LUT. Notar que el último elemento en un anillo 'GaloisRing' siempre será un flip-flop, y el penúltimo elemento depende de la opción 'inverted_end': si 'True', el número de  elementos total del anillo será igual a N_inv+2, siendo el penúltimo elemento siempre una LUT1 (inversor final). Si por el contrario esta opción es 'False' entonces el número de elementos del anillo será N_inv+1.
+        
+    pin : str o lista de str
+        Lista de parámetros 'pin' de cada LUT que forma parte del anillo (ver clase 'Lut'). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al primer elemento, la segunda al segundo, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con el tipo de LUT que se está fijando, y en particular los inversores inicial y final siempre son de tipo LUT1 (i.e., solo se puede fijar el pin 'I0'). Notar que, dado que el último elemento (N_inv+2 o N_inv+1, dependiendo de la opción 'inverted_end') de un anillo 'GaloisRing' es un flip-flop, a efectos de la opción "pin" este se ignora (esta opción restringe solo los pines de las LUT, no del flip-flop). Por definición, el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente en el bucle.
+
+    pdl : bool, opcional
+        Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
+        
+    poly : int, opcional
+        Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta cantidad de recursos hardware, a costa de perder flexibilidad.
+        
+    inverted_end : bool, opcional
+        Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual según parece evita acoplos entre anillos cercanos. Notar que la presencia o no de este inversor cambia el número de elementos a efectos de las opciones 'bel' y 'pin'. 
     """
     def __init__(self, name, N_inv, loc, bel='', pin='', pdl=False, poly=-1, inverted_end=True):
-        """
-        Inicialización del objeto 'GaloisRing'.
-        
-        Parámetros:
-        -----------
-            name : <cadena de caracteres>
-                Nombre del anillo. En la práctica este precederá a los nombres
-                de cada instancia LUT que forme parte del anillo, e.g. si
-                name='a', los nombres de todas las instancias LUT que forman
-                parte del anillo serán:
-                    'a_AND' # AND inicial.
-                    'a_0'   # Primer inversor.
-                    'a_1'   # Segundor inversor.
-                      .
-                      .
-                      .
-                    'a_N-1' # "N-1"-ésimo inversor.
-                    
-            N_inv : <entero>
-                Número de inversores que forman el anillo.
-                    
-            loc : <string>
-                Parámetro 'loc' de la primera LUT del anillo (ver clase 'Lut').
-                Solo se da la posición de la primera LUT porque los anillos siempre 
-                se construyen ocupando todos los 'bel' de una celda antes de pasar a
-                la celda inmediatamente superior (de modo que, dadas las coordenadas
-                del primer elemento, las demás están predeterminadas). La "celda 
-                inmediatamente superior" es X+1 si X es par, Y+1 si X es impar.
-                
-            bel : <caracter o lista de caracteres> 
-                Lista de parámetros 'bel' para cada elemento del anillo (ver clase 
-                'Lut'). Cada elemento de la lista se aplica en orden correlativo al
-                elemento del anillo (la primera restricción se aplica al primer 
-                elemento, la segunda al segundo, etc). Pueden darse menos 
-                restricciones que inversores forman el anillo, pero entonces 
-                quedarán LUT sin fijar. Notar además que el valor de esta 
-                restricción es excluyente entre LUT que forman parte de la misma 
-                celda: cada celda tiene cuatro posibles posiciones A, B, C y D, y 
-                dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de
-                esta violación: el usuario es responsable de que los valores 'bel' 
-                introducidos sean todos distintos entre sí en grupos de cuatro. En 
-                otro caso, el diseño fallará. Además de una lista de caracteres, 
-                esta opción admite un único caracter, pero entonces solo se 
-                restringirá la primera LUT. Notar que el último elemento en un anillo
-                'GaloisRing' siempre será un flip-flop, y el penúltimo elemento depende
-                de la opción 'inverted_end': si 'True', el número de  elementos total
-                del anillo será igual a N_inv+2, siendo el penúltimo elemento siempre una
-                LUT1 (inversor final). Si por el contrario esta opción es 'False' entonces
-                el número de elementos del anillo será N_inv+1.
-                
-            pin : <cadena de caracteres o lista de cadenas> 
-                Lista de parámetros 'pin' de cada LUT que forma parte del anillo 
-                (ver clase 'Lut'). Cada elemento de la lista se aplica en orden
-                correlativo al elemento del anillo (la primera restricción se aplica
-                al primer elemento, la segunda al segundo, etc). Pueden darse menos
-                restricciones que inversores forman el anillo, pero entonces 
-                quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con 
-                el tipo de LUT que se está fijando, y en particular los inversores 
-                inicial y final siempre son de tipo LUT1 (i.e., solo se puede fijar
-                el pin 'I0'). Notar que, dado que el último elemento (N_inv+2 o N_inv+1,
-                dependiendo de la opción 'inverted_end') de un anillo 'GaloisRing' es
-                un flip-flop, a efectos de la opción "pin" este se ignora (esta opción
-                restringe solo los pines de las LUT, no del flip-flop). Por definición,
-                el puerto lógico 'I0' siempre es el que recoge la señal del elemento precedente
-                en el bucle.
-            
-            pdl : <bool, opcional, por defecto False>
-                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
-                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
-                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
-                
-            poly : <int, por defecto -1>
-                Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo
-                (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo
-                de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
-                utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
-                cantidad de recursos hardware, a costa de perder flexibilidad.
-                
-            inverted_end : <bool, por defecto 'True'>
-                Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual
-                según parece evita acoplos entre anillos cercanos. Notar que la presencia o no
-                de este inversor cambia el número de elementos a efectos de las opciones 'bel'
-                y 'pin'. 
-        """
+        """Constructor."""
         self.name = name
+        """Nombre del anillo instanciado."""
         self.N_inv = N_inv
+        """Número de inversores del anillo."""
         self.loc = [loc]
+        """Parámetro LOC de la primera puerta del anillo."""
         x = int(self.loc[-1].replace(' ','').split(',')[0])
         x0 = x # Coord. x inicial
         y = int(self.loc[-1].replace(' ','').split(',')[1])
@@ -337,6 +229,7 @@ class GaloisRing():
             self.loc.append(f"{x},{y}")
             
         self.bel = ['' for i in range(N_inv+2)]
+        """Lista de restricciones BEL para cada elemento del anillo.""""""Lista de restricciones BEL para cada elemento del anillo."""
         if type(bel) == type([]):
             for i in range(len(bel)):
                 self.bel[i] = bel[i]
@@ -344,6 +237,7 @@ class GaloisRing():
             self.bel[0] = bel
             
         self.pin = ['' for i in range(N_inv+1)]
+        """Lista de restricciones PIN para cada elemento del anillo.""""""Lista de restricciones PIN para cada elemento del anillo."""
         if type(pin) == type([]):
             for i in range(len(pin)):
                 self.pin[i] = pin[i]
@@ -352,6 +246,7 @@ class GaloisRing():
             
         if pdl:
             self.elements = []
+            """Lista de objetos que conforman el anillo. Esta consisitirá en N_inv objetos 'Lut', más un inversor en caso de que la opción `inverted_end`=True, más un flip-flop 'FF'."""
             for i in range(N_inv):
                 w_out = f"w_{name}[{i}]"
                 
@@ -406,67 +301,56 @@ class GaloisRing():
         
         
 class Dominio:
-    """
-    Este objeto contiene las localizaciones de un conjunto de 
-    osciladores dispuestos atendiendo a diversos parámetros geométricos.
-    Si directriz=y, estos se colocan formando una matriz rectangular, la cual crece en
-    dirección y en incrementos de dy. Cuando se alcanza el límite y1, la matriz se incrementa
-    una cantidad dx en la dirección x, y vuelve a la coordenada y0. Si directriz=x, el 
-    comentario anterior se aplica substituyendo x <-> y.
-    
-    Variables:
+    """Este objeto contiene las localizaciones de un conjunto de osciladores dispuestos atendiendo a diversos parámetros geométricos. Si directriz=y, estos se colocan formando una matriz rectangular, la cual crece en dirección y en incrementos de dy. Cuando se alcanza el límite y1, la matriz se incrementa una cantidad dx en la dirección x, y vuelve a la coordenada y0. Si directriz=x, el comentario anterior se aplica substituyendo x <-> y.
+
+    Parameters
     ----------
-    osc_coord : coordenadas de los osciladores.
+        N_osc : int, opcional
+            Número de osciladores del dominio.
+            
+        x0 : int, opcional
+            Coordenada X del primer oscilador de la matriz.
+         
+        x1 : int, opcional
+            Coordenada X máxima de la matriz (no se sobrepasará).
+            
+        dx : int, opcional
+            Incremento de la coordenada X. Notar que habitualmente en las FPGA de Xilinx se reservan las coordenadas X par/impar para distintos tipos de celda ('0' y '1').
+            
+        y0 : int, opcional
+            Coordenada Y del primer oscilador de la matriz.
+            
+        y1 : int, opcional
+            Coordenada Y máxima de la matriz (no se sobrepasará).
+            
+        dy : int, opcional
+            Incremento de la coordenada Y.
+            
+        directriz : char, opcional
+            Dirección de crecimiento de la matriz (hasta llegar a la coordenada 
+            máxima). Puede ser 'y' o 'x'.
     """
     def __init__(self, N_osc=10, x0=0, x1=_inf, dx=1, y0=0, y1=_inf, dy=1, directriz='y'):
-        """
-        Inicialización del objeto 'Dominio'.
-        
-        Parámetros:
-        -----------
-            N_osc : <int, opcional, por defecto 10>
-                Número de osciladores del dominio.
-                
-            x0 : <int, opcional, por defecto 0>
-                Coordenada X del primer oscilador de la matriz.
-             
-            x1 : <int, opcional, por defecto infinito>
-                Coordenada X máxima de la matriz (no se sobrepasará).
-                
-            dx : <int, opcional, por defecto 1>
-                Incremento de la coordenada X. Notar que habitualmente en las FPGA 
-                de Xilinx se reservan las coordenadas X par/impar para distintos
-                tipos de celda ('0' y '1').
-                
-            y0 : <int, opcional, por defecto 0>
-                Coordenada Y del primer oscilador de la matriz.
-                
-            y1 : <int, opcional, por defecto infinito>
-                Coordenada Y máxima de la matriz (no se sobrepasará).
-                
-            dy : <int, opcional, por defecto 1>
-                Incremento de la coordenada Y.
-                
-            directriz : <char, opcional, por defecto 'y'>
-                Dirección de crecimiento de la matriz (hasta llegar a la coordenada 
-                máxima). Puede ser 'y' o 'x'.
-                
-        Constantes:
-        -----------
-            osc_coord : <lista de string>
-                Esta variable contiene la lista de las coordenadas de los anillos, dados
-                en forma de par x,y.
-        """
+    
         self.N_osc = N_osc
+        """Número de osciladores del anillo."""
         self.directriz = directriz
+        """Dirección de crecimiento de la matriz de anillos."""
         self.x0 = x0
+        """Coordenada 'X' inicial."""
         self.y0 = y0
+        """Coordenada 'Y' inicial."""
         self.x1 = x1
+        """Coordenada 'X' final."""
         self.y1 = y1
+        """Coordenada 'Y' final."""
         self.dx = dx
+        """Incremento de la coordenada 'X'."""
         self.dy = dy
+        """Incremento de la coordenada 'Y'."""
                 
         self.osc_coord = []
+        """Lista de las coordenadas de los anillos, dados en forma de par x,y."""
         x = self.x0
         y = self.y0
         for i in range(self.N_osc):
@@ -498,45 +382,38 @@ class Dominio:
         
 class StdMatrix:
     """Objeto que contiene una matriz de osciladores de anillo estándar.
-        
-        Parámetros:
-        ---------
-            N_inv : <int>
-                Número de inversores de cada oscilador.
 
-            dominios : <objeto 'Dominio' o lista de estos>
-                Osciladores que forman la matriz. Se construye como una lista de 
-                objetos 'Dominio'. Si solo pasamos un dominio de osciladores podemos
-                pasar un objeto 'Dominio', en lugar de una lista.
-                
-            bel : <caracter o lista de caracteres>
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'bel' en 'StdRing').
-                    
-            pin : <cadena de caracteres o lista de cadenas>
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'pin' en 'StdRing').
-                
-            pdl : <bool, opcional, por defecto False>
-                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
-                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
-                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
+    Parameters
+    ----------
+    N_inv : int
+        Número de inversores de cada oscilador.
+
+    dominios : :obj:`Dominio` o lista de `Dominio`
+        Osciladores que forman la matriz. Se construye como una lista de objetos `Dominio`. Si solo pasamos un dominio de osciladores podemos pasar un objeto `Dominio`, en lugar de una lista.
+        
+    bel : char | list(char)
+        Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver `bel` en :obj:`StdRing`).
+            
+    pin : str | list(str)
+        Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver 'pin' en 'StdRing').
+        
+    pdl : bool, opcional
+        Si `True` se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si `False` se utilizan modelos :obj:Lut1 para los inversores y :obj:Lut2 para el enable AND.
     """
     def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False):
-        """
-        Inicialización del objeto 'StdMatrix'.
-        """
+
         self.dominios=[]
+        """Lista de :obj:Dominio de que consta la matriz."""
         if type(dominios) == type([]) or type(dominios) == type(()):
             self.dominios[:]=dominios[:]
         else:
             self.dominios.append(dominios)
             
         self.N_inv = N_inv
+        """Número de inversores de cada anillo de la matriz."""
             
         self.bel = ['' for i in range(N_inv+1)]
+        """Restricciones BEL de cada anillo."""
         if type(bel)==type([]):
             for i in range(len(bel)):
                 self.bel[i] = bel[i]
@@ -544,6 +421,7 @@ class StdMatrix:
             self.bel[0] = bel
 
         self.pin = ['' for i in range(N_inv+1)]
+        """Restricciones PIN de cada anillo."""
         if type(pin)==type([]):
             for i in range(len(pin)):
                 self.pin[i] = pin[i]
@@ -551,19 +429,25 @@ class StdMatrix:
             self.pin[0] = pin
 
         self.pdl = pdl
+        """Valor booleano que indica si los anillos de la matriz son configurables mediante PDL."""
             
         self.osc_list = []
+        """Lista completa de osciladores que componen la matriz."""
         self.N_osc=0
+        """Número total de osciladores de la matriz."""
         for dominio in self.dominios:
             for osc_coord in dominio.osc_coord:
                 self.osc_list.append(StdRing(f"{self.N_osc}", self.N_inv, osc_coord, self.bel, self.pin, self.pdl))
                 self.N_osc+=1
                 
         self.N_bits_osc = clog2(self.N_osc)
+        """Número de bits necesarios para especificar cada oscilador."""
         self.N_bits_resol = 5
+        """Número de bits necesarios para especificar la resolución del proceso de medida."""
         
         if self.pdl:
             self.N_bits_pdl = 5
+            """Número de bits necesarios para especificar cada PDL."""
         else:
             self.N_bits_pdl = 0
                 
@@ -576,6 +460,11 @@ class StdMatrix:
     def save(self, file_name):
         """
         'Wrapper' para guardar objetos serializados con el módulo 'pickle'.
+        
+        Parameters
+        ----------
+        file_name : str
+            Nombre del archivo de salida.
         """
         with open(file_name, "wb") as f:
             _dump(self, f)
@@ -586,17 +475,13 @@ class StdMatrix:
         los dominios introducidos durante la inicialización del objeto. El 
         principal uso de esta función es dentro de la función 'implement()'.
 
-        Parámetros:
-        -----------
-            out_name : <string> (opcional)
-                Nombre del fichero de salida.
-                
-            debug : <bool> (opcional)
-                Flag que indica si se debe geenrar un diseño de depuración en 
-                lugar de una verdadera matriz de osciladores de anillo. En el 
-                diseño de depuración se substituye cada anillo por un divisor de
-                reloj de frecuencia conocida, lo que permite depurar la interfaz
-                de medida.
+        Parameters
+        ----------
+        out_name : str, opcional
+            Nombre del fichero de salida.
+            
+        debug : bool, opcional
+            Flag que indica si se debe geenrar un diseño de depuración en lugar de una verdadera matriz de osciladores de anillo. En el diseño de depuración se substituye cada anillo por un divisor de reloj de frecuencia conocida, lo que permite depurar la interfaz de medida.
         """
         with open(out_name, "w") as f:
             f.write(f"//N_osciladores: {self.N_osc}\n\n")
@@ -630,73 +515,53 @@ class StdMatrix:
                     f.write("\n")
                 f.write("endmodule\n")
                 
-    def implement(self, projname='project_romatrix', projdir='.', njobs=4,
-                  debug=False, files=True, board='pynqz2', qspi=False, routing=False,
-                  pblock=False, data_width=32, buffer_out_width=32, f_clock=100):
-        """
-        Copia en el directorio 'self.projdir' todos los archivos necesarios para 
-        implementar una matriz de osciladores de anillo con medición de la 
-        frecuencia y comunicación pc <-> microprocesador <-> FPGA.
+    def implement(self, projname='project_romatrix', projdir='.', njobs=4, debug=False, files=True, board='pynqz2', qspi=False, routing=False, pblock=False, data_width=32, buffer_out_width=32, f_clock=100):
+        """Copia en el directorio 'self.projdir' todos los archivos necesarios para implementar una matriz de osciladores de anillo con medición de la frecuencia y comunicación pc <-> microprocesador <-> FPGA.
 
-        Parámetros:
-        ---------
-            projname : <string>
-                Nombre del proyecto de Vivado.
+        Parameters
+        ----------
+        projname : str, opcional
+            Nombre del proyecto de Vivado.
+        
+        projdir : str, opcional
+            Directorio donde se creará el proyecto de Vivado y las fuentes (por defecto el directorio de trabajo actual).
+        
+        njobs : int, opcional
+            Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
             
-            projdir : <string>
-                Directorio donde se creará el proyecto de Vivado y las fuentes (por
-                defecto el directorio de trabajo actual).
+        debug : bool, opcional
+            Si 'True', se implementará una matriz de divisores de reloj de frecuencia conocida, lo que permite depurar el diseño al conocer qué resultados deben salir.
             
-            njobs : <int>
-                Número de núcleos que utiilizará Vivado paralelamente para la 
-                síntesis/implementación.
-                
-            debug : <bool>
-                Si "True", se implementará una matriz de divisores de reloj de 
-                frecuencia conocida, lo que permite depurar el diseño al conocer
-                qué resultados deben salir.
-                
-            files : <bool>
-                 Si "True", pinta los archivos necesarios para implementar la 
-                 matriz en FPGA. Esta opción se puede desactivar (False) cuando 
-                 queremos configurar un objeto tipo 'Romatrix' pero no vamos a 
-                 implementarla físicamente (por ejemplo porque ya lo hemos hecho
-                 y solo queremos medir, o vamos a simularla sin realizarla).
-                
-            board : <string>
-                Placa de desarrollo utilizada en el proyecyo. Las opciones 
-                soportadas son: 'pynqz2', 'zybo', 'cmoda7_15t' o 'cmoda7_35t'.
-                
-            qspi : <bool>
-                Si "True", el flujo de diseño incluirá el guardado del bitstream
-                en la memoria flash de la placa para que se auto-programe al 
-                encenderse.
-                
-            routing : <bool>
-                Si "True", el flujo de diseño incluirá el cableado de los 
-                inversores después de la síntesis. Esto aumenta las 
-                probabilidades de que la herramienta haga un cableado idéntico,
-                pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
-                que esta opción sea del todo compatible con -qspi).
-                
-            pblock : <bool, por defecto False>
-                Si esta opción es 'True' se inserta la matriz en un pblock tal que
-                el espacio dentro del bloque se excluye para toda lógica que no sea
-                la propia matriz.
+        files : bool, opcional
+             Si 'True', pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar (False) cuando queremos configurar un objeto tipo 'Romatrix' pero no vamos a implementarla físicamente (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).
+            
+        board : str, opcional
+            Placa de desarrollo utilizada en el proyecyo. Las opciones soportadas son: 'pynqz2', 'zybo', 'cmoda7_15t' o 'cmoda7_35t'.
+            
+        qspi : bool, opcional
+            Si "True", el flujo de diseño incluirá el guardado del bitstream en la memoria flash de la placa para que se auto-programe al encenderse.
+            
+        routing : bool, opcional
+            Si "True", el flujo de diseño incluirá el cableado de los inversores después de la síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
+            
+        pblock : bool, opcional
+            Si esta opción es 'True' se inserta la matriz en un pblock tal que el espacio dentro del bloque se excluye para toda lógica que no sea la propia matriz.
 
-            data_width(dw) : <int>
-                Esta opción especifica la anchura del canal de datos PS<-->PL.
+        data_width : int, opcional
+            Esta opción especifica la anchura del canal de datos PS<-->PL.
 
-            buffer_out_width(bow) : <int> 
-                Esta opción especifica la anchura de la palabra de respuesta 
-                (i.e., de la medida).
-                
-            f_clock : <int>
-                Frecuencia del reloj del diseño (en MHz).
+        buffer_out_width : int, opcional
+            Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
+            
+        f_clock : int, opcional
+            Frecuencia del reloj del diseño (en MHz).
         """
         self.projname = projname
+        """Nombre del proyecto."""
         self.projdir = _os.path.join(_os.path.abspath(projdir), projname).replace("\\","/")
+        """Ruta al directorio del proyecto."""
         self.board = board
+        """Modelo de placa FPGA."""
         self.qspi = qspi
         self.routing = routing
         self.pblock = pblock
@@ -1099,47 +964,36 @@ class StdMatrix:
 
     def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=17, f_ref=False, 
               log=False, verbose=True, baudrate=9600):
-        """
-        Esta función mide la frecuencia de una matriz de osciladores estándar 
-        'StdMatrix', una vez esta ha sido implementado en FPGA. El resultado 
-        se devuelve como un objeto 'Tensor'.
+        """Esta función mide la frecuencia de una matriz de osciladores estándar 'StdMatrix', una vez esta ha sido implementado en FPGA. El resultado se devuelve como un objeto 'Tensor'.
 
-        Parámetros:
-        -----------
-            puerto : <string>
-                Esta opción especifica el puerto serie al que se conecta la 
-                FPGA.
-                
-            osc : <int o lista de int>
-                Lista de osciladores a medir.
-                
-            pdl : <int o lista de int>
-                Lista de PDL a medir.
-                
-            N_rep : <int>
-                Número de repeticiones a medir.
-                
-            resol : <int>
-                log_2 del número de ciclos de referencia a completar para dar 
-                por terminada la medida (por defecto 17, i.e., 2^17 = 131072 
-                ciclos).
-                
-            f_ref = <real>
-                Frecuencia del reloj de referencia. Si se proporciona este 
-                valor, el resultado obtenido se devuelve en las mismas unidades
-                en que se haya pasado este valor "f_ref".
-                
-            log : <bool>
-                Si se pasa "True" se escriben algunos datos a modo de log.
-                
-            verbose : <bool>
-                Si se pasa "True" se pinta una barra de progreso de la medida. 
-                Desactivar esta opción ("False") hace más cómodo utilizar esta 
-                función en un bucle.
-                
-            baudrate : <int>
-                Tasa de transferencia del protocolo serie UART PC<-->PS. Debe 
-                concordar con el programa compilador en PS.
+        Parameters
+        ----------
+        puerto : str, opcional
+            Esta opción especifica el puerto serie al que se conecta la FPGA.
+            
+        osc : int | list(int), opcional
+            Lista de osciladores a medir.
+            
+        pdl : int | list(int), opcional
+            Lista de PDL a medir.
+            
+        N_rep : int, opcional
+            Número de repeticiones a medir.
+            
+        resol : int, opcional
+            log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por defecto 17, i.e., 2^17 = 131072 ciclos).
+            
+        f_ref = float, opcional
+            Frecuencia del reloj de referencia. Si se proporciona este valor, el resultado obtenido se devuelve en las mismas unidades en que se haya pasado este valor "f_ref".
+            
+        log : bool, opcional
+            Si se pasa "True" se escriben algunos datos a modo de log.
+            
+        verbose : bool, opcional
+            Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace más cómodo utilizar esta función en un bucle.
+            
+        baudrate : int, opcional
+            Tasa de transferencia del protocolo serie UART PC<-->PS. Debe concordar con el programa compilador en PS.
         """
         if type(osc)==type(1):
             osc_list = [osc]
@@ -1199,59 +1053,37 @@ class StdMatrix:
         
         
 class GaloisMatrix:
-    """
+    """    
     Objeto que contiene una matriz de osciladores de anillo de Galois.
+
+    Parameters
+    ----------
+    N_inv : int, opcional
+        Número de inversores de cada oscilador.
+
+    dominios : :obj:`Dominio` | list(`Dominio`), opcional
+        Osciladores que forman la matriz. Se construye como una lista de objetos 'Dominio'. Si solo pasamos un dominio de osciladores podemos pasar un objeto 'Dominio', en lugar de una lista.
+        
+    bel : char | list(char), opcional
+        Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver 'bel' en 'GaloisRing').
+            
+    pin : str | list(str), opcional
+        Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver 'pin' en 'GaloisRing').
+        
+    pdl : bool, opcional
+        Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
+        
+    trng: int, opcional
+        Esta variable modifica de manera profunda el diseño de la matriz GARO implementada. Si se incluye este parámetro como un entero mayor que cero, el diseño genera un arreglo de bits generados por cada GARO como TRNG. En este caso, el buffer de salida del diseño tiene un tamaño 'trng' dado por esta variable. Alternativamente, si no se incluye esta opción (o vale '0'), el diseño incluye un medidor de sesgo que devuelve el valor del sesgo de cada GARO, en lugar de producir un arreglo de bits.
+        
+    poly : int, opcional
+        Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta cantidad de recursos hardware, a costa de perder flexibilidad.
+        
+    inverted_end : bool, opcional
+        Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual según parece evita acoplos entre anillos cercanos. Notar que la presencia o no de este inversor cambia el número de elementos a efectos de las opciones 'bel' y 'pin'.                
     """
     def __init__(self, N_inv=3, dominios=Dominio(), bel='', pin='', pdl=False, trng=0, poly=-1, inverted_end=True):
-        """    
-        Inicialización del objeto 'StdMatrix'.
 
-        Parámetros:
-        ---------
-            N_inv : <int>
-                Número de inversores de cada oscilador.
-
-            dominios : <objeto 'Dominio' o lista de estos>
-                Osciladores que forman la matriz. Se construye como una lista de 
-                objetos 'Dominio'. Si solo pasamos un dominio de osciladores podemos
-                pasar un objeto 'Dominio', en lugar de una lista.
-                
-            bel : <caracter o lista de caracteres> (opcional)
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'bel' en 'GaloisRing').
-                    
-            pin : <cadena de caracteres o lista de cadenas> (opcional)
-                Dado que todos los anillos de la matriz son idénticos 
-                por diseño, esta opción es la misma que la aplicada para
-                un solo oscilador (ver 'pin' en 'GaloisRing').
-                
-            pdl : <bool, opcional, por defecto False>
-                Si 'True' se utilizan modelos LUT6 para los inversores, permitiendo 
-                utilizar 5 puertos para configurar el anillo mediante PDL. Si 'False' 
-                se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.
-                
-            trng: <int positivo>
-                Esta variable modifica de manera profunda el diseño de la matriz GARO implementada.
-                Si se incluye este parámetro como un entero mayor que cero, el diseño genera un arreglo
-                de bits generados por cada GARO como TRNG. En este caso, el buffer de salida del diseño
-                tiene un tamaño 'trng' dado por esta variable. Alternativamente, si no se incluye esta
-                opción (o vale '0'), el diseño incluye un medidor de sesgo que devuelve el valor del sesgo
-                de cada GARO, en lugar de producir un arreglo de bits.
-                
-            poly : <int, por defecto -1>
-                Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo
-                (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo
-                de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, 
-                utilizando la misma codificación que la función ',edir()'. Esto puede ahorrar una cierta
-                cantidad de recursos hardware, a costa de perder flexibilidad.
-                
-            inverted_end : <bool, por defecto 'True'>
-                Si esta opción es 'True', se añadirá un inversor al final del anillo, lo cual
-                según parece evita acoplos entre anillos cercanos. Notar que la presencia o no
-                de este inversor cambia el número de elementos a efectos de las opciones 'bel'
-                y 'pin'.                
-        """
         self.dominios=[]
         if type(dominios) == type([]) or type(dominios) == type(()):
             self.dominios[:]=dominios[:]
@@ -1316,15 +1148,12 @@ class GaloisMatrix:
             _dump(self, f)
         
     def gen_garomatrix(self, out_name="garomatrix.v"):
-        """
-        Genera un diseño 'out_name' en formato Verilog con la implementación de 
-        los dominios introducidos durante la inicialización del objeto. El 
-        principal uso de esta función es dentro de la función 'implement()'.
+        """Genera un diseño 'out_name' en formato Verilog con la implementación de los dominios introducidos durante la inicialización del objeto. El principal uso de esta función es dentro de la función 'implement()'.
 
-        Parámetros:
-        -----------
-            out_name : <string> (opcional)
-                Nombre del fichero de salida.
+        Parameters
+        ----------
+        out_name : str, opcional
+            Nombre del fichero de salida.
         """
         with open(out_name, "w") as f:
             f.write(f"//N_osciladores de Galois: {self.N_osc}\n\n")
@@ -1359,66 +1188,43 @@ class GaloisMatrix:
                 f.write("\n")
             f.write("endmodule\n")
             
-    def implement(self, projname="project_garomatrix", projdir='.', njobs=4, 
-                  files=True, board='pynqz2', qspi=False, routing=False, 
-                  pblock=False, data_width=32, buffer_out_width=32):
-        """
-        Copia en el directorio 'self.projdir' todos los archivos necesarios para 
-        implementar una matriz de osciladores de anillo de Galois con medición 
-        del sesgo ("bias") y comunicación pc <-> microprocesador <-> FPGA.
+    def implement(self, projname="project_garomatrix", projdir='.', njobs=4, files=True, board='pynqz2', qspi=False, routing=False, pblock=False, data_width=32, buffer_out_width=32):
+        """Copia en el directorio 'self.projdir' todos los archivos necesarios para implementar una matriz de osciladores de anillo de Galois con medición del sesgo ("bias") y comunicación pc <-> microprocesador <-> FPGA.
 
-        Parámetros:
-        ---------
-            projname : <string>
-                Nombre del proyecto de Vivado.
+        Parameters
+        ----------
+        projname : str, opcional
+            Nombre del proyecto de Vivado.
+        
+        projdir : str, opcional
+            Directorio donde se creará el proyecto de Vivado y las fuentes (por defecto el directorio de trabajo actual).
+        
+        njobs : int, opcional
+            Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.
+        
+        debug : bool, opcional
+            Si "True", se implementará una matriz de divisores de reloj de frecuencia conocida, lo que permite depurar el diseño al conocer qué resultados deben salir.
             
-            projdir : <string>
-                Directorio donde se creará el proyecto de Vivado y las fuentes (por
-                defecto el directorio de trabajo actual).
+        files : bool, opcional
+            Si "True", pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar (False) cuando queremos configurar un objeto tipo 'Romatrix' pero no vamos a implementarla físicamente (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).
+                
+        board : str, opcional
+            Placa de desarrollo utilizada en el proyecyo. Las opciones soportadas son: 'pynqz2', 'zybo', 'cmoda7_15t' o 'cmoda7_35t'.
             
-            njobs : <int>
-                Número de núcleos que utiilizará Vivado paralelamente para la 
-                síntesis/implementación.
+        qspi : bool, opcional
+            Si "True", el flujo de diseño incluirá el guardado del bitstream en la memoria flash de la placa para que se auto-programe al encenderse.
             
-            debug : <bool>
-                Si "True", se implementará una matriz de divisores de reloj de 
-                frecuencia conocida, lo que permite depurar el diseño al conocer
-                qué resultados deben salir.
-                
-            files : <bool>
-                    Si "True", pinta los archivos necesarios para implementar la 
-                    matriz en FPGA. Esta opción se puede desactivar (False) cuando 
-                    queremos configurar un objeto tipo 'Romatrix' pero no vamos a 
-                    implementarla físicamente (por ejemplo porque ya lo hemos hecho
-                    y solo queremos medir, o vamos a simularla sin realizarla).
-                    
-            board : <string> 
-                Placa de desarrollo utilizada en el proyecyo. Las opciones 
-                soportadas son: 'pynqz2', 'zybo', 'cmoda7_15t' o 'cmoda7_35t'.
-                
-            qspi : <bool>
-                Si "True", el flujo de diseño incluirá el guardado del bitstream
-                en la memoria flash de la placa para que se auto-programe al 
-                encenderse.
-                
-            routing : <bool> 
-                Si "True", el flujo de diseño incluirá el cableado de los 
-                inversores después de la síntesis. Esto aumenta las 
-                probabilidades de que la herramienta haga un cableado idéntico,
-                pero es recomendable comprobarlo. (NOTA: no tengo garantías de 
-                que esta opción sea del todo compatible con -qspi).
-                
-            pblock : <bool, por defecto False>
-                Si esta opción es 'True' se inserta la matriz en un pblock tal que
-                el espacio dentro del bloque se excluye para toda lógica que no sea
-                la propia matriz.
+        routing : bool, opcional
+            Si "True", el flujo de diseño incluirá el cableado de los inversores después de la síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).
+            
+        pblock : bool, opcional
+            Si esta opción es 'True' se inserta la matriz en un pblock tal que el espacio dentro del bloque se excluye para toda lógica que no sea la propia matriz.
 
-            data_width : <int>
-                Esta opción especifica la anchura del canal de datos PS<-->PL.
+        data_width : int, opcional
+            Esta opción especifica la anchura del canal de datos PS<-->PL.
 
-            buffer_out_width : <int>
-                Esta opción especifica la anchura de la palabra de respuesta 
-                (i.e., de la medida).
+        buffer_out_width : int, opcional
+            Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).
         """
         self.projname = projname
         self.projdir = _os.path.join(_os.path.abspath(projdir), projname).replace("\\","/")
@@ -1837,59 +1643,51 @@ class GaloisMatrix:
             
     def medir(self, puerto='/dev/ttyS1', osc=[0], pdl=[0], N_rep=1, resol=14, poly=0, fdiv=9, 
               bias=False, log=False, verbose=True, baudrate=9600):
-        """
-        Esta función mide la frecuencia de una matriz de osciladores de Galois 
-        'GaloisMatrix', una vez esta ha sido implementado en FPGA. El resultado
-        se devuelve como un objeto 'Tensor'.
+        """Esta función mide la frecuencia de una matriz de osciladores de Galois 'GaloisMatrix', una vez esta ha sido implementado en FPGA. El resultado se devuelve como un objeto 'Tensor'.
         
-        Parámetros:
-        ---------
-            puerto : <string>
-                Esta opción especifica el puerto serie al que se conecta la 
-                FPGA.
-                
-            osc : <int o lista de int>
-                Lista de osciladores a medir.
-                
-            pdl : <int o lista de int>
-                Lista de PDL a medir.
-                
-            N_rep : <int>
-                Número de repeticiones a medir.
-                
-            resol : <int>
-                log_2 del número de ciclos de referencia a completar para dar 
-                por terminada la medida (por defecto 14, i.e., 2^14 = 16384 
-                ciclos).
-                
-            poly : <int>
-                Esta variable indica el índice del polinomio a medir.
-                
-            fdiv : <int>
-                log_2 del factor de división menos uno, para el reloj de muestreo
-                (por defecto 9, i.e., 2^(9+1)=1024; cin f_ref=100 MHz esto supone
-                una frecuencia de muestre f_s=97.65 kHz).
-                
-            bias : <bool>
-                Si se pasa esta opción como "True" el resultado se dará en 
-                tanto por 1.
-                
-            log : <bool>
-                Si se pasa "True" se escriben algunos datos a modo de log.
-                
-            verbose : <bool>
-                Si se pasa "True" se pinta una barra de progreso de la medida. 
-                Desactivar esta opción ("False") hace más cómodo utilizar esta 
-                función en un bucle.
-                
-            baudrate : <int>
-                Tasa de transferencia del protocolo serie UART PC<-->PS. Debe 
-                concordar con el programa compilador en PS.
+        Parameters
+        ----------
+        puerto : str
+            Esta opción especifica el puerto serie al que se conecta la 
+            FPGA.
+            
+        osc : int | list(int)
+            Lista de osciladores a medir.
+            
+        pdl : int | list(int)
+            Lista de PDL a medir.
+            
+        N_rep : int
+            Número de repeticiones a medir.
+            
+        resol : int
+            log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por defecto 14, i.e., 2^14 = 16384 ciclos).
+            
+        poly : int
+            Esta variable indica el índice del polinomio a medir.
+            
+        fdiv : int
+            log_2 del factor de división menos uno, para el reloj de muestreo (por defecto 9, i.e., 2^(9+1)=1024; cin f_ref=100 MHz esto supone una frecuencia de muestre f_s=97.65 kHz).
+            
+        bias : bool
+            Si se pasa esta opción como "True" el resultado se dará en tanto por 1.
+            
+        log : bool
+            Si se pasa "True" se escriben algunos datos a modo de log.
+            
+        verbose : bool
+            Si se pasa "True" se pinta una barra de progreso de la medida. Desactivar esta opción ("False") hace más cómodo utilizar esta función en un bucle.
+            
+        baudrate : int
+            Tasa de transferencia del protocolo serie UART PC<-->PS. Debe concordar con el programa compilador en PS.
         """        
-        def print_unicode_exp(numero):
-            """
-            Esta función toma un número y lo escribe como un exponente utilizando 
-            caracteres UNICODE.
+        def _print_unicode_exp(numero):
+            """Esta función toma un número y lo escribe como un exponente utilizando caracteres UNICODE.
+            
+            Parameters
+            ----------
+            numero : int
+                Valor a escribir como exponente.
             """
             super_unicode = ["\u2070","\u00B9","\u00B2","\u00B3","\u2074","\u2075","\u2076","\u2077","\u2078","\u2079"]
             result=""
@@ -1903,11 +1701,8 @@ class GaloisMatrix:
                 result+=super_unicode[i]
             return result
 
-        def poly_nomenclature(entrada):
-            """
-            Esta función toma un array 'poly' tal y como se utilizando en este 
-            script para representar un polinomio de Galois, y lo escribe en forma 
-            de polinomio tal y como se escribe en el paper de Golic.
+        def _poly_nomenclature(entrada):
+            """Esta función toma un array 'poly' tal y como se utilizando en este script para representar un polinomio de Galois, y lo escribe en forma de polinomio tal y como se escribe en el paper de Golic.
             """
             N=len(entrada)+1
             result="1"
@@ -1916,11 +1711,11 @@ class GaloisMatrix:
                     if i==1:
                         result+="+x"
                     else:
-                        result+=f"+x{print_unicode_exp(i)}"
+                        result+=f"+x{_print_unicode_exp(i)}"
             if N==1:
                 result+="+x"
             else:
-                result+=f"+x{print_unicode_exp(N)}"
+                result+=f"+x{_print_unicode_exp(N)}"
             return result
 
         if type(osc)==type(1):
@@ -1956,9 +1751,9 @@ class GaloisMatrix:
             if not self.trng:
                 print(f"Resolución             = {2**resol}\n")
             if self.poly<0:
-                print(f"Polinomio              = {poly} --> {poly_nomenclature(buffer_sel_poly)}\n")
+                print(f"Polinomio              = {poly} --> {_poly_nomenclature(buffer_sel_poly)}\n")
             else:
-                print(f"Polinomio (hardcoded)  = {self.poly} --> {poly_nomenclature(resize_array(int_to_bitstr(self.poly), self.N_inv-1))}\n")
+                print(f"Polinomio (hardcoded)  = {self.poly} --> {_poly_nomenclature(resize_array(int_to_bitstr(self.poly), self.N_inv-1))}\n")
             print(f"Frecuencia de muestreo = {round(100000/2**(1+fdiv),2)} kHz\n")
             print(f"Número de osciladores  = {N_osc}\n")
             print(f"Número de repeticiones = {N_rep}\n")

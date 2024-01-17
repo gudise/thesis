@@ -1,5 +1,6 @@
-from numpy.random import normal, random
-from numpy import interp
+from numpy.random   import  normal as _normal,\
+                            random as _random
+from numpy          import  interp as _interp
 
 class WAVEFORM:
 	def __init__(self, x=False, names=[], waves=[]):
@@ -72,7 +73,7 @@ class MODULO:
 			if wname == 'x':
 				self.w_old.append('x')
 			else:
-				self.w_old.append(random()) # Inicializar valores en los cables.
+				self.w_old.append(_random()) # Inicializar valores en los cables.
 		self.w = self.w_old[:]
 		
 		## Corregimos los valores de los cables de salida incompatibles con las LUT del sistema
@@ -113,7 +114,7 @@ class MODULO:
 			for name in waveform_in.names:
 				waveform_proc_names.append(name)
 			for wave in waveform_in.waves:
-				waveform_proc_waves.append(interp(tspan, [t0+j*((t1-t0)/(len(wave)-1)) for j in range(len(wave))], wave))
+				waveform_proc_waves.append(_interp(tspan, [t0+j*((t1-t0)/(len(wave)-1)) for j in range(len(wave))], wave))
 		waveform_proc = WAVEFORM(names=waveform_proc_names, waves=waveform_proc_waves)
 		
 		waveform_result_names = []
@@ -145,7 +146,7 @@ def numDerivative(func, x, eps=1e-10):
 
 
 def delayLineModel(expected_value, old_value, func_pot, mu=0, sigma=0):
-	result = old_value + numDerivative(func_pot, expected_value-old_value)+normal(mu, sigma)
+	result = old_value + numDerivative(func_pot, expected_value-old_value)+_normal(mu, sigma)
 	if result > 1:
 		result=1
 	elif result < 0:

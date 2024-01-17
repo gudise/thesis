@@ -2,11 +2,16 @@
 Este módulo contiene una lista de algunos recursos relacionados con la 
 estructura interna de la FPGA; estas cantidades son invariantes (no se
 modifican durante la ejecución de un programa).
+
+Attributes
+----------
+pynqz2 : lista de lista de str
+    Matriz de tamaño 114x150 cuya entrada i,j contiene los parámetros físicos de la celda SLICE_X{i}Y{j} para la FPGA implementada sobre una placa de desarrollo ``PYNQ-Z2``. Si la celda no existe en esta FPGA se devuelve `None`.
 """
 
 ## PYNQ-Z2
-pynqz2 = [[None for j in range(150)] for i in range(114)] # matriz 114x150; el elemento i,j contiene los parámetros físicos de la celda SLICE_X{i}Y{j}.
-                                                          # Si la celda no existe en esta FPGA se devuelve 'None'.
+pynqz2 = [[None for j in range(150)] for i in range(114)] # Matriz de tamaño 114x150 cuya entrada i,j contiene los parámetros físicos de la celda SLICE_X{i}Y{j} para la FPGA implementada sobre una placa de desarrollo ``PYNQ-Z2``. Si la celda no existe en esta FPGA se devuelve `None`
+
 # SLICE_X0
 for j in range(50):
     pynqz2[0][j] = '0 M left'
