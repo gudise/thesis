@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>utils package &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils.bool module" href="utils.bool.html" />
+    <link rel="prev" title="setup module" href="setup.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.bool.html" title="utils.bool module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="setup module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-utils">
+<span id="utils-package"></span><h1>utils package<a class="headerlink" href="#module-utils" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.BarraProgreso">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">BarraProgreso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_barra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caracter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'#'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#BarraProgreso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.BarraProgreso" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Esta clase instancia un objeto BarraProgreso.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total</strong> (<em>int</em>) – Número de iteraciones que hacen el 100% de la barra.</p></li>
+<li><p><strong>long_barra</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de caracteres que componen la barra, por defecto 40.</p></li>
+<li><p><strong>caracter</strong> (<em>char</em><em>, </em><em>opcional</em>) – Caracter que se utiliza para decorar la barra, por defecto ‘#’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.export_legend_plt">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">export_legend_plt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'legend.pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_inches</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#export_legend_plt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.export_legend_plt" title="Link to this definition">¶</a></dt>
+<dd><p>Exporta la leyenda de la figura actualmente activa.</p>
+<p>Esta función es útil para exportar la leyenda de un gráfico cuando se tienen
+múltiples gráficos que comparten la misma leyenda. Es importante tener en cuenta
+que se requiere haber creado una figura con ‘plt.plot’, la cual debe incluir una
+leyenda, y NO se debe haber ejecutado ‘plt.show()’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<cite>matplotlib.axes.Axes</cite>) – Los ejes de la figura de los cuales se quiere extraer la leyenda. Si se utilizan
+comandos como ‘plot’, etc., se puede obtener los ejes activos del gráfico con
+ax=plt.gca().</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre de la imagen. Por defecto es “legend.pdf”.</p></li>
+<li><p><strong>pad_inches</strong> (<em>float</em><em>, </em><em>opcional</em>) – Esta opción se pasa directamente a la función “savefig”. Por defecto es 0.1.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Las opciones introducidas aquí se pasan directamente a la función <cite>ax.legend</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.run_in_parallel">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">run_in_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#run_in_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.run_in_parallel" title="Link to this definition">¶</a></dt>
+<dd><p>Ejecuta la función en paralelo utilizando argumentos proporcionados.</p>
+<p>Esta función toma un método ‘func’ y una lista de argumentos ‘args’, y repite la ejecución
+de la función en paralelo. El método ‘func’ puede recibir un número arbitrario y tipos de argumentos,
+pero serán pasados en orden según aparezcan en ‘args’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – Procedimiento que puede tomar un número arbitrario y tipos de argumentos, pero son específicos
+en su posición.</p></li>
+<li><p><strong>args</strong> (<em>list</em>) – Lista que contiene una lista con los argumentos a pasar a ‘func’ en cada proceso.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista con los resultados de cada proceso.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Esta función siempre debe ser ejecutada dentro de <cite>if __name__==’__main__’:</cite>.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.set_size_plt">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">set_size_plt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.333333333333333</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#set_size_plt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.set_size_plt" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función permite dibujar una figura fijando el tamaño del plot, y no de la figura completa. Toma los valores <cite>x</cite>, <cite>y</cite> que representan las dimensiones en dichos ejes de un plot, y construye la figura del tamaño que sea necesario para acomodar los ejes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<cite>matplotlib.axes.Axes</cite>) – Objeto que contiene la figura a redimensionar.</p></li>
+<li><p><strong>x</strong> (<em>float</em><em>, </em><em>opcional</em>) – Nueva anchura, por defecto 16/3.</p></li>
+<li><p><strong>y</strong> (<em>float</em><em>, </em><em>opcional</em>) – Nueva altura, por defecto 4.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="utils.bool.html">utils.bool module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.bool.html#utils.bool.LinearSystECC"><code class="docutils literal notranslate"><span class="pre">LinearSystECC</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.bool.html#utils.bool.LinearSystECC.decode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.decode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.bool.html#utils.bool.LinearSystECC.encode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.encode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.bool.html#utils.bool.gauss_elimination_gf2"><code class="docutils literal notranslate"><span class="pre">gauss_elimination_gf2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.bool.html#utils.bool.hamming"><code class="docutils literal notranslate"><span class="pre">hamming()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.bool.html#utils.bool.invert_matrix_gf2"><code class="docutils literal notranslate"><span class="pre">invert_matrix_gf2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.bool.html#utils.bool.matrix_multiply_gf2"><code class="docutils literal notranslate"><span class="pre">matrix_multiply_gf2()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.stats.html">utils.stats module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.Dks_montecarlo_discrete"><code class="docutils literal notranslate"><span class="pre">Dks_montecarlo_discrete()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.bin_rv_cont"><code class="docutils literal notranslate"><span class="pre">bin_rv_cont()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.bin_rv_discrete"><code class="docutils literal notranslate"><span class="pre">bin_rv_discrete()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.chisq_gof_discrete"><code class="docutils literal notranslate"><span class="pre">chisq_gof_discrete()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.fit_rv_cont"><code class="docutils literal notranslate"><span class="pre">fit_rv_cont()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.get_area_fraction"><code class="docutils literal notranslate"><span class="pre">get_area_fraction()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.get_hist_smooth"><code class="docutils literal notranslate"><span class="pre">get_hist_smooth()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.stats.html#utils.stats.intervalo_int"><code class="docutils literal notranslate"><span class="pre">intervalo_int()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.tensor.html">utils.tensor module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor"><code class="docutils literal notranslate"><span class="pre">Tensor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.array"><code class="docutils literal notranslate"><span class="pre">Tensor.array</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.shape"><code class="docutils literal notranslate"><span class="pre">Tensor.shape</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.axis"><code class="docutils literal notranslate"><span class="pre">Tensor.axis</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.item"><code class="docutils literal notranslate"><span class="pre">Tensor.item()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.mean"><code class="docutils literal notranslate"><span class="pre">Tensor.mean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.save"><code class="docutils literal notranslate"><span class="pre">Tensor.save()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.size"><code class="docutils literal notranslate"><span class="pre">Tensor.size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.slice"><code class="docutils literal notranslate"><span class="pre">Tensor.slice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.squeeze"><code class="docutils literal notranslate"><span class="pre">Tensor.squeeze()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.std"><code class="docutils literal notranslate"><span class="pre">Tensor.std()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.swap"><code class="docutils literal notranslate"><span class="pre">Tensor.swap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.tensor.html#utils.tensor.Tensor.take"><code class="docutils literal notranslate"><span class="pre">Tensor.take()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.tensor.html#utils.tensor.append"><code class="docutils literal notranslate"><span class="pre">append()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.tensor.html#utils.tensor.load_tensor"><code class="docutils literal notranslate"><span class="pre">load_tensor()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils package</a><ul>
+<li><a class="reference internal" href="#utils.BarraProgreso"><code class="docutils literal notranslate"><span class="pre">BarraProgreso</span></code></a></li>
+<li><a class="reference internal" href="#utils.export_legend_plt"><code class="docutils literal notranslate"><span class="pre">export_legend_plt()</span></code></a></li>
+<li><a class="reference internal" href="#utils.run_in_parallel"><code class="docutils literal notranslate"><span class="pre">run_in_parallel()</span></code></a></li>
+<li><a class="reference internal" href="#utils.set_size_plt"><code class="docutils literal notranslate"><span class="pre">set_size_plt()</span></code></a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="setup.html"
+                          title="previous chapter">setup module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="utils.bool.html"
+                          title="next chapter">utils.bool module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.bool.html" title="utils.bool module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="setup module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

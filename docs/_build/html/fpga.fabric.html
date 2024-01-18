@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fpga.fabric module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fpga.interfaz_pcps module" href="fpga.interfaz_pcps.html" />
+    <link rel="prev" title="fpga package" href="fpga.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.interfaz_pcps.html" title="fpga.interfaz_pcps module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fpga.html" title="fpga package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" accesskey="U">fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.fabric module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-fpga.fabric">
+<span id="fpga-fabric-module"></span><h1>fpga.fabric module<a class="headerlink" href="#module-fpga.fabric" title="Link to this heading">¶</a></h1>
+<p>Este módulo contiene una lista de algunos recursos relacionados con la
+estructura interna de la FPGA; estas cantidades son invariantes (no se
+modifican durante la ejecución de un programa).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.fabric.pynqz2">
+<span class="sig-prename descclassname"><span class="pre">fpga.fabric.</span></span><span class="sig-name descname"><span class="pre">pynqz2</span></span><a class="headerlink" href="#fpga.fabric.pynqz2" title="Link to this definition">¶</a></dt>
+<dd><p>Matriz de tamaño 114x150 cuya entrada i,j contiene los parámetros físicos de la celda SLICE_X{i}Y{j} para la FPGA implementada sobre una placa de desarrollo <code class="docutils literal notranslate"><span class="pre">PYNQ-Z2</span></code>. Si la celda no existe en esta FPGA se devuelve <cite>None</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de lista de str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">fpga.fabric module</a><ul>
+<li><a class="reference internal" href="#fpga.fabric.pynqz2"><code class="docutils literal notranslate"><span class="pre">pynqz2</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fpga.html"
+                          title="previous chapter">fpga package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="fpga.interfaz_pcps.html"
+                          title="next chapter">fpga.interfaz_pcps module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fpga.fabric.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.interfaz_pcps.html" title="fpga.interfaz_pcps module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fpga.html" title="fpga package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" >fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.fabric module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

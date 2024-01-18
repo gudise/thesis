@@ -1,0 +1,172 @@
+\indexentry{module@\spxentry{module}!fpga@\spxentry{fpga}|hyperpage}{1}
+\indexentry{fpga@\spxentry{fpga}!module@\spxentry{module}|hyperpage}{1}
+\indexentry{FlipFlop (class in fpga)@\spxentry{FlipFlop}\spxextra{class in fpga}|hyperpage}{1}
+\indexentry{bel (fpga.FlipFlop attribute)@\spxentry{bel}\spxextra{fpga.FlipFlop attribute}|hyperpage}{1}
+\indexentry{impl() (fpga.FlipFlop method)@\spxentry{impl()}\spxextra{fpga.FlipFlop method}|hyperpage}{1}
+\indexentry{loc (fpga.FlipFlop attribute)@\spxentry{loc}\spxextra{fpga.FlipFlop attribute}|hyperpage}{1}
+\indexentry{name (fpga.FlipFlop attribute)@\spxentry{name}\spxextra{fpga.FlipFlop attribute}|hyperpage}{1}
+\indexentry{w\_clock (fpga.FlipFlop attribute)@\spxentry{w\_clock}\spxextra{fpga.FlipFlop attribute}|hyperpage}{1}
+\indexentry{w\_in (fpga.FlipFlop attribute)@\spxentry{w\_in}\spxextra{fpga.FlipFlop attribute}|hyperpage}{2}
+\indexentry{w\_out (fpga.FlipFlop attribute)@\spxentry{w\_out}\spxextra{fpga.FlipFlop attribute}|hyperpage}{2}
+\indexentry{Lut1 (class in fpga)@\spxentry{Lut1}\spxextra{class in fpga}|hyperpage}{2}
+\indexentry{bel (fpga.Lut1 attribute)@\spxentry{bel}\spxextra{fpga.Lut1 attribute}|hyperpage}{2}
+\indexentry{impl() (fpga.Lut1 method)@\spxentry{impl()}\spxextra{fpga.Lut1 method}|hyperpage}{2}
+\indexentry{init (fpga.Lut1 attribute)@\spxentry{init}\spxextra{fpga.Lut1 attribute}|hyperpage}{2}
+\indexentry{loc (fpga.Lut1 attribute)@\spxentry{loc}\spxextra{fpga.Lut1 attribute}|hyperpage}{3}
+\indexentry{name (fpga.Lut1 attribute)@\spxentry{name}\spxextra{fpga.Lut1 attribute}|hyperpage}{3}
+\indexentry{pin (fpga.Lut1 attribute)@\spxentry{pin}\spxextra{fpga.Lut1 attribute}|hyperpage}{3}
+\indexentry{w\_in (fpga.Lut1 attribute)@\spxentry{w\_in}\spxextra{fpga.Lut1 attribute}|hyperpage}{3}
+\indexentry{w\_out (fpga.Lut1 attribute)@\spxentry{w\_out}\spxextra{fpga.Lut1 attribute}|hyperpage}{3}
+\indexentry{Lut2 (class in fpga)@\spxentry{Lut2}\spxextra{class in fpga}|hyperpage}{3}
+\indexentry{bel (fpga.Lut2 attribute)@\spxentry{bel}\spxextra{fpga.Lut2 attribute}|hyperpage}{3}
+\indexentry{impl() (fpga.Lut2 method)@\spxentry{impl()}\spxextra{fpga.Lut2 method}|hyperpage}{3}
+\indexentry{init (fpga.Lut2 attribute)@\spxentry{init}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{loc (fpga.Lut2 attribute)@\spxentry{loc}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{name (fpga.Lut2 attribute)@\spxentry{name}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{pin (fpga.Lut2 attribute)@\spxentry{pin}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{w\_in (fpga.Lut2 attribute)@\spxentry{w\_in}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{w\_out (fpga.Lut2 attribute)@\spxentry{w\_out}\spxextra{fpga.Lut2 attribute}|hyperpage}{4}
+\indexentry{Lut3 (class in fpga)@\spxentry{Lut3}\spxextra{class in fpga}|hyperpage}{4}
+\indexentry{bel (fpga.Lut3 attribute)@\spxentry{bel}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{impl() (fpga.Lut3 method)@\spxentry{impl()}\spxextra{fpga.Lut3 method}|hyperpage}{5}
+\indexentry{init (fpga.Lut3 attribute)@\spxentry{init}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{loc (fpga.Lut3 attribute)@\spxentry{loc}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{name (fpga.Lut3 attribute)@\spxentry{name}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{pin (fpga.Lut3 attribute)@\spxentry{pin}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{w\_in (fpga.Lut3 attribute)@\spxentry{w\_in}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{w\_out (fpga.Lut3 attribute)@\spxentry{w\_out}\spxextra{fpga.Lut3 attribute}|hyperpage}{5}
+\indexentry{Lut4 (class in fpga)@\spxentry{Lut4}\spxextra{class in fpga}|hyperpage}{5}
+\indexentry{bel (fpga.Lut4 attribute)@\spxentry{bel}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{impl() (fpga.Lut4 method)@\spxentry{impl()}\spxextra{fpga.Lut4 method}|hyperpage}{6}
+\indexentry{init (fpga.Lut4 attribute)@\spxentry{init}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{loc (fpga.Lut4 attribute)@\spxentry{loc}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{name (fpga.Lut4 attribute)@\spxentry{name}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{pin (fpga.Lut4 attribute)@\spxentry{pin}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{w\_in (fpga.Lut4 attribute)@\spxentry{w\_in}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{w\_out (fpga.Lut4 attribute)@\spxentry{w\_out}\spxextra{fpga.Lut4 attribute}|hyperpage}{6}
+\indexentry{Lut6 (class in fpga)@\spxentry{Lut6}\spxextra{class in fpga}|hyperpage}{6}
+\indexentry{bel (fpga.Lut6 attribute)@\spxentry{bel}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{impl() (fpga.Lut6 method)@\spxentry{impl()}\spxextra{fpga.Lut6 method}|hyperpage}{7}
+\indexentry{init (fpga.Lut6 attribute)@\spxentry{init}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{loc (fpga.Lut6 attribute)@\spxentry{loc}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{name (fpga.Lut6 attribute)@\spxentry{name}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{pin (fpga.Lut6 attribute)@\spxentry{pin}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{w\_in (fpga.Lut6 attribute)@\spxentry{w\_in}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{w\_out (fpga.Lut6 attribute)@\spxentry{w\_out}\spxextra{fpga.Lut6 attribute}|hyperpage}{7}
+\indexentry{module@\spxentry{module}!fpga.fabric@\spxentry{fpga.fabric}|hyperpage}{8}
+\indexentry{fpga.fabric@\spxentry{fpga.fabric}!module@\spxentry{module}|hyperpage}{8}
+\indexentry{pynqz2 (in module fpga.fabric)@\spxentry{pynqz2}\spxextra{in module fpga.fabric}|hyperpage}{8}
+\indexentry{module@\spxentry{module}!fpga.interfaz\_pcps@\spxentry{fpga.interfaz\_pcps}|hyperpage}{8}
+\indexentry{fpga.interfaz\_pcps@\spxentry{fpga.interfaz\_pcps}!module@\spxentry{module}|hyperpage}{8}
+\indexentry{bitstr\_to\_bytestr() (in module fpga.interfaz\_pcps)@\spxentry{bitstr\_to\_bytestr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{8}
+\indexentry{bitstr\_to\_int() (in module fpga.interfaz\_pcps)@\spxentry{bitstr\_to\_int()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{8}
+\indexentry{bytestr\_to\_bitstr() (in module fpga.interfaz\_pcps)@\spxentry{bytestr\_to\_bitstr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{8}
+\indexentry{bytestr\_to\_int() (in module fpga.interfaz\_pcps)@\spxentry{bytestr\_to\_int()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{9}
+\indexentry{calc() (in module fpga.interfaz\_pcps)@\spxentry{calc()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{9}
+\indexentry{int\_to\_bitstr() (in module fpga.interfaz\_pcps)@\spxentry{int\_to\_bitstr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{9}
+\indexentry{int\_to\_bytestr() (in module fpga.interfaz\_pcps)@\spxentry{int\_to\_bytestr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{9}
+\indexentry{print\_bitstr() (in module fpga.interfaz\_pcps)@\spxentry{print\_bitstr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{9}
+\indexentry{print\_bytestr() (in module fpga.interfaz\_pcps)@\spxentry{print\_bytestr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{10}
+\indexentry{receive\_bytestr() (in module fpga.interfaz\_pcps)@\spxentry{receive\_bytestr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{10}
+\indexentry{receive\_u32() (in module fpga.interfaz\_pcps)@\spxentry{receive\_u32()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{10}
+\indexentry{receive\_u8() (in module fpga.interfaz\_pcps)@\spxentry{receive\_u8()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{10}
+\indexentry{resize\_array() (in module fpga.interfaz\_pcps)@\spxentry{resize\_array()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{10}
+\indexentry{scan() (in module fpga.interfaz\_pcps)@\spxentry{scan()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{11}
+\indexentry{send\_bytestr() (in module fpga.interfaz\_pcps)@\spxentry{send\_bytestr()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{11}
+\indexentry{send\_u8() (in module fpga.interfaz\_pcps)@\spxentry{send\_u8()}\spxextra{in module fpga.interfaz\_pcps}|hyperpage}{11}
+\indexentry{module@\spxentry{module}!fpga.ring\_osc@\spxentry{fpga.ring\_osc}|hyperpage}{11}
+\indexentry{fpga.ring\_osc@\spxentry{fpga.ring\_osc}!module@\spxentry{module}|hyperpage}{11}
+\indexentry{Dominio (class in fpga.ring\_osc)@\spxentry{Dominio}\spxextra{class in fpga.ring\_osc}|hyperpage}{11}
+\indexentry{N\_osc (fpga.ring\_osc.Dominio attribute)@\spxentry{N\_osc}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{directriz (fpga.ring\_osc.Dominio attribute)@\spxentry{directriz}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{dx (fpga.ring\_osc.Dominio attribute)@\spxentry{dx}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{dy (fpga.ring\_osc.Dominio attribute)@\spxentry{dy}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{help() (fpga.ring\_osc.Dominio method)@\spxentry{help()}\spxextra{fpga.ring\_osc.Dominio method}|hyperpage}{12}
+\indexentry{osc\_coord (fpga.ring\_osc.Dominio attribute)@\spxentry{osc\_coord}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{x0 (fpga.ring\_osc.Dominio attribute)@\spxentry{x0}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{x1 (fpga.ring\_osc.Dominio attribute)@\spxentry{x1}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{y0 (fpga.ring\_osc.Dominio attribute)@\spxentry{y0}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{y1 (fpga.ring\_osc.Dominio attribute)@\spxentry{y1}\spxextra{fpga.ring\_osc.Dominio attribute}|hyperpage}{12}
+\indexentry{GaloisMatrix (class in fpga.ring\_osc)@\spxentry{GaloisMatrix}\spxextra{class in fpga.ring\_osc}|hyperpage}{12}
+\indexentry{gen\_garomatrix() (fpga.ring\_osc.GaloisMatrix method)@\spxentry{gen\_garomatrix()}\spxextra{fpga.ring\_osc.GaloisMatrix method}|hyperpage}{13}
+\indexentry{help() (fpga.ring\_osc.GaloisMatrix method)@\spxentry{help()}\spxextra{fpga.ring\_osc.GaloisMatrix method}|hyperpage}{13}
+\indexentry{implement() (fpga.ring\_osc.GaloisMatrix method)@\spxentry{implement()}\spxextra{fpga.ring\_osc.GaloisMatrix method}|hyperpage}{13}
+\indexentry{medir() (fpga.ring\_osc.GaloisMatrix method)@\spxentry{medir()}\spxextra{fpga.ring\_osc.GaloisMatrix method}|hyperpage}{14}
+\indexentry{save() (fpga.ring\_osc.GaloisMatrix method)@\spxentry{save()}\spxextra{fpga.ring\_osc.GaloisMatrix method}|hyperpage}{14}
+\indexentry{GaloisRing (class in fpga.ring\_osc)@\spxentry{GaloisRing}\spxextra{class in fpga.ring\_osc}|hyperpage}{14}
+\indexentry{N\_inv (fpga.ring\_osc.GaloisRing attribute)@\spxentry{N\_inv}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{15}
+\indexentry{bel (fpga.ring\_osc.GaloisRing attribute)@\spxentry{bel}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{15}
+\indexentry{elements (fpga.ring\_osc.GaloisRing attribute)@\spxentry{elements}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{16}
+\indexentry{help() (fpga.ring\_osc.GaloisRing method)@\spxentry{help()}\spxextra{fpga.ring\_osc.GaloisRing method}|hyperpage}{16}
+\indexentry{loc (fpga.ring\_osc.GaloisRing attribute)@\spxentry{loc}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{16}
+\indexentry{name (fpga.ring\_osc.GaloisRing attribute)@\spxentry{name}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{16}
+\indexentry{pin (fpga.ring\_osc.GaloisRing attribute)@\spxentry{pin}\spxextra{fpga.ring\_osc.GaloisRing attribute}|hyperpage}{16}
+\indexentry{StdMatrix (class in fpga.ring\_osc)@\spxentry{StdMatrix}\spxextra{class in fpga.ring\_osc}|hyperpage}{16}
+\indexentry{N\_bits\_osc (fpga.ring\_osc.StdMatrix attribute)@\spxentry{N\_bits\_osc}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{N\_bits\_pdl (fpga.ring\_osc.StdMatrix attribute)@\spxentry{N\_bits\_pdl}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{N\_bits\_resol (fpga.ring\_osc.StdMatrix attribute)@\spxentry{N\_bits\_resol}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{N\_inv (fpga.ring\_osc.StdMatrix attribute)@\spxentry{N\_inv}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{N\_osc (fpga.ring\_osc.StdMatrix attribute)@\spxentry{N\_osc}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{bel (fpga.ring\_osc.StdMatrix attribute)@\spxentry{bel}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{16}
+\indexentry{dominios (fpga.ring\_osc.StdMatrix attribute)@\spxentry{dominios}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{17}
+\indexentry{gen\_romatrix() (fpga.ring\_osc.StdMatrix method)@\spxentry{gen\_romatrix()}\spxextra{fpga.ring\_osc.StdMatrix method}|hyperpage}{17}
+\indexentry{help() (fpga.ring\_osc.StdMatrix method)@\spxentry{help()}\spxextra{fpga.ring\_osc.StdMatrix method}|hyperpage}{17}
+\indexentry{implement() (fpga.ring\_osc.StdMatrix method)@\spxentry{implement()}\spxextra{fpga.ring\_osc.StdMatrix method}|hyperpage}{17}
+\indexentry{medir() (fpga.ring\_osc.StdMatrix method)@\spxentry{medir()}\spxextra{fpga.ring\_osc.StdMatrix method}|hyperpage}{18}
+\indexentry{osc\_list (fpga.ring\_osc.StdMatrix attribute)@\spxentry{osc\_list}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{18}
+\indexentry{pdl (fpga.ring\_osc.StdMatrix attribute)@\spxentry{pdl}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{18}
+\indexentry{pin (fpga.ring\_osc.StdMatrix attribute)@\spxentry{pin}\spxextra{fpga.ring\_osc.StdMatrix attribute}|hyperpage}{18}
+\indexentry{save() (fpga.ring\_osc.StdMatrix method)@\spxentry{save()}\spxextra{fpga.ring\_osc.StdMatrix method}|hyperpage}{18}
+\indexentry{StdRing (class in fpga.ring\_osc)@\spxentry{StdRing}\spxextra{class in fpga.ring\_osc}|hyperpage}{18}
+\indexentry{N\_inv (fpga.ring\_osc.StdRing attribute)@\spxentry{N\_inv}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{19}
+\indexentry{bel (fpga.ring\_osc.StdRing attribute)@\spxentry{bel}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{19}
+\indexentry{elements (fpga.ring\_osc.StdRing attribute)@\spxentry{elements}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{19}
+\indexentry{help() (fpga.ring\_osc.StdRing method)@\spxentry{help()}\spxextra{fpga.ring\_osc.StdRing method}|hyperpage}{19}
+\indexentry{loc (fpga.ring\_osc.StdRing attribute)@\spxentry{loc}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{19}
+\indexentry{name (fpga.ring\_osc.StdRing attribute)@\spxentry{name}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{20}
+\indexentry{pin (fpga.ring\_osc.StdRing attribute)@\spxentry{pin}\spxextra{fpga.ring\_osc.StdRing attribute}|hyperpage}{20}
+\indexentry{clog2() (in module fpga.ring\_osc)@\spxentry{clog2()}\spxextra{in module fpga.ring\_osc}|hyperpage}{20}
+\indexentry{load() (in module fpga.ring\_osc)@\spxentry{load()}\spxextra{in module fpga.ring\_osc}|hyperpage}{20}
+\indexentry{sim\_romatrix() (in module fpga.ring\_osc)@\spxentry{sim\_romatrix()}\spxextra{in module fpga.ring\_osc}|hyperpage}{20}
+\indexentry{module@\spxentry{module}!utils@\spxentry{utils}|hyperpage}{23}
+\indexentry{utils@\spxentry{utils}!module@\spxentry{module}|hyperpage}{23}
+\indexentry{BarraProgreso (class in utils)@\spxentry{BarraProgreso}\spxextra{class in utils}|hyperpage}{23}
+\indexentry{export\_legend\_plt() (in module utils)@\spxentry{export\_legend\_plt()}\spxextra{in module utils}|hyperpage}{23}
+\indexentry{run\_in\_parallel() (in module utils)@\spxentry{run\_in\_parallel()}\spxextra{in module utils}|hyperpage}{23}
+\indexentry{set\_size\_plt() (in module utils)@\spxentry{set\_size\_plt()}\spxextra{in module utils}|hyperpage}{24}
+\indexentry{module@\spxentry{module}!utils.bool@\spxentry{utils.bool}|hyperpage}{24}
+\indexentry{utils.bool@\spxentry{utils.bool}!module@\spxentry{module}|hyperpage}{24}
+\indexentry{LinearSystECC (class in utils.bool)@\spxentry{LinearSystECC}\spxextra{class in utils.bool}|hyperpage}{24}
+\indexentry{decode() (utils.bool.LinearSystECC method)@\spxentry{decode()}\spxextra{utils.bool.LinearSystECC method}|hyperpage}{25}
+\indexentry{encode() (utils.bool.LinearSystECC method)@\spxentry{encode()}\spxextra{utils.bool.LinearSystECC method}|hyperpage}{25}
+\indexentry{gauss\_elimination\_gf2() (in module utils.bool)@\spxentry{gauss\_elimination\_gf2()}\spxextra{in module utils.bool}|hyperpage}{25}
+\indexentry{hamming() (in module utils.bool)@\spxentry{hamming()}\spxextra{in module utils.bool}|hyperpage}{25}
+\indexentry{invert\_matrix\_gf2() (in module utils.bool)@\spxentry{invert\_matrix\_gf2()}\spxextra{in module utils.bool}|hyperpage}{26}
+\indexentry{matrix\_multiply\_gf2() (in module utils.bool)@\spxentry{matrix\_multiply\_gf2()}\spxextra{in module utils.bool}|hyperpage}{26}
+\indexentry{module@\spxentry{module}!utils.stats@\spxentry{utils.stats}|hyperpage}{26}
+\indexentry{utils.stats@\spxentry{utils.stats}!module@\spxentry{module}|hyperpage}{26}
+\indexentry{Dks\_montecarlo\_discrete() (in module utils.stats)@\spxentry{Dks\_montecarlo\_discrete()}\spxextra{in module utils.stats}|hyperpage}{26}
+\indexentry{bin\_rv\_cont() (in module utils.stats)@\spxentry{bin\_rv\_cont()}\spxextra{in module utils.stats}|hyperpage}{27}
+\indexentry{bin\_rv\_discrete() (in module utils.stats)@\spxentry{bin\_rv\_discrete()}\spxextra{in module utils.stats}|hyperpage}{27}
+\indexentry{chisq\_gof\_discrete() (in module utils.stats)@\spxentry{chisq\_gof\_discrete()}\spxextra{in module utils.stats}|hyperpage}{28}
+\indexentry{fit\_rv\_cont() (in module utils.stats)@\spxentry{fit\_rv\_cont()}\spxextra{in module utils.stats}|hyperpage}{28}
+\indexentry{get\_area\_fraction() (in module utils.stats)@\spxentry{get\_area\_fraction()}\spxextra{in module utils.stats}|hyperpage}{29}
+\indexentry{get\_hist\_smooth() (in module utils.stats)@\spxentry{get\_hist\_smooth()}\spxextra{in module utils.stats}|hyperpage}{29}
+\indexentry{intervalo\_int() (in module utils.stats)@\spxentry{intervalo\_int()}\spxextra{in module utils.stats}|hyperpage}{30}
+\indexentry{module@\spxentry{module}!utils.tensor@\spxentry{utils.tensor}|hyperpage}{30}
+\indexentry{utils.tensor@\spxentry{utils.tensor}!module@\spxentry{module}|hyperpage}{30}
+\indexentry{Tensor (class in utils.tensor)@\spxentry{Tensor}\spxextra{class in utils.tensor}|hyperpage}{30}
+\indexentry{array (utils.tensor.Tensor attribute)@\spxentry{array}\spxextra{utils.tensor.Tensor attribute}|hyperpage}{30}
+\indexentry{shape (utils.tensor.Tensor attribute)@\spxentry{shape}\spxextra{utils.tensor.Tensor attribute}|hyperpage}{30}
+\indexentry{axis (utils.tensor.Tensor attribute)@\spxentry{axis}\spxextra{utils.tensor.Tensor attribute}|hyperpage}{30}
+\indexentry{item() (utils.tensor.Tensor method)@\spxentry{item()}\spxextra{utils.tensor.Tensor method}|hyperpage}{31}
+\indexentry{mean() (utils.tensor.Tensor method)@\spxentry{mean()}\spxextra{utils.tensor.Tensor method}|hyperpage}{31}
+\indexentry{save() (utils.tensor.Tensor method)@\spxentry{save()}\spxextra{utils.tensor.Tensor method}|hyperpage}{31}
+\indexentry{size() (utils.tensor.Tensor method)@\spxentry{size()}\spxextra{utils.tensor.Tensor method}|hyperpage}{31}
+\indexentry{slice() (utils.tensor.Tensor method)@\spxentry{slice()}\spxextra{utils.tensor.Tensor method}|hyperpage}{31}
+\indexentry{squeeze() (utils.tensor.Tensor method)@\spxentry{squeeze()}\spxextra{utils.tensor.Tensor method}|hyperpage}{32}
+\indexentry{std() (utils.tensor.Tensor method)@\spxentry{std()}\spxextra{utils.tensor.Tensor method}|hyperpage}{32}
+\indexentry{swap() (utils.tensor.Tensor method)@\spxentry{swap()}\spxextra{utils.tensor.Tensor method}|hyperpage}{32}
+\indexentry{take() (utils.tensor.Tensor method)@\spxentry{take()}\spxextra{utils.tensor.Tensor method}|hyperpage}{32}
+\indexentry{append() (in module utils.tensor)@\spxentry{append()}\spxextra{in module utils.tensor}|hyperpage}{33}
+\indexentry{load\_tensor() (in module utils.tensor)@\spxentry{load\_tensor()}\spxextra{in module utils.tensor}|hyperpage}{33}

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>utils.stats module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils.tensor module" href="utils.tensor.html" />
+    <link rel="prev" title="utils.bool module" href="utils.bool.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.tensor.html" title="utils.tensor module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utils.bool.html" title="utils.bool module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" accesskey="U">utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.stats module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-utils.stats">
+<span id="utils-stats-module"></span><h1>utils.stats module<a class="headerlink" href="#module-utils.stats" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.Dks_montecarlo_discrete">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">Dks_montecarlo_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#Dks_montecarlo_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.Dks_montecarlo_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la distribución del estadístico KS de un modelo discreto en comparación con una distribución teórica.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>callable</em>) – Función aleatoria a contrastar. El primer parámetro que debe aceptar es ‘N’, seguido de un número arbitrario de
+parámetros que son pasados mediante ‘kwargs’. Devuelve un array de valores aleatorios.</p></li>
+<li><p><strong>fit</strong> (<em>list</em><em> of </em><em>float</em>) – Lista de valores que representa la distribución de probabilidad contra la cual se calcula la distribución de KS.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – Número de veces que se repite el cálculo de Dks.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Si es True, imprime el progreso. Por defecto es True.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parámetros a pasar a ‘model’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de valores Dks.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función calcula la distribución del estadístico KS de un modelo ‘model’ que produce ‘N’ valores aleatorios frente a
+una curva teórica ‘fit’, representada como una lista de valores. Devuelve una lista de estos índices KS.</p>
+<p>El método ‘model’ admite una cantidad arbitraria de parámetros pasados mediante ‘kwargs’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.bin_rv_cont">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">bin_rv_cont</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rv_continuous</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_in</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#bin_rv_cont"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.bin_rv_cont" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la probabilidad acumulada de un objeto ‘rv_continuous’ de scipy en los extremos dados por ‘bins’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rv_continuous</strong> (<em>scipy.stats.rv_continuous</em>) – Objeto ‘rv_continuous’ de scipy.</p></li>
+<li><p><strong>bins_in</strong> (<em>array_like</em>) – Bineado del eje de abscisas. Debe ser una lista de ‘N_bins+1’ elementos, conteniendo los extremos de cada bin.</p></li>
+<li><p><strong>args</strong> (<em>list</em><em>, </em><em>optional</em>) – Parámetros extra para pasar a ‘rv_continuous.cdf’, distintos del primer argumento (‘x’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arreglo de tamaño ‘N_bin’ elementos que contiene la probabilidad acumulada en los extremos dados por ‘bins’.
+El arreglo de salida está normalizado respecto a la suma de sus elementos.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función toma un objeto ‘rv_continuous’ de scipy y una lista ‘bins_in’ que contiene el bineado del eje de abscisas.
+Calcula la probabilidad acumulada en los extremos dados por ‘bins’ utilizando ‘rv_continuous.cdf’ y devuelve un numpy array
+normalizado con las probabilidades acumuladas.</p>
+<p>El argumento ‘args’ se utiliza para pasar parámetros extra distintos al primero (‘x’) a ‘rv_continuous.cdf’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.bin_rv_discrete">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">bin_rv_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rv_discrete</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins_in</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#bin_rv_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.bin_rv_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la probabilidad acumulada de un objeto ‘rv_discrete’ de scipy en los extremos dados por ‘bins’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rv_discrete</strong> (<em>scipy.stats.rv_discrete</em>) – Objeto ‘rv_discrete’ de scipy.</p></li>
+<li><p><strong>bins_in</strong> (<em>array_like</em>) – Bineado del eje de abscisas. Debe ser una lista de ‘N_bins+1’ elementos, conteniendo los extremos de cada bin.</p></li>
+<li><p><strong>args</strong> (<em>list</em><em>, </em><em>optional</em>) – Parámetros extra para pasar a ‘rv_discrete’, distintos del primer argumento (‘k’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Arreglo de tamaño ‘N_bin’ elementos que contiene la probabilidad acumulada en los extremos dados por ‘bins’.
+El arreglo de salida está normalizado respecto a la suma de sus elementos.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función toma un objeto ‘rv_discrete’ de scipy y una lista ‘bins_in’ que contiene el bineado del eje de abscisas.
+Calcula la probabilidad acumulada en los extremos dados por ‘bins’ y devuelve un numpy array normalizado con las probabilidades acumuladas.</p>
+<p>El argumento ‘args’ se utiliza para pasar parámetros extra distintos del primero (‘k’) a ‘rv_discrete’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.chisq_gof_discrete">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">chisq_gof_discrete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plothist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#chisq_gof_discrete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.chisq_gof_discrete" title="Link to this definition">¶</a></dt>
+<dd><p>Realiza un test chi^2 de bondad del ajuste entre los datos observados y un modelo
+estocástico discreto (una función pmf -probability mass function-) que hipotéticamente
+genera dichos datos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs_data</strong> (<em>array_like</em>) – Vector de datos observados.</p></li>
+<li><p><strong>model</strong> (<em>callable</em>) – Función pmf (probability mass function) que representa el modelo estocástico discreto.
+El primer argumento siempre debe ser la variable independiente (aleatoria).</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Nivel de significancia para el test chi^2. Por defecto es 0.05.</p></li>
+<li><p><strong>plothist</strong> (<em>bool</em><em>, </em><em>optional</em>) – Indica si se debe graficar el histograma de los datos. Por defecto es False.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Opciones adicionales para pasar parámetros a la función pmf introducida como modelo.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Un diccionario con los campos:
+- ‘chisq’: Valor del estadístico chi^2.
+- ‘pvalue’: Valor tal que la probabilidad de obtener ‘chisq’ es al menos pvalue.
+- ‘dof’: Número de grados de libertad de la distribución chi^2.
+- ‘testpass’: Booleano que indica si el test ha sido superado en función de ‘alpha’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función calcula un test chi^2 de bondad del ajuste entre los datos observados y un modelo
+estocástico discreto proporcionado como una función pmf. Se genera un histograma de los datos
+y se calculan los valores esperados de probabilidad para cada bin. Luego se aplica la función
+‘chisquare’ de scipy para realizar el test chi^2.</p>
+<p>El parámetro ‘kwargs’ se puede utilizar para pasar parámetros adicionales a la función pmf del modelo.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.fit_rv_cont">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">fit_rv_cont</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv_cont</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#fit_rv_cont"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.fit_rv_cont" title="Link to this definition">¶</a></dt>
+<dd><p>Encuentra la distribución ‘rv_continuous’ que mejor ajusta un conjunto de datos ‘data’ y calcula el ‘valor p’ correspondiente a una significancia ‘alpha’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em><em> of </em><em>float</em>) – Vector con los datos a ajustar.</p></li>
+<li><p><strong>rv_cont</strong> (<em>scipy.stats.rv_continuous</em>) – Objeto ‘scipy.stats.rv_continuous’ que define una distribución de probabilidad continua que se ajustará a los datos ‘data’.</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Número de cajas para el histograma de ‘data’. Por defecto es 10.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Valor de significancia ‘alpha’ para el cual se calcula el valor p. Por defecto es 0.05.</p></li>
+<li><p><strong>plot</strong> (<em>bool</em><em>, </em><em>optional</em>) – Si es True, pinta el histograma y superpone la curva encontrada. La función no ejecuta ‘show()’, de forma que el usuario puede recabar la figura externamente
+con ‘gca()’ y ‘gcf()’, y editarla antes de representarla. Por defecto es False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Una lista que contiene cuatro elementos:
+- El primero es una lista de los parámetros que mejor ajustan la distribución (en el mismo orden en que se definen en la función ‘rv_cont.pdf’).
+- El segundo es el valor ‘valo p’ correspondiente a una significancia ‘alpha’.
+- El tercero es un nparray con el histograma.
+- El cuarto es un nparray con el bineado de los datos de entrada.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función es un wrapper para encontrar la distribución ‘rv_continuous’ que mejor ajusta un conjunto de valores ‘data’ utilizando la máxima verosimilitud.
+Calcula el ‘valor p’ correspondiente a una significancia ‘alpha’. Resulta útil para distribuciones obtenidas por simulación, que carecen de una función
+densidad teórica.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.get_area_fraction">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">get_area_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#get_area_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.get_area_fraction" title="Link to this definition">¶</a></dt>
+<dd><p>Encuentra los extremos ‘xmin’ y ‘xmax’ de una lista ‘hist’ de números (no necesariamente normalizada)
+de tal manera que el intervalo ‘hist[xmin:xmax]’ contenga al menos una fracción ‘p’ de la suma acumulada
+de los elementos de la lista.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hist</strong> (<em>list</em><em> or </em><em>array_like</em>) – Lista de números.</p></li>
+<li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – Fracción mínima deseada. Por defecto es 0.9.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>xmin</strong> (<em>int</em>) – Índice del extremo izquierdo del intervalo.</p></li>
+<li><p><strong>xmax</strong> (<em>int</em>) – Índice del extremo derecho del intervalo.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función busca los extremos ‘xmin’ y ‘xmax’ en la lista ‘hist’ de números, de tal manera que el intervalo
+‘hist[xmin:xmax]’ contenga al menos una fracción ‘p’ de la suma acumulada de los elementos de la lista. La búsqueda
+comienza desde el índice correspondiente al valor máximo de la lista y se desplaza simétricamente hacia ambos extremos.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.get_hist_smooth">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">get_hist_smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#get_hist_smooth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.get_hist_smooth" title="Link to this definition">¶</a></dt>
+<dd><p>Genera un histograma suavizado a partir de un conjunto de datos ‘data’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>array_like</em>) – Conjunto de datos para representar en forma de histograma.</p></li>
+<li><p><strong>p</strong> (<em>float</em><em>, </em><em>optional</em>) – Fracción (tanto por uno) de área bajo la cual se busca que el histograma no presente máximos relativos.
+Por defecto es 0.9.</p></li>
+<li><p><strong>x0</strong> (<em>float</em><em>, </em><em>optional</em>) – Extremo inferior del rango del histograma. Por defecto es NaN (se calcula automáticamente a partir de ‘data’).</p></li>
+<li><p><strong>x1</strong> (<em>float</em><em>, </em><em>optional</em>) – Extremo superior del rango del histograma. Por defecto es NaN (se calcula automáticamente a partir de ‘data’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Histograma suavizado generado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta función devuelve un histograma con el número de bins adecuado para que no presente máximos locales,
+lo cual resulta en un aspecto más suave. El parámetro ‘p’ representa la fracción de área bajo la cual
+se busca que el histograma no presente máximos relativos, medido simétricamente desde el punto máximo
+del histograma.</p>
+<p>Los parámetros ‘x0’ y ‘x1’ son opcionales y se utilizan para definir el rango del histograma; si no se
+proporcionan, se calculan automáticamente a partir de los valores mínimo y máximo de ‘data’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.stats.intervalo_int">
+<span class="sig-prename descclassname"><span class="pre">utils.stats.</span></span><span class="sig-name descname"><span class="pre">intervalo_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sup</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/stats.html#intervalo_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.stats.intervalo_int" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función auxiliar devuelve los extremos de números enteros dado un intervalo real.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inf</strong> (<em>float</em>) – Extremo inferior del intervalo.</p></li>
+<li><p><strong>sup</strong> (<em>float</em>) – Extremo superior del intervalo.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rango de enteros entre los extremos <cite>inf</cite> y <cite>sup</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils.stats module</a><ul>
+<li><a class="reference internal" href="#utils.stats.Dks_montecarlo_discrete"><code class="docutils literal notranslate"><span class="pre">Dks_montecarlo_discrete()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.bin_rv_cont"><code class="docutils literal notranslate"><span class="pre">bin_rv_cont()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.bin_rv_discrete"><code class="docutils literal notranslate"><span class="pre">bin_rv_discrete()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.chisq_gof_discrete"><code class="docutils literal notranslate"><span class="pre">chisq_gof_discrete()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.fit_rv_cont"><code class="docutils literal notranslate"><span class="pre">fit_rv_cont()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.get_area_fraction"><code class="docutils literal notranslate"><span class="pre">get_area_fraction()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.get_hist_smooth"><code class="docutils literal notranslate"><span class="pre">get_hist_smooth()</span></code></a></li>
+<li><a class="reference internal" href="#utils.stats.intervalo_int"><code class="docutils literal notranslate"><span class="pre">intervalo_int()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="utils.bool.html"
+                          title="previous chapter">utils.bool module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="utils.tensor.html"
+                          title="next chapter">utils.tensor module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.stats.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.tensor.html" title="utils.tensor module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utils.bool.html" title="utils.bool module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" >utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.stats module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

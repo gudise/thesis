@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fpga package &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fpga.fabric module" href="fpga.fabric.html" />
+    <link rel="prev" title="Welcome to thesis’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.fabric.html" title="fpga.fabric module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to thesis’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-fpga">
+<span id="fpga-package"></span><h1>fpga package<a class="headerlink" href="#module-fpga" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.FlipFlop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">FlipFlop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_clock</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#FlipFlop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.FlipFlop" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-FF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia FF.</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece el FF en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida del FF.</p></li>
+<li><p><strong>w_clock</strong> (<em>str</em>) – Nombre del cable que lleva la señal de reloj al FF.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada al FF.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restrición BEL que indica qué FF concreto es ocupado dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.FlipFlop.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.FlipFlop.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#FlipFlop.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.FlipFlop.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar el FF inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación del FF inicializado, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.FlipFlop.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición del FF en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.FlipFlop.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia FF.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.w_clock">
+<span class="sig-name descname"><span class="pre">w_clock</span></span><a class="headerlink" href="#fpga.FlipFlop.w_clock" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de reloj.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.FlipFlop.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.FlipFlop.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.FlipFlop.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.Lut1">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">Lut1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut1" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-LUT de 1 entrada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia LUT.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – <p>Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>I0</p></th>
+<th class="head"><p>Out</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>init[0]</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>init[1]</p></td>
+</tr>
+</tbody>
+</table>
+<p>donde init[i] es el i-ésimo bit del número ‘init’ en representación binaria LSB (i.e., init[0] es el bit menos significativo -“más a la izquierda”- de init).</p>
+</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida de la LUT.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombre de la entrada correspondiente al pin I0.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.Lut1.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.Lut1.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut1.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut1.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación de la LUT inicializada, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.init">
+<span class="sig-name descname"><span class="pre">init</span></span><a class="headerlink" href="#fpga.Lut1.init" title="Link to this definition">¶</a></dt>
+<dd><p>función realizada por la LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.Lut1.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición de la LUT en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.Lut1.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.Lut1.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones de pines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.Lut1.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut1.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.Lut1.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.Lut2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">Lut2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut2" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-LUT de 2 entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia LUT.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – <p>Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>I1</p></th>
+<th class="head"><p>I0</p></th>
+<th class="head"><p>Out</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>init[0]</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>init[1]</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>init[2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>init[3]</p></td>
+</tr>
+</tbody>
+</table>
+<p>donde init[i] es el i-ésimo bit del número ‘init’ en representación binaria LSB (i.e., init[0] es el bit menos significativo -“más a la izquierda”- de init).</p>
+</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida de la LUT.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombre de la entrada correspondiente al pin I0.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.Lut2.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.Lut2.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut2.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut2.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación de la LUT inicializada, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.init">
+<span class="sig-name descname"><span class="pre">init</span></span><a class="headerlink" href="#fpga.Lut2.init" title="Link to this definition">¶</a></dt>
+<dd><p>función realizada por la LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.Lut2.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición de la LUT en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.Lut2.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.Lut2.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones de pines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.Lut2.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de señales de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut2.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.Lut2.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.Lut3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">Lut3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut3" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-LUT de 3 entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia LUT.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – <p>Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>I2</p></th>
+<th class="head"><p>I1</p></th>
+<th class="head"><p>I0</p></th>
+<th class="head"><p>Out</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>init[0]</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>init[1]</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>init[2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>init[7]</p></td>
+</tr>
+</tbody>
+</table>
+<p>donde init[i] es el i-ésimo bit del número ‘init’ en representación binaria LSB (i.e., init[0] es el bit menos significativo -“más a la izquierda”- de init).</p>
+</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida de la LUT.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombre de la entrada correspondiente al pin I0.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.Lut3.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.Lut3.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut3.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut3.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación de la LUT inicializada, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.init">
+<span class="sig-name descname"><span class="pre">init</span></span><a class="headerlink" href="#fpga.Lut3.init" title="Link to this definition">¶</a></dt>
+<dd><p>función realizada por la LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.Lut3.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición de la LUT en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.Lut3.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.Lut3.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones de pines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.Lut3.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de señales de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut3.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.Lut3.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.Lut4">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">Lut4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut4" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-LUT de 4 entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia LUT.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – <p>Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>I3</p></th>
+<th class="head"><p>I2</p></th>
+<th class="head"><p>I1</p></th>
+<th class="head"><p>I0</p></th>
+<th class="head"><p>Out</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>init[0]</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>init[1]</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>init[2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>init[15]</p></td>
+</tr>
+</tbody>
+</table>
+<p>donde init[i] es el i-ésimo bit del número ‘init’ en representación binaria LSB (i.e., init[0] es el bit menos significativo -“más a la izquierda”- de init).</p>
+</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida de la LUT.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombre de la entrada correspondiente al pin I0.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.Lut4.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.Lut4.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut4.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut4.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación de la LUT inicializada, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.init">
+<span class="sig-name descname"><span class="pre">init</span></span><a class="headerlink" href="#fpga.Lut4.init" title="Link to this definition">¶</a></dt>
+<dd><p>función realizada por la LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.Lut4.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición de la LUT en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.Lut4.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.Lut4.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones de pines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.Lut4.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de señales de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut4.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.Lut4.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.Lut6">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.</span></span><span class="sig-name descname"><span class="pre">Lut6</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut6"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut6" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Modelo de FPGA-LUT de 6 entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre de la instancia LUT.</p></li>
+<li><p><strong>init</strong> (<em>str</em>) – <p>Valor numérico que representa la función realizada por la LUT. La relación entrada/salida se asigna de la forma:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>I5</p></th>
+<th class="head"><p>I4</p></th>
+<th class="head"><p>I3</p></th>
+<th class="head"><p>I2</p></th>
+<th class="head"><p>I1</p></th>
+<th class="head"><p>I0</p></th>
+<th class="head"><p>Out</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>init[0]</p></td>
+</tr>
+<tr class="row-odd"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>init[1]</p></td>
+</tr>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>init[2]</p></td>
+</tr>
+<tr class="row-odd"><td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>init[63]</p></td>
+</tr>
+</tbody>
+</table>
+<p>donde init[i] es el i-ésimo bit del número ‘init’ en representación binaria LSB (i.e., init[0] es el bit menos significativo -“más a la izquierda”- de init).</p>
+</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Posición de la celda a la que pertenece la LUT en la FPGA. El formato de esta opción es un string formado por dos números enteros (coordenadas X, Y) separados por una coma.</p></li>
+<li><p><strong>w_out</strong> (<em>str</em>) – Nombre del cable que contiene la señal de salida de la LUT.</p></li>
+<li><p><strong>w_in</strong> (<em>str</em>) – Nombre del cable que contiene la señal de entrada a la LUT. Se trata de una string con el nombre de la entrada correspondiente al pin I0.</p></li>
+<li><p><strong>bel</strong> (<em>{'A'</em><em>, </em><em>'B'</em><em>, </em><em>'C'</em><em>, </em><em>'D'}</em>) – Restricción BEL que indica qué LUT concreta es ocupada dentro de la celda.</p></li>
+<li><p><strong>pin</strong> (<em>str</em>) – Restricción de los pines lógicos (“I”) a los pines físicos (“A”) de la LUT. El formato es el mismo que el de la restricción LOCK_PINS de XDC, i.e., un string de elementos ‘I&lt;puerto lógico&gt;:A&lt;puerto físico&gt;’ separados por comas, donde el puerto lógico es ‘I0’, y los puertos físicos varían de ‘A1’ a ‘A6’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.Lut6.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.Lut6.impl">
+<span class="sig-name descname"><span class="pre">impl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga.html#Lut6.impl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.Lut6.impl" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función devuelve un ‘string’ que contiene el código en lenguaje Verilog necesario para implementar la LUT inicializada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cadena que representa el código Verilog para la implementación de la LUT inicializada, con los parámetros actuales de la instancia.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.init">
+<span class="sig-name descname"><span class="pre">init</span></span><a class="headerlink" href="#fpga.Lut6.init" title="Link to this definition">¶</a></dt>
+<dd><p>función realizada por la LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.Lut6.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Posición de la LUT en la FPGA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.Lut6.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre de la instancia LUT.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.Lut6.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones de pines.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.w_in">
+<span class="sig-name descname"><span class="pre">w_in</span></span><a class="headerlink" href="#fpga.Lut6.w_in" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de señales de entrada.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.Lut6.w_out">
+<span class="sig-name descname"><span class="pre">w_out</span></span><a class="headerlink" href="#fpga.Lut6.w_out" title="Link to this definition">¶</a></dt>
+<dd><p>Señal de salida.</p>
+</dd></dl>
+
+</dd></dl>
+
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fpga.fabric.html">fpga.fabric module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fpga.fabric.html#fpga.fabric.pynqz2"><code class="docutils literal notranslate"><span class="pre">pynqz2</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fpga.interfaz_pcps.html">fpga.interfaz_pcps module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.bitstr_to_bytestr"><code class="docutils literal notranslate"><span class="pre">bitstr_to_bytestr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.bitstr_to_int"><code class="docutils literal notranslate"><span class="pre">bitstr_to_int()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.bytestr_to_bitstr"><code class="docutils literal notranslate"><span class="pre">bytestr_to_bitstr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.bytestr_to_int"><code class="docutils literal notranslate"><span class="pre">bytestr_to_int()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.calc"><code class="docutils literal notranslate"><span class="pre">calc()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.int_to_bitstr"><code class="docutils literal notranslate"><span class="pre">int_to_bitstr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.int_to_bytestr"><code class="docutils literal notranslate"><span class="pre">int_to_bytestr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.print_bitstr"><code class="docutils literal notranslate"><span class="pre">print_bitstr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.print_bytestr"><code class="docutils literal notranslate"><span class="pre">print_bytestr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_bytestr"><code class="docutils literal notranslate"><span class="pre">receive_bytestr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_u32"><code class="docutils literal notranslate"><span class="pre">receive_u32()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_u8"><code class="docutils literal notranslate"><span class="pre">receive_u8()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.resize_array"><code class="docutils literal notranslate"><span class="pre">resize_array()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.scan"><code class="docutils literal notranslate"><span class="pre">scan()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.send_bytestr"><code class="docutils literal notranslate"><span class="pre">send_bytestr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.interfaz_pcps.html#fpga.interfaz_pcps.send_u8"><code class="docutils literal notranslate"><span class="pre">send_u8()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fpga.ring_osc.html">fpga.ring_osc module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio"><code class="docutils literal notranslate"><span class="pre">Dominio</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.N_osc"><code class="docutils literal notranslate"><span class="pre">Dominio.N_osc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.directriz"><code class="docutils literal notranslate"><span class="pre">Dominio.directriz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.dx"><code class="docutils literal notranslate"><span class="pre">Dominio.dx</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.dy"><code class="docutils literal notranslate"><span class="pre">Dominio.dy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.help"><code class="docutils literal notranslate"><span class="pre">Dominio.help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.osc_coord"><code class="docutils literal notranslate"><span class="pre">Dominio.osc_coord</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.x0"><code class="docutils literal notranslate"><span class="pre">Dominio.x0</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.x1"><code class="docutils literal notranslate"><span class="pre">Dominio.x1</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.y0"><code class="docutils literal notranslate"><span class="pre">Dominio.y0</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.Dominio.y1"><code class="docutils literal notranslate"><span class="pre">Dominio.y1</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix.gen_garomatrix"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.gen_garomatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix.help"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix.implement"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.implement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix.medir"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.medir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisMatrix.save"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing"><code class="docutils literal notranslate"><span class="pre">GaloisRing</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.N_inv"><code class="docutils literal notranslate"><span class="pre">GaloisRing.N_inv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.bel"><code class="docutils literal notranslate"><span class="pre">GaloisRing.bel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.elements"><code class="docutils literal notranslate"><span class="pre">GaloisRing.elements</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.help"><code class="docutils literal notranslate"><span class="pre">GaloisRing.help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.loc"><code class="docutils literal notranslate"><span class="pre">GaloisRing.loc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.name"><code class="docutils literal notranslate"><span class="pre">GaloisRing.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.GaloisRing.pin"><code class="docutils literal notranslate"><span class="pre">GaloisRing.pin</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix"><code class="docutils literal notranslate"><span class="pre">StdMatrix</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.N_bits_osc"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_osc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.N_bits_pdl"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_pdl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.N_bits_resol"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_resol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.N_inv"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_inv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.N_osc"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_osc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.bel"><code class="docutils literal notranslate"><span class="pre">StdMatrix.bel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.dominios"><code class="docutils literal notranslate"><span class="pre">StdMatrix.dominios</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.gen_romatrix"><code class="docutils literal notranslate"><span class="pre">StdMatrix.gen_romatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.help"><code class="docutils literal notranslate"><span class="pre">StdMatrix.help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.implement"><code class="docutils literal notranslate"><span class="pre">StdMatrix.implement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.medir"><code class="docutils literal notranslate"><span class="pre">StdMatrix.medir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.osc_list"><code class="docutils literal notranslate"><span class="pre">StdMatrix.osc_list</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.pdl"><code class="docutils literal notranslate"><span class="pre">StdMatrix.pdl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.pin"><code class="docutils literal notranslate"><span class="pre">StdMatrix.pin</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdMatrix.save"><code class="docutils literal notranslate"><span class="pre">StdMatrix.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing"><code class="docutils literal notranslate"><span class="pre">StdRing</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.N_inv"><code class="docutils literal notranslate"><span class="pre">StdRing.N_inv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.bel"><code class="docutils literal notranslate"><span class="pre">StdRing.bel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.elements"><code class="docutils literal notranslate"><span class="pre">StdRing.elements</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.help"><code class="docutils literal notranslate"><span class="pre">StdRing.help()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.loc"><code class="docutils literal notranslate"><span class="pre">StdRing.loc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.name"><code class="docutils literal notranslate"><span class="pre">StdRing.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.StdRing.pin"><code class="docutils literal notranslate"><span class="pre">StdRing.pin</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.clog2"><code class="docutils literal notranslate"><span class="pre">clog2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fpga.ring_osc.html#fpga.ring_osc.sim_romatrix"><code class="docutils literal notranslate"><span class="pre">sim_romatrix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">fpga package</a><ul>
+<li><a class="reference internal" href="#fpga.FlipFlop"><code class="docutils literal notranslate"><span class="pre">FlipFlop</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.FlipFlop.bel"><code class="docutils literal notranslate"><span class="pre">FlipFlop.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.impl"><code class="docutils literal notranslate"><span class="pre">FlipFlop.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.loc"><code class="docutils literal notranslate"><span class="pre">FlipFlop.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.name"><code class="docutils literal notranslate"><span class="pre">FlipFlop.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.w_clock"><code class="docutils literal notranslate"><span class="pre">FlipFlop.w_clock</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.w_in"><code class="docutils literal notranslate"><span class="pre">FlipFlop.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.FlipFlop.w_out"><code class="docutils literal notranslate"><span class="pre">FlipFlop.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.Lut1"><code class="docutils literal notranslate"><span class="pre">Lut1</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.Lut1.bel"><code class="docutils literal notranslate"><span class="pre">Lut1.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.impl"><code class="docutils literal notranslate"><span class="pre">Lut1.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.init"><code class="docutils literal notranslate"><span class="pre">Lut1.init</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.loc"><code class="docutils literal notranslate"><span class="pre">Lut1.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.name"><code class="docutils literal notranslate"><span class="pre">Lut1.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.pin"><code class="docutils literal notranslate"><span class="pre">Lut1.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.w_in"><code class="docutils literal notranslate"><span class="pre">Lut1.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut1.w_out"><code class="docutils literal notranslate"><span class="pre">Lut1.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.Lut2"><code class="docutils literal notranslate"><span class="pre">Lut2</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.Lut2.bel"><code class="docutils literal notranslate"><span class="pre">Lut2.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.impl"><code class="docutils literal notranslate"><span class="pre">Lut2.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.init"><code class="docutils literal notranslate"><span class="pre">Lut2.init</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.loc"><code class="docutils literal notranslate"><span class="pre">Lut2.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.name"><code class="docutils literal notranslate"><span class="pre">Lut2.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.pin"><code class="docutils literal notranslate"><span class="pre">Lut2.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.w_in"><code class="docutils literal notranslate"><span class="pre">Lut2.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut2.w_out"><code class="docutils literal notranslate"><span class="pre">Lut2.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.Lut3"><code class="docutils literal notranslate"><span class="pre">Lut3</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.Lut3.bel"><code class="docutils literal notranslate"><span class="pre">Lut3.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.impl"><code class="docutils literal notranslate"><span class="pre">Lut3.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.init"><code class="docutils literal notranslate"><span class="pre">Lut3.init</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.loc"><code class="docutils literal notranslate"><span class="pre">Lut3.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.name"><code class="docutils literal notranslate"><span class="pre">Lut3.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.pin"><code class="docutils literal notranslate"><span class="pre">Lut3.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.w_in"><code class="docutils literal notranslate"><span class="pre">Lut3.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut3.w_out"><code class="docutils literal notranslate"><span class="pre">Lut3.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.Lut4"><code class="docutils literal notranslate"><span class="pre">Lut4</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.Lut4.bel"><code class="docutils literal notranslate"><span class="pre">Lut4.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.impl"><code class="docutils literal notranslate"><span class="pre">Lut4.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.init"><code class="docutils literal notranslate"><span class="pre">Lut4.init</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.loc"><code class="docutils literal notranslate"><span class="pre">Lut4.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.name"><code class="docutils literal notranslate"><span class="pre">Lut4.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.pin"><code class="docutils literal notranslate"><span class="pre">Lut4.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.w_in"><code class="docutils literal notranslate"><span class="pre">Lut4.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut4.w_out"><code class="docutils literal notranslate"><span class="pre">Lut4.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.Lut6"><code class="docutils literal notranslate"><span class="pre">Lut6</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.Lut6.bel"><code class="docutils literal notranslate"><span class="pre">Lut6.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.impl"><code class="docutils literal notranslate"><span class="pre">Lut6.impl()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.init"><code class="docutils literal notranslate"><span class="pre">Lut6.init</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.loc"><code class="docutils literal notranslate"><span class="pre">Lut6.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.name"><code class="docutils literal notranslate"><span class="pre">Lut6.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.pin"><code class="docutils literal notranslate"><span class="pre">Lut6.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.w_in"><code class="docutils literal notranslate"><span class="pre">Lut6.w_in</span></code></a></li>
+<li><a class="reference internal" href="#fpga.Lut6.w_out"><code class="docutils literal notranslate"><span class="pre">Lut6.w_out</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Welcome to thesis’s documentation!</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="fpga.fabric.html"
+                          title="next chapter">fpga.fabric module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fpga.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.fabric.html" title="fpga.fabric module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to thesis’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

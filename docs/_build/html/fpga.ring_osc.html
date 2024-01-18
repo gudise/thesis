@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fpga.ring_osc module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="setup module" href="setup.html" />
+    <link rel="prev" title="fpga.interfaz_pcps module" href="fpga.interfaz_pcps.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="setup module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fpga.interfaz_pcps.html" title="fpga.interfaz_pcps module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" accesskey="U">fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.ring_osc module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-fpga.ring_osc">
+<span id="fpga-ring-osc-module"></span><h1>fpga.ring_osc module<a class="headerlink" href="#module-fpga.ring_osc" title="Link to this heading">¶</a></h1>
+<p>Este módulo contiene una serie de clases y funciones para implementar y
+medir una matriz de osciladores de anillo en FPGA, tanto estándar como
+de Galois.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">Dominio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_osc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directriz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#Dominio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.Dominio" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Este objeto contiene las localizaciones de un conjunto de osciladores dispuestos atendiendo a diversos parámetros geométricos. Si directriz=y, estos se colocan formando una matriz rectangular, la cual crece en dirección y en incrementos de dy. Cuando se alcanza el límite y1, la matriz se incrementa una cantidad dx en la dirección x, y vuelve a la coordenada y0. Si directriz=x, el comentario anterior se aplica substituyendo x &lt;-&gt; y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_osc</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de osciladores del dominio.</p></li>
+<li><p><strong>x0</strong> (<em>int</em><em>, </em><em>opcional</em>) – Coordenada X del primer oscilador de la matriz.</p></li>
+<li><p><strong>x1</strong> (<em>int</em><em>, </em><em>opcional</em>) – Coordenada X máxima de la matriz (no se sobrepasará).</p></li>
+<li><p><strong>dx</strong> (<em>int</em><em>, </em><em>opcional</em>) – Incremento de la coordenada X. Notar que habitualmente en las FPGA de Xilinx se reservan las coordenadas X par/impar para distintos tipos de celda (‘0’ y ‘1’).</p></li>
+<li><p><strong>y0</strong> (<em>int</em><em>, </em><em>opcional</em>) – Coordenada Y del primer oscilador de la matriz.</p></li>
+<li><p><strong>y1</strong> (<em>int</em><em>, </em><em>opcional</em>) – Coordenada Y máxima de la matriz (no se sobrepasará).</p></li>
+<li><p><strong>dy</strong> (<em>int</em><em>, </em><em>opcional</em>) – Incremento de la coordenada Y.</p></li>
+<li><p><strong>directriz</strong> (<em>char</em><em>, </em><em>opcional</em>) – Dirección de crecimiento de la matriz (hasta llegar a la coordenada
+máxima). Puede ser ‘y’ o ‘x’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.N_osc">
+<span class="sig-name descname"><span class="pre">N_osc</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.N_osc" title="Link to this definition">¶</a></dt>
+<dd><p>Número de osciladores del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.directriz">
+<span class="sig-name descname"><span class="pre">directriz</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.directriz" title="Link to this definition">¶</a></dt>
+<dd><p>Dirección de crecimiento de la matriz de anillos.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.dx">
+<span class="sig-name descname"><span class="pre">dx</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.dx" title="Link to this definition">¶</a></dt>
+<dd><p>Incremento de la coordenada ‘X’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.dy">
+<span class="sig-name descname"><span class="pre">dy</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.dy" title="Link to this definition">¶</a></dt>
+<dd><p>Incremento de la coordenada ‘Y’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.help">
+<span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#Dominio.help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.Dominio.help" title="Link to this definition">¶</a></dt>
+<dd><p>Ayuda de la clase ‘Dominio’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.osc_coord">
+<span class="sig-name descname"><span class="pre">osc_coord</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.osc_coord" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de las coordenadas de los anillos, dados en forma de par x,y.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.x0">
+<span class="sig-name descname"><span class="pre">x0</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.x0" title="Link to this definition">¶</a></dt>
+<dd><p>Coordenada ‘X’ inicial.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.x1">
+<span class="sig-name descname"><span class="pre">x1</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.x1" title="Link to this definition">¶</a></dt>
+<dd><p>Coordenada ‘X’ final.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.y0">
+<span class="sig-name descname"><span class="pre">y0</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.y0" title="Link to this definition">¶</a></dt>
+<dd><p>Coordenada ‘Y’ inicial.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.Dominio.y1">
+<span class="sig-name descname"><span class="pre">y1</span></span><a class="headerlink" href="#fpga.ring_osc.Dominio.y1" title="Link to this definition">¶</a></dt>
+<dd><p>Coordenada ‘Y’ final.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">GaloisMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_inv=3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dominios=&lt;fpga.ring_osc.Dominio</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trng=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted_end=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Objeto que contiene una matriz de osciladores de anillo de Galois.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_inv</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de inversores de cada oscilador.</p></li>
+<li><p><strong>dominios</strong> (<a class="reference internal" href="#fpga.ring_osc.Dominio" title="fpga.ring_osc.Dominio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dominio</span></code></a> | list(<cite>Dominio</cite>), opcional) – Osciladores que forman la matriz. Se construye como una lista de objetos ‘Dominio’. Si solo pasamos un dominio de osciladores podemos pasar un objeto ‘Dominio’, en lugar de una lista.</p></li>
+<li><p><strong>bel</strong> (<em>char</em><em> | </em><em>list</em><em>(</em><em>char</em><em>)</em><em>, </em><em>opcional</em>) – Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver ‘bel’ en ‘GaloisRing’).</p></li>
+<li><p><strong>pin</strong> (<em>str</em><em> | </em><em>list</em><em>(</em><em>str</em><em>)</em><em>, </em><em>opcional</em>) – Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver ‘pin’ en ‘GaloisRing’).</p></li>
+<li><p><strong>pdl</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si ‘True’ se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si ‘False’ se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.</p></li>
+<li><p><strong>trng</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta variable modifica de manera profunda el diseño de la matriz GARO implementada. Si se incluye este parámetro como un entero mayor que cero, el diseño genera un arreglo de bits generados por cada GARO como TRNG. En este caso, el buffer de salida del diseño tiene un tamaño ‘trng’ dado por esta variable. Alternativamente, si no se incluye esta opción (o vale ‘0’), el diseño incluye un medidor de sesgo que devuelve el valor del sesgo de cada GARO, en lugar de producir un arreglo de bits.</p></li>
+<li><p><strong>poly</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, utilizando la misma codificación que la función ‘,edir()’. Esto puede ahorrar una cierta cantidad de recursos hardware, a costa de perder flexibilidad.</p></li>
+<li><p><strong>inverted_end</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si esta opción es ‘True’, se añadirá un inversor al final del anillo, lo cual según parece evita acoplos entre anillos cercanos. Notar que la presencia o no de este inversor cambia el número de elementos a efectos de las opciones ‘bel’ y ‘pin’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix.gen_garomatrix">
+<span class="sig-name descname"><span class="pre">gen_garomatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'garomatrix.v'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix.gen_garomatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix.gen_garomatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Genera un diseño ‘out_name’ en formato Verilog con la implementación de los dominios introducidos durante la inicialización del objeto. El principal uso de esta función es dentro de la función ‘implement()’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>out_name</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre del fichero de salida.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix.help">
+<span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix.help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix.help" title="Link to this definition">¶</a></dt>
+<dd><p>Ayuda de la clase ‘GaloisMatrix’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix.implement">
+<span class="sig-name descname"><span class="pre">implement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'project_garomatrix'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">njobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">board</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pynqz2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qspi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pblock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_out_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix.implement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix.implement" title="Link to this definition">¶</a></dt>
+<dd><p>Copia en el directorio ‘self.projdir’ todos los archivos necesarios para implementar una matriz de osciladores de anillo de Galois con medición del sesgo (“bias”) y comunicación pc &lt;-&gt; microprocesador &lt;-&gt; FPGA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>projname</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre del proyecto de Vivado.</p></li>
+<li><p><strong>projdir</strong> (<em>str</em><em>, </em><em>opcional</em>) – Directorio donde se creará el proyecto de Vivado y las fuentes (por defecto el directorio de trabajo actual).</p></li>
+<li><p><strong>njobs</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.</p></li>
+<li><p><strong>debug</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, se implementará una matriz de divisores de reloj de frecuencia conocida, lo que permite depurar el diseño al conocer qué resultados deben salir.</p></li>
+<li><p><strong>files</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar (False) cuando queremos configurar un objeto tipo ‘Romatrix’ pero no vamos a implementarla físicamente (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).</p></li>
+<li><p><strong>board</strong> (<em>str</em><em>, </em><em>opcional</em>) – Placa de desarrollo utilizada en el proyecyo. Las opciones soportadas son: ‘pynqz2’, ‘zybo’, ‘cmoda7_15t’ o ‘cmoda7_35t’.</p></li>
+<li><p><strong>qspi</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, el flujo de diseño incluirá el guardado del bitstream en la memoria flash de la placa para que se auto-programe al encenderse.</p></li>
+<li><p><strong>routing</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, el flujo de diseño incluirá el cableado de los inversores después de la síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).</p></li>
+<li><p><strong>pblock</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si esta opción es ‘True’ se inserta la matriz en un pblock tal que el espacio dentro del bloque se excluye para toda lógica que no sea la propia matriz.</p></li>
+<li><p><strong>data_width</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta opción especifica la anchura del canal de datos PS&lt;–&gt;PL.</p></li>
+<li><p><strong>buffer_out_width</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix.medir">
+<span class="sig-name descname"><span class="pre">medir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">puerto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/dev/ttyS1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">osc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_rep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">14</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fdiv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9600</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix.medir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix.medir" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función mide la frecuencia de una matriz de osciladores de Galois ‘GaloisMatrix’, una vez esta ha sido implementado en FPGA. El resultado se devuelve como un objeto ‘Tensor’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>puerto</strong> (<em>str</em>) – Esta opción especifica el puerto serie al que se conecta la
+FPGA.</p></li>
+<li><p><strong>osc</strong> (<em>int</em><em> | </em><em>list</em><em>(</em><em>int</em><em>)</em>) – Lista de osciladores a medir.</p></li>
+<li><p><strong>pdl</strong> (<em>int</em><em> | </em><em>list</em><em>(</em><em>int</em><em>)</em>) – Lista de PDL a medir.</p></li>
+<li><p><strong>N_rep</strong> (<em>int</em>) – Número de repeticiones a medir.</p></li>
+<li><p><strong>resol</strong> (<em>int</em>) – log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por defecto 14, i.e., 2^14 = 16384 ciclos).</p></li>
+<li><p><strong>poly</strong> (<em>int</em>) – Esta variable indica el índice del polinomio a medir.</p></li>
+<li><p><strong>fdiv</strong> (<em>int</em>) – log_2 del factor de división menos uno, para el reloj de muestreo (por defecto 9, i.e., 2^(9+1)=1024; cin f_ref=100 MHz esto supone una frecuencia de muestre f_s=97.65 kHz).</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – Si se pasa esta opción como “True” el resultado se dará en tanto por 1.</p></li>
+<li><p><strong>log</strong> (<em>bool</em>) – Si se pasa “True” se escriben algunos datos a modo de log.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Si se pasa “True” se pinta una barra de progreso de la medida. Desactivar esta opción (“False”) hace más cómodo utilizar esta función en un bucle.</p></li>
+<li><p><strong>baudrate</strong> (<em>int</em>) – Tasa de transferencia del protocolo serie UART PC&lt;–&gt;PS. Debe concordar con el programa compilador en PS.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisMatrix.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisMatrix.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisMatrix.save" title="Link to this definition">¶</a></dt>
+<dd><p>‘Wrapper’ para guardar objetos serializados con el módulo ‘pickle’.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">GaloisRing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_inv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poly</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inverted_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisRing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisRing" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Lista de elementos (LUT) que constituyen un oscilador de anillo de Galois junto con la información necesaria para su implementación en FPGA utilzando el software ‘Vivado’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre utilizado para identificar el anillo.</p></li>
+<li><p><strong>N_inv</strong> (<em>int</em>) – Número de inversores que forman el anillo.</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Parámetro ‘loc’ de la primera LUT del anillo (ver clase ‘Lut’). Solo se da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos los ‘bel’ de una celda antes de pasar a la celda inmediatamente superior (de modo que, dadas las coordenadas del primer elemento, las demás están predeterminadas). La “celda inmediatamente superior” es X+1 si X es par, Y+1 si X es impar.</p></li>
+<li><p><strong>bel</strong> (<em>char o lista de char</em>) – Lista de parámetros ‘bel’ para cada elemento del anillo (ver clase ‘Lut’). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al primer elemento, la segunda al segundo, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el usuario es responsable de que los valores ‘bel’ introducidos sean todos distintos entre sí en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta opción admite un único caracter, pero entonces solo se restringirá la primera LUT. Notar que el último elemento en un anillo ‘GaloisRing’ siempre será un flip-flop, y el penúltimo elemento depende de la opción ‘inverted_end’: si ‘True’, el número de  elementos total del anillo será igual a N_inv+2, siendo el penúltimo elemento siempre una LUT1 (inversor final). Si por el contrario esta opción es ‘False’ entonces el número de elementos del anillo será N_inv+1.</p></li>
+<li><p><strong>pin</strong> (<em>str o lista de str</em>) – Lista de parámetros ‘pin’ de cada LUT que forma parte del anillo (ver clase ‘Lut’). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al primer elemento, la segunda al segundo, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con el tipo de LUT que se está fijando, y en particular los inversores inicial y final siempre son de tipo LUT1 (i.e., solo se puede fijar el pin ‘I0’). Notar que, dado que el último elemento (N_inv+2 o N_inv+1, dependiendo de la opción ‘inverted_end’) de un anillo ‘GaloisRing’ es un flip-flop, a efectos de la opción “pin” este se ignora (esta opción restringe solo los pines de las LUT, no del flip-flop). Por definición, el puerto lógico ‘I0’ siempre es el que recoge la señal del elemento precedente en el bucle.</p></li>
+<li><p><strong>pdl</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si ‘True’ se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si ‘False’ se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND.</p></li>
+<li><p><strong>poly</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta variable determina el polinomio a implementar en hardware. Si su valor es negativo (por defecto), entonces se implementa un anillo de Galois genérico configurable en tiempo de ejecución. En caso contrario, se producirá un anillo que implementa un polinomio fijo, utilizando la misma codificación que la función ‘,edir()’. Esto puede ahorrar una cierta cantidad de recursos hardware, a costa de perder flexibilidad.</p></li>
+<li><p><strong>inverted_end</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si esta opción es ‘True’, se añadirá un inversor al final del anillo, lo cual según parece evita acoplos entre anillos cercanos. Notar que la presencia o no de este inversor cambia el número de elementos a efectos de las opciones ‘bel’ y ‘pin’.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.N_inv">
+<span class="sig-name descname"><span class="pre">N_inv</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.N_inv" title="Link to this definition">¶</a></dt>
+<dd><p>Número de inversores del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de restricciones BEL para cada elemento del anillo.Lista de restricciones BEL para cada elemento del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.elements">
+<span class="sig-name descname"><span class="pre">elements</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.elements" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de objetos que conforman el anillo. Esta consisitirá en N_inv objetos ‘Lut’, más un inversor en caso de que la opción <a href="#id1"><span class="problematic" id="id2">`</span></a>inverted_end`=True, más un flip-flop ‘FF’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.help">
+<span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#GaloisRing.help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.GaloisRing.help" title="Link to this definition">¶</a></dt>
+<dd><p>Ayuda de la clase ‘GaloisRing’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Parámetro LOC de la primera puerta del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre del anillo instanciado.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.GaloisRing.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.ring_osc.GaloisRing.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de restricciones PIN para cada elemento del anillo.Lista de restricciones PIN para cada elemento del anillo.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">StdMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_inv=3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dominios=&lt;fpga.ring_osc.Dominio</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin=''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Objeto que contiene una matriz de osciladores de anillo estándar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_inv</strong> (<em>int</em>) – Número de inversores de cada oscilador.</p></li>
+<li><p><strong>dominios</strong> (<a class="reference internal" href="#fpga.ring_osc.Dominio" title="fpga.ring_osc.Dominio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dominio</span></code></a> o lista de <cite>Dominio</cite>) – Osciladores que forman la matriz. Se construye como una lista de objetos <cite>Dominio</cite>. Si solo pasamos un dominio de osciladores podemos pasar un objeto <cite>Dominio</cite>, en lugar de una lista.</p></li>
+<li><p><strong>bel</strong> (<em>char</em><em> | </em><em>list</em><em>(</em><em>char</em><em>)</em>) – Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver <cite>bel</cite> en <a class="reference internal" href="#fpga.ring_osc.StdRing" title="fpga.ring_osc.StdRing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StdRing</span></code></a>).</p></li>
+<li><p><strong>pin</strong> (<em>str</em><em> | </em><em>list</em><em>(</em><em>str</em><em>)</em>) – Dado que todos los anillos de la matriz son idénticos por diseño, esta opción es la misma que la aplicada para un solo oscilador (ver ‘pin’ en ‘StdRing’).</p></li>
+<li><p><strong>pdl</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si <cite>True</cite> se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si <cite>False</cite> se utilizan modelos :obj:Lut1 para los inversores y :obj:Lut2 para el enable AND.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.N_bits_osc">
+<span class="sig-name descname"><span class="pre">N_bits_osc</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.N_bits_osc" title="Link to this definition">¶</a></dt>
+<dd><p>Número de bits necesarios para especificar cada oscilador.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.N_bits_pdl">
+<span class="sig-name descname"><span class="pre">N_bits_pdl</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.N_bits_pdl" title="Link to this definition">¶</a></dt>
+<dd><p>Número de bits necesarios para especificar cada PDL.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.N_bits_resol">
+<span class="sig-name descname"><span class="pre">N_bits_resol</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.N_bits_resol" title="Link to this definition">¶</a></dt>
+<dd><p>Número de bits necesarios para especificar la resolución del proceso de medida.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.N_inv">
+<span class="sig-name descname"><span class="pre">N_inv</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.N_inv" title="Link to this definition">¶</a></dt>
+<dd><p>Número de inversores de cada anillo de la matriz.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.N_osc">
+<span class="sig-name descname"><span class="pre">N_osc</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.N_osc" title="Link to this definition">¶</a></dt>
+<dd><p>Número total de osciladores de la matriz.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones BEL de cada anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.dominios">
+<span class="sig-name descname"><span class="pre">dominios</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.dominios" title="Link to this definition">¶</a></dt>
+<dd><p>Dominio de que consta la matriz.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Lista de</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>obj</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.gen_romatrix">
+<span class="sig-name descname"><span class="pre">gen_romatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'romatrix.v'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix.gen_romatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix.gen_romatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Genera un diseño ‘out_name’ en formato Verilog con la implementación de
+los dominios introducidos durante la inicialización del objeto. El
+principal uso de esta función es dentro de la función ‘implement()’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>out_name</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre del fichero de salida.</p></li>
+<li><p><strong>debug</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Flag que indica si se debe geenrar un diseño de depuración en lugar de una verdadera matriz de osciladores de anillo. En el diseño de depuración se substituye cada anillo por un divisor de reloj de frecuencia conocida, lo que permite depurar la interfaz de medida.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.help">
+<span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix.help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix.help" title="Link to this definition">¶</a></dt>
+<dd><p>Ayuda de la clase ‘StdMatrix’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.implement">
+<span class="sig-name descname"><span class="pre">implement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'project_romatrix'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">njobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">board</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pynqz2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qspi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pblock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_out_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_clock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix.implement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix.implement" title="Link to this definition">¶</a></dt>
+<dd><p>Copia en el directorio ‘self.projdir’ todos los archivos necesarios para implementar una matriz de osciladores de anillo con medición de la frecuencia y comunicación pc &lt;-&gt; microprocesador &lt;-&gt; FPGA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>projname</strong> (<em>str</em><em>, </em><em>opcional</em>) – Nombre del proyecto de Vivado.</p></li>
+<li><p><strong>projdir</strong> (<em>str</em><em>, </em><em>opcional</em>) – Directorio donde se creará el proyecto de Vivado y las fuentes (por defecto el directorio de trabajo actual).</p></li>
+<li><p><strong>njobs</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de núcleos que utiilizará Vivado paralelamente para la síntesis/implementación.</p></li>
+<li><p><strong>debug</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si ‘True’, se implementará una matriz de divisores de reloj de frecuencia conocida, lo que permite depurar el diseño al conocer qué resultados deben salir.</p></li>
+<li><p><strong>files</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si ‘True’, pinta los archivos necesarios para implementar la matriz en FPGA. Esta opción se puede desactivar (False) cuando queremos configurar un objeto tipo ‘Romatrix’ pero no vamos a implementarla físicamente (por ejemplo porque ya lo hemos hecho y solo queremos medir, o vamos a simularla sin realizarla).</p></li>
+<li><p><strong>board</strong> (<em>str</em><em>, </em><em>opcional</em>) – Placa de desarrollo utilizada en el proyecyo. Las opciones soportadas son: ‘pynqz2’, ‘zybo’, ‘cmoda7_15t’ o ‘cmoda7_35t’.</p></li>
+<li><p><strong>qspi</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, el flujo de diseño incluirá el guardado del bitstream en la memoria flash de la placa para que se auto-programe al encenderse.</p></li>
+<li><p><strong>routing</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si “True”, el flujo de diseño incluirá el cableado de los inversores después de la síntesis. Esto aumenta las probabilidades de que la herramienta haga un cableado idéntico, pero es recomendable comprobarlo. (NOTA: no tengo garantías de que esta opción sea del todo compatible con -qspi).</p></li>
+<li><p><strong>pblock</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si esta opción es ‘True’ se inserta la matriz en un pblock tal que el espacio dentro del bloque se excluye para toda lógica que no sea la propia matriz.</p></li>
+<li><p><strong>data_width</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta opción especifica la anchura del canal de datos PS&lt;–&gt;PL.</p></li>
+<li><p><strong>buffer_out_width</strong> (<em>int</em><em>, </em><em>opcional</em>) – Esta opción especifica la anchura de la palabra de respuesta (i.e., de la medida).</p></li>
+<li><p><strong>f_clock</strong> (<em>int</em><em>, </em><em>opcional</em>) – Frecuencia del reloj del diseño (en MHz).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.medir">
+<span class="sig-name descname"><span class="pre">medir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">puerto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/dev/ttyS1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">osc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_rep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baudrate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9600</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix.medir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix.medir" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función mide la frecuencia de una matriz de osciladores estándar ‘StdMatrix’, una vez esta ha sido implementado en FPGA. El resultado se devuelve como un objeto ‘Tensor’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>puerto</strong> (<em>str</em><em>, </em><em>opcional</em>) – Esta opción especifica el puerto serie al que se conecta la FPGA.</p></li>
+<li><p><strong>osc</strong> (<em>int</em><em> | </em><em>list</em><em>(</em><em>int</em><em>)</em><em>, </em><em>opcional</em>) – Lista de osciladores a medir.</p></li>
+<li><p><strong>pdl</strong> (<em>int</em><em> | </em><em>list</em><em>(</em><em>int</em><em>)</em><em>, </em><em>opcional</em>) – Lista de PDL a medir.</p></li>
+<li><p><strong>N_rep</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de repeticiones a medir.</p></li>
+<li><p><strong>resol</strong> (<em>int</em><em>, </em><em>opcional</em>) – log_2 del número de ciclos de referencia a completar para dar por terminada la medida (por defecto 17, i.e., 2^17 = 131072 ciclos).</p></li>
+<li><p><strong>float</strong> (<em>f_ref =</em>) – Frecuencia del reloj de referencia. Si se proporciona este valor, el resultado obtenido se devuelve en las mismas unidades en que se haya pasado este valor “f_ref”.</p></li>
+<li><p><strong>opcional</strong> – Frecuencia del reloj de referencia. Si se proporciona este valor, el resultado obtenido se devuelve en las mismas unidades en que se haya pasado este valor “f_ref”.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si se pasa “True” se escriben algunos datos a modo de log.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si se pasa “True” se pinta una barra de progreso de la medida. Desactivar esta opción (“False”) hace más cómodo utilizar esta función en un bucle.</p></li>
+<li><p><strong>baudrate</strong> (<em>int</em><em>, </em><em>opcional</em>) – Tasa de transferencia del protocolo serie UART PC&lt;–&gt;PS. Debe concordar con el programa compilador en PS.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.osc_list">
+<span class="sig-name descname"><span class="pre">osc_list</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.osc_list" title="Link to this definition">¶</a></dt>
+<dd><p>Lista completa de osciladores que componen la matriz.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.pdl">
+<span class="sig-name descname"><span class="pre">pdl</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.pdl" title="Link to this definition">¶</a></dt>
+<dd><p>Valor booleano que indica si los anillos de la matriz son configurables mediante PDL.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.ring_osc.StdMatrix.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Restricciones PIN de cada anillo.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdMatrix.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdMatrix.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdMatrix.save" title="Link to this definition">¶</a></dt>
+<dd><p>‘Wrapper’ para guardar objetos serializados con el módulo ‘pickle’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo de salida.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">StdRing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_inv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdRing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdRing" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Este objeto contiene una lista de elementos (LUT) que constituyen un oscilador de anillo estándar junto con la información necesaria para su implementación en FPGA utilzando el software ‘Vivado’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Nombre utilizado para identificar el anillo.</p></li>
+<li><p><strong>N_inv</strong> (<em>int</em>) – Número de inversores que forman el anillo.</p></li>
+<li><p><strong>loc</strong> (<em>str</em>) – Parámetro ‘loc’ de la primera LUT del anillo (ver clase ‘Lut’). En un anillo estándar esta LUT siempre corresponde a la puerta AND inicial. Solo se da la posición de la primera LUT porque los anillos siempre se construyen ocupando todos los ‘bel’ de una celda antes de pasar a la celda inmediatamente superior (de modo que, dadas las coordenadas del primer elemento, las demás están predeterminadas). La “celda inmediatamente superior” es X+1 si X es par, Y+1 si X es impar.</p></li>
+<li><p><strong>bel</strong> (<em>char o lista de char</em>) – Lista de parámetros ‘bel’ para cada LUT del anillo (ver clase ‘Lut’). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin fijar. Notar además que el valor de esta restricción es excluyente entre LUT que forman parte de la misma celda: cada celda tiene cuatro posibles posiciones A, B, C y D, y dos LUT no pueden ocupar el mismo espacio. Esta función no avisa de esta violación: el usuario es responsable de que los valores ‘bel’ introducidos sean todos distintos entre sí en grupos de cuatro. En otro caso, el diseño fallará. Además de una lista de caracteres, esta opción admite un único caracter, pero entonces solo se restringirá la AND inicial. Ver opción ‘bel’ de la clase ‘Lut’. Notar que el número de elementos total de un anillo “StdRing” es igual a N_inv+1, siendo el primero siempre una LUT2 (AND).</p></li>
+<li><p><strong>pin</strong> (<em>str o lista de str</em>) – Lista de parámetros ‘pin’ de cada LUT que forma parte del anillo (ver clase ‘Lut’). Cada elemento de la lista se aplica en orden correlativo al elemento del anillo (la primera restricción se aplica al AND inicial, la segunda al primer inversor, etc). Pueden darse menos restricciones que inversores forman el anillo, pero entonces quedarán LUT sin mapear. Notar que el mapeo debe ser coherente con el tipo de LUT que se está fijando, y en particular el AND inicial siempre es de tipo LUT2 (i.e., solo se pueden fijar los pines ‘I0’ y ‘I1’). Notar que el número de elementos total de un anillo “StdRing” es igual a N_inv+1, siendo el primero siempre una LUT2 (AND). Por definición, el puerto lógico ‘I0’ siempre es el que recoge la señal del elemento precedente en el bucle.</p></li>
+<li><p><strong>pdl</strong> (<em>bool</em><em>, </em><em>opcional</em>) – Si ‘True’ se utilizan modelos LUT6 para los inversores, permitiendo utilizar 5 puertos para configurar el anillo mediante PDL. Si ‘False’ se utilizan modelos LUT1 para los inversores y LUT2 para el enable AND. Por defecto False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.N_inv">
+<span class="sig-name descname"><span class="pre">N_inv</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.N_inv" title="Link to this definition">¶</a></dt>
+<dd><p>Número de inversores del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.bel">
+<span class="sig-name descname"><span class="pre">bel</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.bel" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de restricciones BEL para cada elemento del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.elements">
+<span class="sig-name descname"><span class="pre">elements</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.elements" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de objetos Lut que conforman el anillo. El primer elemento será Lut2, y los restantes <cite>N_inv</cite> elementos serán Lut1 o Lut6 en función de si la opción <cite>pdl</cite> es ‘True’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.help">
+<span class="sig-name descname"><span class="pre">help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#StdRing.help"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.StdRing.help" title="Link to this definition">¶</a></dt>
+<dd><p>Ayuda de la clase ‘StdRing’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.loc">
+<span class="sig-name descname"><span class="pre">loc</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.loc" title="Link to this definition">¶</a></dt>
+<dd><p>Parámetro LOC de la primera puerta del anillo.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.name" title="Link to this definition">¶</a></dt>
+<dd><p>Nombre del anillo instanciado.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fpga.ring_osc.StdRing.pin">
+<span class="sig-name descname"><span class="pre">pin</span></span><a class="headerlink" href="#fpga.ring_osc.StdRing.pin" title="Link to this definition">¶</a></dt>
+<dd><p>Lista de restricciones PIN para cada elemento del anillo.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.ring_osc.clog2">
+<span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">clog2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#clog2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.clog2" title="Link to this definition">¶</a></dt>
+<dd><p>Numero de bits necesarios para especificar ‘N’ estados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>N</strong> (<em>int</em>) – Número del cual calcular la función ‘ceiling log’</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Número entero más pequeño que es mayor o igual al resultado del logaritmo base 2 de <cite>N</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.ring_osc.load">
+<span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.load" title="Link to this definition">¶</a></dt>
+<dd><p>‘Wrapper’ para la función ‘load’ del módulo <cite>pickle</cite>, que permite cargar un objeto guardado serializado de cualquier clase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo a cargar.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.ring_osc.sim_romatrix">
+<span class="sig-prename descclassname"><span class="pre">fpga.ring_osc.</span></span><span class="sig-name descname"><span class="pre">sim_romatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_rep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_osc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_rep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_pdl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_osc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/ring_osc.html#sim_romatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.ring_osc.sim_romatrix" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función proporciona un simulador naíf de una matriz de celdas; reproduce las medidas de una instancia para un número de repeticiones (N_rep), pdl (N_pdl) y celdas (N_osc), así como ajustar las desviaciones estándar de cada proceso. El comportamiento estándar es: std_rep&lt;std_pdl&lt;std_osc La función genera los valores aleatorios como una distribución normal, pero luego los escala para devolver siempre valores enteros positivos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_rep</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de repeticiones simuladas.</p></li>
+<li><p><strong>N_pdl</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de PDL simulados.</p></li>
+<li><p><strong>N_osc</strong> (<em>int</em><em>, </em><em>opcional</em>) – Número de celdas simuladas.</p></li>
+<li><p><strong>std_rep</strong> (<em>float</em><em>, </em><em>opcional</em>) – Desviación estándar de una misma celda, para un mismo PDL entre
+medidas sucesivas.</p></li>
+<li><p><strong>std_pdl</strong> (<em>float</em><em>, </em><em>opcional</em>) – Desviación estandar de una misma celda entre distintos PDL</p></li>
+<li><p><strong>std_osc</strong> (<em>float</em><em>, </em><em>opcional</em>) – Desviación estándar entre distintas celdas.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">fpga.ring_osc module</a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio"><code class="docutils literal notranslate"><span class="pre">Dominio</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.N_osc"><code class="docutils literal notranslate"><span class="pre">Dominio.N_osc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.directriz"><code class="docutils literal notranslate"><span class="pre">Dominio.directriz</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.dx"><code class="docutils literal notranslate"><span class="pre">Dominio.dx</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.dy"><code class="docutils literal notranslate"><span class="pre">Dominio.dy</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.help"><code class="docutils literal notranslate"><span class="pre">Dominio.help()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.osc_coord"><code class="docutils literal notranslate"><span class="pre">Dominio.osc_coord</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.x0"><code class="docutils literal notranslate"><span class="pre">Dominio.x0</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.x1"><code class="docutils literal notranslate"><span class="pre">Dominio.x1</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.y0"><code class="docutils literal notranslate"><span class="pre">Dominio.y0</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.Dominio.y1"><code class="docutils literal notranslate"><span class="pre">Dominio.y1</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix.gen_garomatrix"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.gen_garomatrix()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix.help"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.help()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix.implement"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.implement()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix.medir"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.medir()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisMatrix.save"><code class="docutils literal notranslate"><span class="pre">GaloisMatrix.save()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing"><code class="docutils literal notranslate"><span class="pre">GaloisRing</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.N_inv"><code class="docutils literal notranslate"><span class="pre">GaloisRing.N_inv</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.bel"><code class="docutils literal notranslate"><span class="pre">GaloisRing.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.elements"><code class="docutils literal notranslate"><span class="pre">GaloisRing.elements</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.help"><code class="docutils literal notranslate"><span class="pre">GaloisRing.help()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.loc"><code class="docutils literal notranslate"><span class="pre">GaloisRing.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.name"><code class="docutils literal notranslate"><span class="pre">GaloisRing.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.GaloisRing.pin"><code class="docutils literal notranslate"><span class="pre">GaloisRing.pin</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix"><code class="docutils literal notranslate"><span class="pre">StdMatrix</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.N_bits_osc"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_osc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.N_bits_pdl"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_pdl</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.N_bits_resol"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_bits_resol</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.N_inv"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_inv</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.N_osc"><code class="docutils literal notranslate"><span class="pre">StdMatrix.N_osc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.bel"><code class="docutils literal notranslate"><span class="pre">StdMatrix.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.dominios"><code class="docutils literal notranslate"><span class="pre">StdMatrix.dominios</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.gen_romatrix"><code class="docutils literal notranslate"><span class="pre">StdMatrix.gen_romatrix()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.help"><code class="docutils literal notranslate"><span class="pre">StdMatrix.help()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.implement"><code class="docutils literal notranslate"><span class="pre">StdMatrix.implement()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.medir"><code class="docutils literal notranslate"><span class="pre">StdMatrix.medir()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.osc_list"><code class="docutils literal notranslate"><span class="pre">StdMatrix.osc_list</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.pdl"><code class="docutils literal notranslate"><span class="pre">StdMatrix.pdl</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.pin"><code class="docutils literal notranslate"><span class="pre">StdMatrix.pin</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdMatrix.save"><code class="docutils literal notranslate"><span class="pre">StdMatrix.save()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing"><code class="docutils literal notranslate"><span class="pre">StdRing</span></code></a><ul>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.N_inv"><code class="docutils literal notranslate"><span class="pre">StdRing.N_inv</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.bel"><code class="docutils literal notranslate"><span class="pre">StdRing.bel</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.elements"><code class="docutils literal notranslate"><span class="pre">StdRing.elements</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.help"><code class="docutils literal notranslate"><span class="pre">StdRing.help()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.loc"><code class="docutils literal notranslate"><span class="pre">StdRing.loc</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.name"><code class="docutils literal notranslate"><span class="pre">StdRing.name</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.StdRing.pin"><code class="docutils literal notranslate"><span class="pre">StdRing.pin</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fpga.ring_osc.clog2"><code class="docutils literal notranslate"><span class="pre">clog2()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.ring_osc.sim_romatrix"><code class="docutils literal notranslate"><span class="pre">sim_romatrix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fpga.interfaz_pcps.html"
+                          title="previous chapter">fpga.interfaz_pcps module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="setup.html"
+                          title="next chapter">setup module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fpga.ring_osc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="setup module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fpga.interfaz_pcps.html" title="fpga.interfaz_pcps module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" >fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.ring_osc module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
