@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>utils.bool module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils.stats module" href="utils.stats.html" />
+    <link rel="prev" title="utils package" href="utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.stats.html" title="utils.stats module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="utils package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" accesskey="U">utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.bool module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-utils.bool">
+<span id="utils-bool-module"></span><h1>utils.bool module<a class="headerlink" href="#module-utils.bool" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.bool.LinearSystECC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.bool.</span></span><span class="sig-name descname"><span class="pre">LinearSystECC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">H</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#LinearSystECC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.LinearSystECC" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Clase para manipular sistemas de códigos de corrección de errores lineales.</p>
+<p>Esta clase proporciona funcionalidades para la generación de matrices G y H, codificación y decodificación de vectores para códigos de corrección de errores lineales en un cuerpo finito.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> (<em>int</em><em>, </em><em>opcional</em>) – Dimensión de la matriz. Por defecto 4.</p></li>
+<li><p><strong>length</strong> (<em>int</em><em>, </em><em>opcional</em>) – Longitud de la matriz. Por defecto 7.</p></li>
+<li><p><strong>G</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em><em>, </em><em>opcional</em>) – Matriz booleana G para operaciones de generación de código. Por defecto False.</p></li>
+<li><p><strong>H</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em><em>, </em><em>opcional</em>) – Matriz booleana H para operaciones de generación de código. Por defecto False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la matriz generadora y la matriz de paridad no cumplen GH^=0.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Esta clase permite realizar operaciones en un cuerpo finito para códigos de corrección de errores lineales.
+Los métodos ‘encode’ y ‘decode’ permiten la codificación y decodificación de vectores respectivamente,
+usando las matrices generadora y de paridad.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.bool.LinearSystECC.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#LinearSystECC.decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.LinearSystECC.decode" title="Link to this definition">¶</a></dt>
+<dd><p>Decodifica un código de entrada de ‘length’ bits en un mensaje de ‘dim’ bits
+utilizando un método de mínima distancia de Hamming.</p>
+<p>Este método es absolutamente ineficiente y no debería usarse con dimensiones
+mayores que 9.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>list</em><em> of </em><em>bool</em>) – Código booleano de entrada a decodificar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mensaje decodificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of bool</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la longitud del vector de entrada no coincide con ‘length’.
+    Si hay demasiados errores para decodificar el vector de manera fiable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.bool.LinearSystECC.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#LinearSystECC.encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.LinearSystECC.encode" title="Link to this definition">¶</a></dt>
+<dd><p>Codifica un mensaje de entrada de ‘dim’ bits en un código de ‘length’ bits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vector</strong> (<em>list</em><em> of </em><em>bool</em>) – Mensaje booleano de entrada a codificar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mensaje booleano codificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si la longitud del vector de entrada no coincide con ‘dim’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.bool.gauss_elimination_gf2">
+<span class="sig-prename descclassname"><span class="pre">utils.bool.</span></span><span class="sig-name descname"><span class="pre">gauss_elimination_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff_matrix_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">const_vector_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#gauss_elimination_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.gauss_elimination_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Resuelve un sistema de ecuaciones booleanas en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coeff_matrix_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Matriz booleana que representa los coeficientes del sistema de ecuaciones.</p></li>
+<li><p><strong>const_vector_in</strong> (<em>list</em><em> of </em><em>bool</em>) – Vector booleano que representa el término independiente de cada ecuación.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matriz booleana triangular.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.bool.hamming">
+<span class="sig-prename descclassname"><span class="pre">utils.bool.</span></span><span class="sig-name descname"><span class="pre">hamming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#hamming"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.hamming" title="Link to this definition">¶</a></dt>
+<dd><p>Calcula la distancia de Hamming (medida en bits) entre dos entradas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in1</strong> (<em>list</em><em> of </em><em>bool</em>) – Primer vector booleano de entrada.</p></li>
+<li><p><strong>in2</strong> (<em>list</em><em> of </em><em>bool</em>) – Segundo vector booleano de entrada.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Distancia de Hamming entre las dos entradas (medida en bits).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.bool.invert_matrix_gf2">
+<span class="sig-prename descclassname"><span class="pre">utils.bool.</span></span><span class="sig-name descname"><span class="pre">invert_matrix_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#invert_matrix_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.invert_matrix_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve la inversa de una matriz booleana en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>matrix_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Matriz booleana a invertir.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matriz booleana inversa.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.bool.matrix_multiply_gf2">
+<span class="sig-prename descclassname"><span class="pre">utils.bool.</span></span><span class="sig-name descname"><span class="pre">matrix_multiply_gf2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix1_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrix2_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/bool.html#matrix_multiply_gf2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.bool.matrix_multiply_gf2" title="Link to this definition">¶</a></dt>
+<dd><p>Multiplica un par de matrices booleanas en un cuerpo finito con las operaciones XOR (“+”) y AND (“*”).</p>
+<p>Esta función puede utilizarse también para multiplicar vectores por matrices, gestionando automáticamente
+la disposición del vector: fila si va delante de la matriz, columna si va detrás. Así, si ‘matrix1_in’ y
+‘matrix2_in’ son dos vectores, el resultado será el producto vectorial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matrix1_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Primera matriz booleana.</p></li>
+<li><p><strong>matrix2_in</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>bool</em>) – Segunda matriz booleana.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Producto de las matrices o el producto vectorial en gf(2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils.bool module</a><ul>
+<li><a class="reference internal" href="#utils.bool.LinearSystECC"><code class="docutils literal notranslate"><span class="pre">LinearSystECC</span></code></a><ul>
+<li><a class="reference internal" href="#utils.bool.LinearSystECC.decode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.decode()</span></code></a></li>
+<li><a class="reference internal" href="#utils.bool.LinearSystECC.encode"><code class="docutils literal notranslate"><span class="pre">LinearSystECC.encode()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.bool.gauss_elimination_gf2"><code class="docutils literal notranslate"><span class="pre">gauss_elimination_gf2()</span></code></a></li>
+<li><a class="reference internal" href="#utils.bool.hamming"><code class="docutils literal notranslate"><span class="pre">hamming()</span></code></a></li>
+<li><a class="reference internal" href="#utils.bool.invert_matrix_gf2"><code class="docutils literal notranslate"><span class="pre">invert_matrix_gf2()</span></code></a></li>
+<li><a class="reference internal" href="#utils.bool.matrix_multiply_gf2"><code class="docutils literal notranslate"><span class="pre">matrix_multiply_gf2()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="utils.html"
+                          title="previous chapter">utils package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="utils.stats.html"
+                          title="next chapter">utils.stats module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.bool.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.stats.html" title="utils.stats module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="utils package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" >utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.bool module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fpga.interfaz_pcps module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fpga.ring_osc module" href="fpga.ring_osc.html" />
+    <link rel="prev" title="fpga.fabric module" href="fpga.fabric.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.ring_osc.html" title="fpga.ring_osc module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fpga.fabric.html" title="fpga.fabric module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" accesskey="U">fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.interfaz_pcps module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-fpga.interfaz_pcps">
+<span id="fpga-interfaz-pcps-module"></span><h1>fpga.interfaz_pcps module<a class="headerlink" href="#module-fpga.interfaz_pcps" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.bitstr_to_bytestr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">bitstr_to_bytestr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bitstr_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitstr_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#bitstr_to_bytestr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.bitstr_to_bytestr" title="Link to this definition">¶</a></dt>
+<dd><p>Toma una lista de bits <cite>bitstr_in</cite> y la convierte a una lista de bytes del tamaño mínimo necesario para alojar <cite>bitstr_width</cite> bits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bitstr_in</strong> (<em>lista de {0</em><em>,</em><em>1}</em>) – Lista de bits.</p></li>
+<li><p><strong>bitstr_width</strong> (<em>int</em>) – Número de bits mínimos acomodados a la salida.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de bytes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de u8</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.bitstr_to_int">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">bitstr_to_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entrada</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#bitstr_to_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.bitstr_to_int" title="Link to this definition">¶</a></dt>
+<dd><p>Convierte una lista de bits en su correspondiente número decimal (entero).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entrada</strong> (<em>lista de {0</em><em>,</em><em>1}</em>) – Representación binaria de un valor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Representación decimal de <cite>entrada</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.bytestr_to_bitstr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">bytestr_to_bitstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytestr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitstr_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#bytestr_to_bitstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.bytestr_to_bitstr" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función toma una lista de bytes <cite>bytestr</cite> y los aloja en una lista de bits de tamaño <cite>bitstr_width</cite>. Si <cite>bitstr_width</cite> es insuficiente, la lista de bits se truncará.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bytestr</strong> (<em>lista de u8</em>) – Lista de enteros entre 0 y 255 (bytes).</p></li>
+<li><p><strong>bitstr_width</strong> (<em>int</em>) – Tamaño de la lista de bits resultante.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de bits.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de {0,1}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.bytestr_to_int">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">bytestr_to_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entrada</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#bytestr_to_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.bytestr_to_int" title="Link to this definition">¶</a></dt>
+<dd><p>Convierte una lista de bytes en su correspondiente número decimal (entero).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entrada</strong> (<em>lista de u8</em>) – Lista de <cite>int</cite> entre 0 y 255 que representa un valor en base 256.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Valor entero (base 10) dado por la lista <cite>entrada</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.calc">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">calc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_out_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#calc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.calc" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion dispara un ciclo RDY-&gt;CALC-&gt;PRINT-&gt;RDY en una máquina de estados finitos conectada a traves de <cite>serialport</cite> y devuelve un bitstr de tamaño <cite>buffer_out_width</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p></li>
+<li><p><strong>buffer_out_width</strong> (<em>int</em>) – Tamaño del ‘bitstr’ devuelto.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Respuesta binaria devuelta por la máquina de estados finitos después de realizar el procesamiento en FPGA.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de {0,1}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.int_to_bitstr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">int_to_bitstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entrada</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#int_to_bitstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.int_to_bitstr" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion convierte un numero <cite>entrada</cite> en su representacion en base 2 (‘bitstr’, lista de 0/1). El número más a la dcha del bitstr (result[0]) es el menos significativo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entrada</strong> (<em>int</em>) – Valor entero en base 10.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Representación binaria de <cite>entrada</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de {0,1}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.int_to_bytestr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">int_to_bytestr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entrada</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#int_to_bytestr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.int_to_bytestr" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion convierte un numero <cite>entrada</cite> en su representacion en base 256 (lista de u8 ‘bytestr’). El número más a la dcha del bytestr (result[0]) es el menos significativo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entrada</strong> (<em>int</em>) – Número a convertir en ‘bytestr’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista que representa <cite>entrada</cite> en base 256.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de u8</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.print_bitstr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">print_bitstr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bitstr_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#print_bitstr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.print_bitstr" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función imprime una lista de bits como una ‘string’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bitstr_in</strong> (<em>lista de {0</em><em>,</em><em>1}</em>) – Lista de bits a imprimir.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.print_bytestr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">print_bytestr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytestr_in</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#print_bytestr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.print_bytestr" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función imprime una lista de bytes como una ‘string’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bytestr_in</strong> (<em>lista de u8</em>) – Lista de bytes a imprimir.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.receive_bytestr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">receive_bytestr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytestr_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#receive_bytestr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.receive_bytestr" title="Link to this definition">¶</a></dt>
+<dd><p>Recibe <cite>bytestr_size</cite> bytes a traves del puerto serie <cite>serialport</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p></li>
+<li><p><strong>bytestr_size</strong> (<em>int</em>) – Número de bytes a leer a través del puerto <cite>serialport</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista de bytes leídos del puerto serie.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista de u8</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.receive_u32">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">receive_u32</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#receive_u32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.receive_u32" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion implementa un bucle para leer 4 bytes del puerto serie <cite>serialport</cite>, y los devuelve en formato u32 (entero). Si no habia datos en el buffer de entrada a la hora de llamar a la funcion devuelve -1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>En caso de éxito, entero leído de <cite>serialport</cite>. En caso contrario, -1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.receive_u8">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">receive_u8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#receive_u8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.receive_u8" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion implementa un bucle para leer 1 byte del puerto serie <cite>serialport</cite>, y devuelve dicho byte en formato u8 (un numero entre 0 y 255). Si no habia datos en el buffer de entrada a la hora de llamar a la funcion, devuelve -1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>En caso de éxito, ‘byte’ leído del puerto serie en formato decimal. En otro caso, -1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.resize_array">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">resize_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_old</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#resize_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.resize_array" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion toma un <cite>array_old</cite> de tamaño arbitrario y transfiere los elementos a un array de tamaño <cite>array_size</cite>, empezando por el dígito menos significativo (a la dcha.). Si <cite>array_size</cite> no es suficiente para contener todo el <cite>array_old</cite>, la salida estará truncada. Si <cite>array_size</cite> es excesivo para contener <cite>array_old</cite>, los huecos que sobren se rellenan con 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array_old</strong> (<em>lista</em>) – Array a redimensionar (tipo de datos arbitrario).</p></li>
+<li><p><strong>array_size</strong> (<em>int</em>) – Tamaño del nuevo array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lista del mismo tipo que <cite>array_old</cite> redimensionada.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>lista</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.scan">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bitstr_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_in_width</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.scan" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion dispara un ciclo RDY-&gt;SCAN-&gt;RDY en una máquina de estados finitos conectada a traves de <cite>serialport</cite> y carga a la máquina un bitstr de tamaño <cite>buffer_in_width</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p></li>
+<li><p><strong>bitstr_in</strong> (<em>lista de {0</em><em>,</em><em>1}</em>) – Lista de bits a cargar en la máquina de estados finitos, conteniendo datos de entrada necesarios para la operación de la FPGA.</p></li>
+<li><p><strong>buffer_in_width</strong> (<em>int</em>) – Número de bits escritos en la máquina de estados finitos.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.send_bytestr">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">send_bytestr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytestr_out</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#send_bytestr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.send_bytestr" title="Link to this definition">¶</a></dt>
+<dd><p>Envía la lista de bytes <cite>bytestr_out</cite> a traves del puerto serie <cite>serialport</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p></li>
+<li><p><strong>bytestr_out</strong> (<em>lista de u8</em>) – Lista de bytes (entero entre 0 y 255) a enviar a través del puerto serie.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fpga.interfaz_pcps.send_u8">
+<span class="sig-prename descclassname"><span class="pre">fpga.interfaz_pcps.</span></span><span class="sig-name descname"><span class="pre">send_u8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serialport</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fpga/interfaz_pcps.html#send_u8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fpga.interfaz_pcps.send_u8" title="Link to this definition">¶</a></dt>
+<dd><p>Esta funcion envia un numero en formato u8 a traves de <cite>serialport</cite>. Si <cite>number</cite> es mayor que 256, se enviará el resto: number%256.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>serialport</strong> (<em>pyserial.Serial</em>) – Objeto <cite>Serial</cite> del paquete ‘pyserial’.</p></li>
+<li><p><strong>number</strong> (<em>u8</em>) – Byte (entero entre 0 y 255) a enviar a través del puerto serie.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>0</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">fpga.interfaz_pcps module</a><ul>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.bitstr_to_bytestr"><code class="docutils literal notranslate"><span class="pre">bitstr_to_bytestr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.bitstr_to_int"><code class="docutils literal notranslate"><span class="pre">bitstr_to_int()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.bytestr_to_bitstr"><code class="docutils literal notranslate"><span class="pre">bytestr_to_bitstr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.bytestr_to_int"><code class="docutils literal notranslate"><span class="pre">bytestr_to_int()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.calc"><code class="docutils literal notranslate"><span class="pre">calc()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.int_to_bitstr"><code class="docutils literal notranslate"><span class="pre">int_to_bitstr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.int_to_bytestr"><code class="docutils literal notranslate"><span class="pre">int_to_bytestr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.print_bitstr"><code class="docutils literal notranslate"><span class="pre">print_bitstr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.print_bytestr"><code class="docutils literal notranslate"><span class="pre">print_bytestr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.receive_bytestr"><code class="docutils literal notranslate"><span class="pre">receive_bytestr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.receive_u32"><code class="docutils literal notranslate"><span class="pre">receive_u32()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.receive_u8"><code class="docutils literal notranslate"><span class="pre">receive_u8()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.resize_array"><code class="docutils literal notranslate"><span class="pre">resize_array()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.scan"><code class="docutils literal notranslate"><span class="pre">scan()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.send_bytestr"><code class="docutils literal notranslate"><span class="pre">send_bytestr()</span></code></a></li>
+<li><a class="reference internal" href="#fpga.interfaz_pcps.send_u8"><code class="docutils literal notranslate"><span class="pre">send_u8()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fpga.fabric.html"
+                          title="previous chapter">fpga.fabric module</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="fpga.ring_osc.html"
+                          title="next chapter">fpga.ring_osc module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fpga.interfaz_pcps.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fpga.ring_osc.html" title="fpga.ring_osc module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fpga.fabric.html" title="fpga.fabric module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="fpga.html" >fpga package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.interfaz_pcps module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

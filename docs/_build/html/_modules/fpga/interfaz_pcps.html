@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fpga.interfaz_pcps &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=514cf933" />
+    
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../fpga.html" accesskey="U">fpga</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.interfaz_pcps</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for fpga.interfaz_pcps</h1><div class="highlight"><pre>
+<span></span><span class="c1">###</span>
+<span class="c1">## Nomenclatura:</span>
+<span class="c1">##</span>
+<span class="c1">##  bitstr -&gt; bit-string (i.e., a list of &#39;u1&#39; represented by integer = 0 or 1)</span>
+<span class="c1">##  bytestr -&gt; byte-string (i.e., a list of &#39;u8&#39; represented by integer &lt; 256)</span>
+<span class="c1">###</span>
+
+<span class="n">OCT0</span> <span class="o">=</span>  <span class="mi">1</span>           <span class="c1"># 256^0</span>
+<span class="n">OCT1</span> <span class="o">=</span>  <span class="mi">256</span>         <span class="c1"># 256^1</span>
+<span class="n">OCT2</span> <span class="o">=</span>  <span class="mi">65536</span>       <span class="c1"># 256^2</span>
+<span class="n">OCT3</span> <span class="o">=</span>  <span class="mi">16777216</span>    <span class="c1"># 256^3</span>
+
+<span class="n">cmd_calc</span> <span class="o">=</span>          <span class="mi">1</span>
+<span class="n">cmd_scan</span> <span class="o">=</span>          <span class="mi">2</span>
+
+
+<div class="viewcode-block" id="int_to_bytestr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.int_to_bytestr">[docs]</a>
+<span class="k">def</span> <span class="nf">int_to_bytestr</span><span class="p">(</span><span class="n">entrada</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion convierte un numero `entrada` en su representacion en base 256 (lista de u8 &#39;bytestr&#39;). El número más a la dcha del bytestr (result[0]) es el menos significativo.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    entrada : int</span>
+<span class="sd">        Número a convertir en &#39;bytestr&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de u8</span>
+<span class="sd">        Lista que representa `entrada` en base 256.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">entrada</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">entrada</span>
+        <span class="k">while</span> <span class="n">aux</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aux</span><span class="o">%</span><span class="mi">256</span><span class="p">)</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">//</span> <span class="mi">256</span>
+        
+    <span class="k">return</span> <span class="n">result</span></div>
+
+    
+    
+<div class="viewcode-block" id="bytestr_to_int">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.bytestr_to_int">[docs]</a>
+<span class="k">def</span> <span class="nf">bytestr_to_int</span><span class="p">(</span><span class="n">entrada</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convierte una lista de bytes en su correspondiente número decimal (entero).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    entrada : lista de u8</span>
+<span class="sd">        Lista de `int` entre 0 y 255 que representa un valor en base 256.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Valor entero (base 10) dado por la lista `entrada`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">entrada</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">entrada</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">256</span><span class="o">**</span><span class="n">i</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">result</span></div>
+
+    
+    
+<div class="viewcode-block" id="int_to_bitstr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.int_to_bitstr">[docs]</a>
+<span class="k">def</span> <span class="nf">int_to_bitstr</span><span class="p">(</span><span class="n">entrada</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion convierte un numero `entrada` en su representacion en base 2 (&#39;bitstr&#39;, lista de 0/1). El número más a la dcha del bitstr (result[0]) es el menos significativo.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    entrada : int</span>
+<span class="sd">        Valor entero en base 10.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de {0,1}</span>
+<span class="sd">        Representación binaria de `entrada`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">entrada</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">entrada</span>
+        <span class="k">while</span> <span class="n">aux</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aux</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">//</span> <span class="mi">2</span>
+        
+    <span class="k">return</span> <span class="n">result</span></div>
+
+    
+    
+<div class="viewcode-block" id="bitstr_to_int">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.bitstr_to_int">[docs]</a>
+<span class="k">def</span> <span class="nf">bitstr_to_int</span><span class="p">(</span><span class="n">entrada</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convierte una lista de bits en su correspondiente número decimal (entero).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    entrada : lista de {0,1}</span>
+<span class="sd">        Representación binaria de un valor.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        Representación decimal de `entrada`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">entrada</span><span class="p">)):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">entrada</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">i</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">result</span></div>
+
+        
+
+<div class="viewcode-block" id="receive_u8">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_u8">[docs]</a>
+<span class="k">def</span> <span class="nf">receive_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion implementa un bucle para leer 1 byte del puerto serie `serialport`, y devuelve dicho byte en formato u8 (un numero entre 0 y 255). Si no habia datos en el buffer de entrada a la hora de llamar a la funcion, devuelve -1.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        En caso de éxito, &#39;byte&#39; leído del puerto serie en formato decimal. En otro caso, -1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">read</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">serialport</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">serialport</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">read</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+    
+    
+<div class="viewcode-block" id="receive_u32">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_u32">[docs]</a>
+<span class="k">def</span> <span class="nf">receive_u32</span><span class="p">(</span><span class="n">serialport</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion implementa un bucle para leer 4 bytes del puerto serie `serialport`, y los devuelve en formato u32 (entero). Si no habia datos en el buffer de entrada a la hora de llamar a la funcion devuelve -1.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        En caso de éxito, entero leído de `serialport`. En caso contrario, -1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">read</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">serialport</span><span class="o">.</span><span class="n">inWaiting</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">serialport</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">OCT3</span><span class="o">*</span><span class="n">read</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">+</span><span class="n">OCT2</span><span class="o">*</span><span class="n">read</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="n">OCT1</span><span class="o">*</span><span class="n">read</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">read</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+    
+    
+<div class="viewcode-block" id="receive_bytestr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.receive_bytestr">[docs]</a>
+<span class="k">def</span> <span class="nf">receive_bytestr</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">bytestr_size</span><span class="p">):</span> 
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recibe `bytestr_size` bytes a traves del puerto serie `serialport`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">    bytestr_size : int</span>
+<span class="sd">        Número de bytes a leer a través del puerto `serialport`.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de u8</span>
+<span class="sd">        Lista de bytes leídos del puerto serie.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bytestr_size</span><span class="p">):</span>
+        <span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">aux</span> <span class="o">=</span> <span class="n">receive_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">aux</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># Esto puede dar problemas</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span>
+                <span class="k">break</span>
+            
+    <span class="k">return</span> <span class="n">result</span></div>
+
+    
+    
+<div class="viewcode-block" id="send_u8">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.send_u8">[docs]</a>
+<span class="k">def</span> <span class="nf">send_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">number</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion envia un numero en formato u8 a traves de `serialport`. Si `number` es mayor que 256, se enviará el resto: number%256.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">    number : u8</span>
+<span class="sd">        Byte (entero entre 0 y 255) a enviar a través del puerto serie.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">serialport</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">bytes</span><span class="p">([</span><span class="n">number</span><span class="o">%</span><span class="mi">256</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="send_bytestr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.send_bytestr">[docs]</a>
+<span class="k">def</span> <span class="nf">send_bytestr</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">bytestr_out</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Envía la lista de bytes `bytestr_out` a traves del puerto serie `serialport`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">    bytestr_out : lista de u8</span>
+<span class="sd">        Lista de bytes (entero entre 0 y 255) a enviar a través del puerto serie.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    0</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bytestr_out</span><span class="p">:</span>
+        <span class="n">send_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="resize_array">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.resize_array">[docs]</a>
+<span class="k">def</span> <span class="nf">resize_array</span><span class="p">(</span><span class="n">array_old</span><span class="p">,</span> <span class="n">array_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion toma un `array_old` de tamaño arbitrario y transfiere los elementos a un array de tamaño `array_size`, empezando por el dígito menos significativo (a la dcha.). Si `array_size` no es suficiente para contener todo el `array_old`, la salida estará truncada. Si `array_size` es excesivo para contener `array_old`, los huecos que sobren se rellenan con 0.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_old : lista</span>
+<span class="sd">        Array a redimensionar (tipo de datos arbitrario).</span>
+<span class="sd">    array_size : int</span>
+<span class="sd">        Tamaño del nuevo array.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista</span>
+<span class="sd">        Lista del mismo tipo que `array_old` redimensionada.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split_string</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">array_old</span><span class="p">]</span>
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">array_size</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_string</span><span class="p">):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">split_string</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="bitstr_to_bytestr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.bitstr_to_bytestr">[docs]</a>
+<span class="k">def</span> <span class="nf">bitstr_to_bytestr</span><span class="p">(</span><span class="n">bitstr_in</span><span class="p">,</span> <span class="n">bitstr_width</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Toma una lista de bits `bitstr_in` y la convierte a una lista de bytes del tamaño mínimo necesario para alojar `bitstr_width` bits.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bitstr_in : lista de {0,1}</span>
+<span class="sd">        Lista de bits.</span>
+<span class="sd">    bitstr_width : int</span>
+<span class="sd">        Número de bits mínimos acomodados a la salida.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de u8</span>
+<span class="sd">        Lista de bytes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">split_string</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">bitstr_in</span><span class="p">]</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">bitstr_width</span><span class="o">//</span><span class="mi">8</span><span class="o">+</span><span class="p">(</span><span class="n">bitstr_width</span><span class="o">%</span><span class="mi">8</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">index_split_string</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+        <span class="n">aux</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">index_split_string</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_string</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">split_string</span><span class="p">[</span><span class="n">index_split_string</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span> <span class="o">+</span> <span class="mi">2</span><span class="o">**</span><span class="n">j</span>
+                <span class="n">index_split_string</span> <span class="o">=</span> <span class="n">index_split_string</span><span class="o">+</span><span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="bytestr_to_bitstr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.bytestr_to_bitstr">[docs]</a>
+<span class="k">def</span> <span class="nf">bytestr_to_bitstr</span><span class="p">(</span><span class="n">bytestr</span><span class="p">,</span> <span class="n">bitstr_width</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta función toma una lista de bytes `bytestr` y los aloja en una lista de bits de tamaño `bitstr_width`. Si `bitstr_width` es insuficiente, la lista de bits se truncará.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bytestr : lista de u8</span>
+<span class="sd">        Lista de enteros entre 0 y 255 (bytes).</span>
+<span class="sd">    bitstr_width : int</span>
+<span class="sd">        Tamaño de la lista de bits resultante.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de {0,1}</span>
+<span class="sd">        Lista de bits.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bitstr_aux</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">bytestr</span><span class="p">)):</span>
+        <span class="n">bitstr_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+    <span class="n">j</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">bytestr</span><span class="p">:</span>
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">aux</span> <span class="o">=</span> <span class="n">aux</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bitstr_aux</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">aux</span><span class="o">%</span><span class="mi">2</span>
+        
+        <span class="n">j</span> <span class="o">=</span> <span class="n">j</span><span class="o">+</span><span class="mi">8</span>
+        
+    <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bitstr_width</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">bitstr_aux</span><span class="p">):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bitstr_aux</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="print_bitstr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.print_bitstr">[docs]</a>
+<span class="k">def</span> <span class="nf">print_bitstr</span><span class="p">(</span><span class="n">bitstr_in</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta función imprime una lista de bits como una &#39;string&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bitstr_in : lista de {0,1}</span>
+<span class="sd">        Lista de bits a imprimir.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">bin_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">bitstr_in</span><span class="p">)])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">bin_string</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+    
+    
+<div class="viewcode-block" id="print_bytestr">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.print_bytestr">[docs]</a>
+<span class="k">def</span> <span class="nf">print_bytestr</span><span class="p">(</span><span class="n">bytestr_in</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta función imprime una lista de bytes como una &#39;string&#39;.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bytestr_in : lista de u8</span>
+<span class="sd">        Lista de bytes a imprimir.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">aux</span><span class="o">=</span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">bytestr_in</span><span class="p">)]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">aux</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="c1">## Aquí empiezan las funciones &#39;ciclo&#39;</span>
+<div class="viewcode-block" id="calc">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.calc">[docs]</a>
+<span class="k">def</span> <span class="nf">calc</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">buffer_out_width</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion dispara un ciclo RDY-&gt;CALC-&gt;PRINT-&gt;RDY en una máquina de estados finitos conectada a traves de `serialport` y devuelve un bitstr de tamaño `buffer_out_width`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">    buffer_out_width : int</span>
+<span class="sd">        Tamaño del &#39;bitstr&#39; devuelto.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lista de {0,1}</span>
+<span class="sd">        Respuesta binaria devuelta por la máquina de estados finitos después de realizar el procesamiento en FPGA.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bytestr_size</span> <span class="o">=</span> <span class="n">buffer_out_width</span><span class="o">//</span><span class="mi">8</span><span class="o">+</span><span class="p">(</span><span class="n">buffer_out_width</span><span class="o">%</span><span class="mi">8</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">send_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">cmd_calc</span><span class="p">)</span>
+    <span class="n">bytestr</span> <span class="o">=</span> <span class="n">receive_bytestr</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">bytestr_size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bytestr_to_bitstr</span><span class="p">(</span><span class="n">bytestr</span><span class="p">,</span> <span class="n">buffer_out_width</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="scan">
+<a class="viewcode-back" href="../../fpga.interfaz_pcps.html#fpga.interfaz_pcps.scan">[docs]</a>
+<span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">bitstr_in</span><span class="p">,</span> <span class="n">buffer_in_width</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Esta funcion dispara un ciclo RDY-&gt;SCAN-&gt;RDY en una máquina de estados finitos conectada a traves de `serialport` y carga a la máquina un bitstr de tamaño `buffer_in_width`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    serialport : pyserial.Serial</span>
+<span class="sd">        Objeto `Serial` del paquete &#39;pyserial&#39;.</span>
+<span class="sd">    bitstr_in : lista de {0,1}</span>
+<span class="sd">        Lista de bits a cargar en la máquina de estados finitos, conteniendo datos de entrada necesarios para la operación de la FPGA.</span>
+<span class="sd">    buffer_in_width : int</span>
+<span class="sd">        Número de bits escritos en la máquina de estados finitos.    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">send_u8</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">cmd_scan</span><span class="p">)</span>
+    <span class="n">send_bytestr</span><span class="p">(</span><span class="n">serialport</span><span class="p">,</span> <span class="n">bitstr_to_bytestr</span><span class="p">(</span><span class="n">bitstr_in</span><span class="p">,</span> <span class="n">buffer_in_width</span><span class="p">))</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../fpga.html" >fpga</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">fpga.interfaz_pcps</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

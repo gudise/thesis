@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>utils.tensor module &#8212; thesis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="utils.stats module" href="utils.stats.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.stats.html" title="utils.stats module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" accesskey="U">utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.tensor module</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-utils.tensor">
+<span id="utils-tensor-module"></span><h1>utils.tensor module<a class="headerlink" href="#module-utils.tensor" title="Link to this heading">¶</a></h1>
+<p>Este módulo permite definir nombres para los ejes
+de un numpyarray.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.tensor.Tensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.tensor.</span></span><span class="sig-name descname"><span class="pre">Tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Un objeto que es esencialmente un nparray junto con una variable ‘self.axis’ que permite indexar los ejes del array mediante un nombre natural, en lugar de un índice entero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array</strong> (<em>numpy.ndarray</em>) – Arreglo que contiene los datos y la forma del tensor.</p></li>
+<li><p><strong>axis</strong> (<em>list</em><em> of </em><em>strings</em><em>, </em><em>optional</em>) – Nombres de los ejes. El orden en que se proporcionan los nombres se correlaciona
+con el correspondiente eje del parámetro ‘array’. Si no se introduce una lista de nombres en esta variable,
+se asignarán por defecto como nombres el índice de cada eje (empezando en ‘0’).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.array">
+<span class="sig-name descname"><span class="pre">array</span></span><a class="headerlink" href="#utils.tensor.Tensor.array" title="Link to this definition">¶</a></dt>
+<dd><p>Arreglo que contiene los datos y la forma del tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.shape">
+<span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#utils.tensor.Tensor.shape" title="Link to this definition">¶</a></dt>
+<dd><p>Forma del tensor (igual que en un nparray).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><a class="headerlink" href="#utils.tensor.Tensor.axis" title="Link to this definition">¶</a></dt>
+<dd><p>Nombres de los ejes. El i-ésimo elemento contiene el nombre del i-ésimo eje.
+Si no se proporciona, se asignan nombres predeterminados en forma de índices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of strings</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.item">
+<span class="sig-name descname"><span class="pre">item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.item" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función toma por argumento el nombre de cada eje igualado a un
+índice, y devuelve el valor guardado en esa coordenada.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y
+los valores son los índices para esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Valor almacenado en las coordenadas especificadas.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.mean">
+<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.mean" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor comprimido en el eje ‘axe’, suprimiéndolo y calculando el promedio a lo largo de dicho eje.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axe</strong> (<em>int</em>) – Índice del eje a comprimir y calcular el promedio.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con el eje ‘axe’ suprimido y cada punto contiene el promedio a lo largo de ese eje.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%.18e'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.save" title="Link to this definition">¶</a></dt>
+<dd><p>Guarda el Tensor en un archivo de texto.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo donde se guardará el Tensor.</p></li>
+<li><p><strong>fmt</strong> (<em>str</em><em>, </em><em>optional</em>) – Formato numérico de los datos. Sigue el mismo formato que el parámetro ‘fmt’
+de numpy.savetxt.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.size">
+<span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.size" title="Link to this definition">¶</a></dt>
+<dd><p>Esta función toma el nombre de un eje y devuelve su dimensión.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>str</em>) – Nombre del eje del que se desea obtener la dimensión.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dimensión del eje especificado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.slice">
+<span class="sig-name descname"><span class="pre">slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.slice" title="Link to this definition">¶</a></dt>
+<dd><p>Toma una serie de ejes (por nombre), igualados a una porción ‘slice’. Esta porción puede ser
+un entero, una lista de dos enteros, o una lista de tres enteros, y devuelve un Tensor reducido al ‘slice’
+indicado (usando la misma notación que un slice estándar en Python: [x] es la x-ésima entrada, [x,y] son
+todas entradas en [x,y), y [x,y,z] son todas las entradas en [x,y) tomadas en saltos de z). Esta función
+es en realidad un wrapper a ‘take’, usando la nomenclatura de Python para hacer slicing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y los valores
+son objetos ‘slice’ o listas de enteros para realizar la porción en esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor reducido al ‘slice’ indicado a lo largo de los ejes especificados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.squeeze">
+<span class="sig-name descname"><span class="pre">squeeze</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.squeeze"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.squeeze" title="Link to this definition">¶</a></dt>
+<dd><p>Elimina todos los ejes del tensor cuya dimensión sea igual a ‘1’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor resultante después de eliminar los ejes con dimensión ‘1’.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.std">
+<span class="sig-name descname"><span class="pre">std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.std" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor comprimido en el eje ‘axe’, suprimiéndolo y calculando la desviación estándar a lo largo de dicho eje.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axe</strong> (<em>int</em>) – Índice del eje a comprimir y calcular la desviación estándar.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con el eje ‘axe’ suprimido y cada punto contiene la desviación estándar a lo largo de ese eje.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.swap">
+<span class="sig-name descname"><span class="pre">swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axe2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.swap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.swap" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor con el mismo “array” pero los ejes “axe1” y “axe2” intercambiados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axe1</strong> (<em>int</em>) – Índice del primer eje a intercambiar.</p></li>
+<li><p><strong>axe2</strong> (<em>int</em>) – Índice del segundo eje a intercambiar.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor con los ejes “axe1” y “axe2” intercambiados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.tensor.Tensor.take">
+<span class="sig-name descname"><span class="pre">take</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">axes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#Tensor.take"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.Tensor.take" title="Link to this definition">¶</a></dt>
+<dd><p>Toma una serie de ejes (por nombre), igualados a una lista de índices, y devuelve un Tensor
+reducido a los índices seleccionados.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axes</strong> (<em>dict</em>) – Argumentos clave-valor donde las claves son los nombres de los ejes y los valores
+son listas de índices a lo largo de esos ejes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor reducido a los índices seleccionados a lo largo de los ejes especificados.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.tensor.append">
+<span class="sig-prename descclassname"><span class="pre">utils.tensor.</span></span><span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axe</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#append"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.append" title="Link to this definition">¶</a></dt>
+<dd><p>Concatena dos objetos ‘Tensor’ a lo largo de un eje especificado por su nombre.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axe</strong> (<em>str</em>) – Nombre del eje a lo largo del cual se realizará la concatenación.</p></li>
+<li><p><strong>args</strong> (<a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor"><em>Tensor</em></a>) – Tensores que se concatenarán. Se deben proporcionar al menos dos tensores de entrada.
+Todos los tensores deben tener un parámetro ‘Tensor.axis’ idéntico y las mismas
+dimensiones en todos los ejes excepto posiblemente en ‘axe’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Nuevo Tensor que consiste en la concatenación de los argumentos en el orden proporcionado.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Si no se cumplen los requisitos de entrada (al menos dos tensores y ‘axe’).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.tensor.load_tensor">
+<span class="sig-prename descclassname"><span class="pre">utils.tensor.</span></span><span class="sig-name descname"><span class="pre">load_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils/tensor.html#load_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.tensor.load_tensor" title="Link to this definition">¶</a></dt>
+<dd><p>Devuelve un Tensor almacenado en un archivo de texto.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> (<em>str</em>) – Nombre del archivo que contiene el Tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor cargado desde el archivo de texto.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#utils.tensor.Tensor" title="utils.tensor.Tensor">Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">utils.tensor module</a><ul>
+<li><a class="reference internal" href="#utils.tensor.Tensor"><code class="docutils literal notranslate"><span class="pre">Tensor</span></code></a><ul>
+<li><a class="reference internal" href="#utils.tensor.Tensor.array"><code class="docutils literal notranslate"><span class="pre">Tensor.array</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.shape"><code class="docutils literal notranslate"><span class="pre">Tensor.shape</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.axis"><code class="docutils literal notranslate"><span class="pre">Tensor.axis</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.item"><code class="docutils literal notranslate"><span class="pre">Tensor.item()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.mean"><code class="docutils literal notranslate"><span class="pre">Tensor.mean()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.save"><code class="docutils literal notranslate"><span class="pre">Tensor.save()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.size"><code class="docutils literal notranslate"><span class="pre">Tensor.size()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.slice"><code class="docutils literal notranslate"><span class="pre">Tensor.slice()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.squeeze"><code class="docutils literal notranslate"><span class="pre">Tensor.squeeze()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.std"><code class="docutils literal notranslate"><span class="pre">Tensor.std()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.swap"><code class="docutils literal notranslate"><span class="pre">Tensor.swap()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.Tensor.take"><code class="docutils literal notranslate"><span class="pre">Tensor.take()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.tensor.append"><code class="docutils literal notranslate"><span class="pre">append()</span></code></a></li>
+<li><a class="reference internal" href="#utils.tensor.load_tensor"><code class="docutils literal notranslate"><span class="pre">load_tensor()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="utils.stats.html"
+                          title="previous chapter">utils.stats module</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.tensor.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.stats.html" title="utils.stats module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">thesis  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="utils.html" >utils package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">utils.tensor module</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2024, gds.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
